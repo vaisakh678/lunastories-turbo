@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: milotales
+      POSTGRES_PASSWORD: milotales
+      POSTGRES_DB: milotales
+    ports:
+      - "5432:5432"
+    volumes:
+      - milotales_db_data:/var/lib/postgresql/data
+
+volumes:
+  milotales_db_data:
