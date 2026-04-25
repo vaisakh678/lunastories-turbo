@@ -9,6 +9,8 @@ import ClerkKit
 struct GetStartedView: View {
     @State private var sheetStep: SignInSheet?
     @State private var pendingStep: SignInSheet?
+    @State private var providerMode: ProviderSheet.Mode = .signIn
+    @State private var showOnboarding: Bool = false
     @State private var email: String = ""
     @State private var inProgressSignIn: SignIn?
     @State private var inProgressSignUp: SignUp?
@@ -16,6 +18,7 @@ struct GetStartedView: View {
     @State private var errorMessage: String?
 
     var body: some View {
+        NavigationStack {
         ZStack {
             LinearGradient(
                 colors: [Color.purple.opacity(0.15), Color.blue.opacity(0.08)],
@@ -60,7 +63,8 @@ struct GetStartedView: View {
 
                 VStack(spacing: 12) {
                     Button {
-                        sheetStep = .providers
+                        providerMode = .signUp
+                        showOnboarding = true
                     } label: {
                         Text("Get Started")
                             .font(.headline)
@@ -72,6 +76,7 @@ struct GetStartedView: View {
                     .buttonStyle(.plain)
 
                     Button {
+                        providerMode = .signIn
                         sheetStep = .providers
                     } label: {
                         HStack(spacing: 4) {
@@ -89,7 +94,13 @@ struct GetStartedView: View {
                 .padding(.bottom, 28)
             }
         }
-        .sheet(item: $sheetStep, onDismiss: openPendingIfAny) { step in
+        .navigationDestination(isPresented: $showOnboarding) {
+            OnboardingCarouselView {
+                sheetStep = .providers
+            }
+        }
+        }
+        .sheet(item: $sheetStep, onDismiss: handleSheetDismiss) { step in
             sheetContent(for: step)
                 .presentationDetents(detents(for: step))
                 .presentationDragIndicator(.visible)
@@ -111,6 +122,7 @@ struct GetStartedView: View {
         switch step {
         case .providers:
             ProviderSheet(
+                mode: providerMode,
                 isLoading: isLoading,
                 onApple: { Task { await handleApple() } },
                 onGoogle: { Task { await handleGoogle() } },
@@ -148,6 +160,14 @@ struct GetStartedView: View {
         pendingStep = nil
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             sheetStep = next
+        }
+    }
+
+    private func handleSheetDismiss() {
+        if pendingStep != nil {
+            openPendingIfAny()
+        } else if showOnboarding {
+            showOnboarding = false
         }
     }
 

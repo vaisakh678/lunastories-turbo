@@ -29,6 +29,26 @@ enum SignInSheet: Identifiable {
 }
 
 struct ProviderSheet: View {
+    enum Mode {
+        case signIn
+        case signUp
+
+        var title: String {
+            switch self {
+            case .signIn: "Welcome Back"
+            case .signUp: "Get Started"
+            }
+        }
+
+        var subtitle: String {
+            switch self {
+            case .signIn: "Sign in to access your stories\nand keep the magic going."
+            case .signUp: "Continue to sign up and start\nbuilding your bedtime stories."
+            }
+        }
+    }
+
+    var mode: Mode = .signIn
     let isLoading: Bool
     let onApple: () -> Void
     let onGoogle: () -> Void
@@ -53,10 +73,10 @@ struct ProviderSheet: View {
             .padding(.bottom, 16)
 
             VStack(spacing: 8) {
-                Text("Welcome Back")
+                Text(mode.title)
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(textDark)
-                Text("Sign in to access your stories\nand keep the magic going.")
+                Text(mode.subtitle)
                     .font(.system(size: 15))
                     .foregroundStyle(textMedium)
                     .multilineTextAlignment(.center)

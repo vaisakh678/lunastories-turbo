@@ -20,6 +20,7 @@ struct AccountView: View {
     }
 
     var body: some View {
+        ZStack {
         ScrollView {
             VStack(spacing: 24) {
                 VStack(spacing: 12) {
@@ -91,15 +92,14 @@ struct AccountView: View {
             .padding(.vertical, 20)
         }
         .background(Color.gray.opacity(0.08))
-        .confirmationDialog(
-            "Sign out of Milo Tales?",
-            isPresented: $confirmingLogout,
-            titleVisibility: .visible
+        .alert(
+            "Are you sure you want to logout?",
+            isPresented: $confirmingLogout
         ) {
-            Button("Sign out", role: .destructive) {
+            Button("Cancel", role: .cancel) {}
+            Button("Logout", role: .destructive) {
                 Task { await handleLogout() }
             }
-            Button("Cancel", role: .cancel) {}
         }
         .alert(
             "Sign out failed",
@@ -110,6 +110,28 @@ struct AccountView: View {
             actions: { Button("OK") { errorMessage = nil } },
             message: { Text(errorMessage ?? "") }
         )
+
+        if isLoggingOut {
+            Color.black.opacity(0.35)
+                .ignoresSafeArea()
+                .transition(.opacity)
+            VStack(spacing: 14) {
+                ProgressView()
+                    .controlSize(.large)
+                    .tint(.white)
+                Text("Signing out…")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.white)
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.black.opacity(0.7))
+            )
+            .transition(.opacity)
+        }
+        }
+        .animation(.easeInOut(duration: 0.2), value: isLoggingOut)
     }
 
     private func handleLogout() async {

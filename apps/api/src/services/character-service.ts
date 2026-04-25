@@ -1,6 +1,6 @@
 import db, { characterSchema } from "@repo/db";
 import type { CharacterDTO } from "@repo/dto";
-import type { CreateCharacter } from "@repo/zod";
+import type { CreateCharacter, UpdateCharacter } from "@repo/zod";
 import { and, desc, eq, isNull } from "drizzle-orm";
 
 import { NotFound } from "../lib/api-error";
@@ -66,6 +66,27 @@ export async function getCharactersByUser(
     .orderBy(desc(characterSchema.createdAt));
 
   return rows.map(toDTO);
+}
+
+export async function updateCharacter(
+  userId: string,
+  characterId: string,
+  data: UpdateCharacter,
+): Promise<CharacterDTO> {
+  const [updated] = await db
+    .update(characterSchema)
+    .set(data)
+    .where(
+      and(
+        eq(characterSchema.id, characterId),
+        eq(characterSchema.userId, userId),
+        isNull(characterSchema.deletedAt),
+      ),
+    )
+    .returning();
+
+  if (!updated) throw NotFound("Character not found");
+  return toDTO(updated);
 }
 
 export async function softDeleteCharacter(

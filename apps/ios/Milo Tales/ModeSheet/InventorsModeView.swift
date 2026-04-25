@@ -9,7 +9,7 @@ struct InventorsModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onComplete: () -> Void
+    let onComplete: (StoryInputPayload) -> Void
 
     enum Step: Hashable { case place }
 
@@ -78,6 +78,14 @@ private let inventorOptions: [PickOption] = [
 
     private func handleSubmitPlace() {
         guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        onComplete()
+        onComplete(
+            StoryInputPayload(
+                modeKey: "inventors",
+                input: .object([
+                    "inventor": inventor.map { .string($0.title) } ?? .null,
+                    "place": .string(place.trimmingCharacters(in: .whitespaces)),
+                ])
+            )
+        )
     }
 }

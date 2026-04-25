@@ -15,6 +15,13 @@
       "when": 1777132441200,
       "tag": "0001_unique_nocturne",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777133011505,
+      "tag": "0002_unknown_carnage",
+      "breakpoints": true
     }
   ]
 }

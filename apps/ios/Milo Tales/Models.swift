@@ -119,25 +119,3 @@ nonisolated struct Character: Identifiable, Codable {
 
     var tint: Color { ColorPalette.color(for: tintName) }
 }
-
-struct Story: Identifiable {
-    let id = UUID()
-    let title: String
-    let summary: String
-    let symbolName: String
-    let tint: Color
-    let duration: String
-    let createdAt: String
-    var totalSeconds: Int = 300
-    var blocks: [StoryBlock] = []
-}
-
-struct StoryBlock: Identifiable {
-    let id = UUID()
-    let kind: Kind
-
-    enum Kind {
-        case text(String)
-        case illustration(symbolName: String, tint: Color)
-    }
-}
