@@ -125,7 +125,7 @@ struct OptionTile: View {
         Button(action: action) {
             VStack(spacing: 6) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .fill(option.tint.opacity(0.18))
                     Image(systemName: option.symbolName)
                         .font(.system(size: 28, weight: .semibold))
@@ -167,7 +167,7 @@ struct OptionRow: View {
         Button(action: action) {
             HStack(spacing: 14) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(option.tint.opacity(0.18))
                         .frame(width: 44, height: 44)
                     Image(systemName: option.symbolName)

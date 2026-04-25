@@ -200,7 +200,7 @@ private struct AddCharacterTile: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .strokeBorder(
                         Color.accentColor.opacity(0.5),
                         style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
@@ -226,14 +226,14 @@ private struct CharacterCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 ZStack(alignment: .topTrailing) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .fill(character.tint.opacity(0.18))
                         Image(systemName: character.symbolName)
                             .font(.system(size: 30, weight: .semibold))
                             .foregroundStyle(character.tint)
                     }
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .strokeBorder(
                                 isSelected ? Color.accentColor : Color.clear,
                                 lineWidth: 3

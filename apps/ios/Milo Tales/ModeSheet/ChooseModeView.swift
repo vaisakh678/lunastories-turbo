@@ -68,7 +68,7 @@ private struct ModeTile: View {
         Button(action: action) {
             VStack(spacing: 6) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .fill(mode.tint.opacity(0.18))
                     Image(systemName: mode.symbolName)
                         .font(.system(size: 30, weight: .semibold))

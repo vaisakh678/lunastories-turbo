@@ -268,7 +268,7 @@ private struct IconStep: View {
                             .foregroundStyle(isSelected ? Color.white : Color.accentColor)
                             .frame(width: 64, height: 64)
                             .background(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                RoundedRectangle(cornerRadius: 22, style: .continuous)
                                     .fill(isSelected ? Color.accentColor : Color.accentColor.opacity(0.12))
                             )
                     }
