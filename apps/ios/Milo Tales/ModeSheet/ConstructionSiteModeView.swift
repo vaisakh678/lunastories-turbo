@@ -40,17 +40,17 @@ struct ConstructionSiteModeView: View {
     }
 
     private var characterPickStep: some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: 0, total: totalSteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            PlainStepHeader(title: "Pick a character", subtitle: "Who joins the story?")
-                .padding(.bottom, 16)
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                ModeTopBar(onClose: onClose)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                ProgressDots(currentIndex: 0, total: totalSteps)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+                PlainStepHeader(title: "Pick a character", subtitle: "Who joins the story?")
+                    .padding(.bottom, 16)
                 OptionGrid(options: characterOptions) { handlePick($0) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
@@ -59,17 +59,17 @@ struct ConstructionSiteModeView: View {
     }
 
     private var placeStep: some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: 1, total: totalSteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
-                .padding(.bottom, 16)
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                ModeTopBar(onClose: onClose)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                ProgressDots(currentIndex: 1, total: totalSteps)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+                PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
+                    .padding(.bottom, 16)
                 PlaceTextInput(
                     text: $place,
                     placeholder: "e.g. a busy downtown site",
@@ -90,9 +90,5 @@ struct ConstructionSiteModeView: View {
     private func handleSubmitPlace() {
         guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         onComplete()
-    }
-
-    private func popPath() {
-        if !path.isEmpty { path.removeLast() }
     }
 }

@@ -14,33 +14,17 @@ struct PickOption: Identifiable, Hashable {
 
 struct ModeTopBar: View {
     let onClose: () -> Void
-    let onBack: (() -> Void)?
 
     var body: some View {
         HStack {
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.primary)
-                    .frame(width: 32, height: 32)
-                    .glassEffect(in: Circle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.glass)
             .accessibilityLabel("Close")
 
             Spacer()
-
-            if let onBack {
-                Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .frame(width: 32, height: 32)
-                        .glassEffect(in: Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Back")
-            }
         }
     }
 }

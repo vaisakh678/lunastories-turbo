@@ -36,7 +36,7 @@ struct ChooseModeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: nil)
+            ModeTopBar(onClose: onClose)
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
                 .padding(.bottom, 12)

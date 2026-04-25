@@ -95,22 +95,22 @@ struct CreativeModeView: View {
     }
 
     private func typeStep(charIndex: Int) -> some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: charIndex, total: totalSubsteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            if charIndex < characters.count {
-                CharacterStepHeader(
-                    character: characters[charIndex],
-                    title: "Choose a type"
-                )
-                .padding(.bottom, 16)
-            }
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                ModeTopBar(onClose: onClose)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                ProgressDots(currentIndex: charIndex, total: totalSubsteps)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+                if charIndex < characters.count {
+                    CharacterStepHeader(
+                        character: characters[charIndex],
+                        title: "Choose a type"
+                    )
+                    .padding(.bottom, 16)
+                }
                 OptionGrid(options: typeOptions) { handleType($0, charIndex: charIndex) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
@@ -119,22 +119,22 @@ struct CreativeModeView: View {
     }
 
     private func professionStep(charIndex: Int) -> some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: characters.count + charIndex, total: totalSubsteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            if charIndex < characters.count {
-                CharacterStepHeader(
-                    character: characters[charIndex],
-                    title: "Choose a profession"
-                )
-                .padding(.bottom, 16)
-            }
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                ModeTopBar(onClose: onClose)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                ProgressDots(currentIndex: characters.count + charIndex, total: totalSubsteps)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+                if charIndex < characters.count {
+                    CharacterStepHeader(
+                        character: characters[charIndex],
+                        title: "Choose a profession"
+                    )
+                    .padding(.bottom, 16)
+                }
                 OptionGrid(options: professionOptions) { handleProfession($0, charIndex: charIndex) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
@@ -143,17 +143,17 @@ struct CreativeModeView: View {
     }
 
     private var moralStep: some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: characters.count * 2, total: totalSubsteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            PlainStepHeader(title: "Choose a moral", subtitle: "Pick a lesson for your story.")
-                .padding(.bottom, 16)
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                ModeTopBar(onClose: onClose)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                ProgressDots(currentIndex: characters.count * 2, total: totalSubsteps)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+                PlainStepHeader(title: "Choose a moral", subtitle: "Pick a lesson for your story.")
+                    .padding(.bottom, 16)
                 OptionList(options: moralOptions) { handleMoral($0) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
@@ -184,9 +184,5 @@ struct CreativeModeView: View {
     private func handleMoral(_ option: PickOption) {
         moral = option
         onComplete()
-    }
-
-    private func popPath() {
-        if !path.isEmpty { path.removeLast() }
     }
 }
