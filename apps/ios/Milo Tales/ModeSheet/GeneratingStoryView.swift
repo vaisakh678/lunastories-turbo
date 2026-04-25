@@ -9,7 +9,6 @@ struct GeneratingStoryRoute: Hashable {}
 
 struct GeneratingStoryView: View {
     let onClose: () -> Void
-    let onReady: () -> Void
 
     var body: some View {
         VStack(spacing: 28) {
@@ -50,12 +49,6 @@ struct GeneratingStoryView: View {
                     Image(systemName: "xmark")
                 }
                 .accessibilityLabel("Close")
-            }
-        }
-        .task {
-            try? await Task.sleep(for: .seconds(2.5))
-            if !Task.isCancelled {
-                onReady()
             }
         }
     }

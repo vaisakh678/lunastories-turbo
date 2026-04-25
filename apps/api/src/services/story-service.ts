@@ -4,6 +4,7 @@ import db, {
   storySchema,
 } from "@repo/db";
 import type {
+  CharacterDTO,
   StoryContent,
   StoryDTO,
   StorySummaryDTO,
@@ -11,7 +12,9 @@ import type {
 import type { CreateStory } from "@repo/zod";
 import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 
-import { BadRequest, NotFound } from "../lib/api-error";
+import { BadRequest, InternalError, NotFound } from "../lib/api-error";
+import { logger } from "../lib/logger";
+import { generateStory } from "../lib/story-generator";
 
 function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
   return {
@@ -43,12 +46,34 @@ function toDTO(
   };
 }
 
+function characterRowToDTO(
+  row: typeof characterSchema.$inferSelect,
+): CharacterDTO {
+  return {
+    id: row.id,
+    role: row.role,
+    name: row.name,
+    symbolName: row.symbolName,
+    tint: row.tint,
+    tagline: row.tagline,
+    age: row.age,
+    gender: row.gender,
+    hairColor: row.hairColor,
+    eyeColor: row.eyeColor,
+    hairstyle: row.hairstyle,
+    interests: row.interests,
+    extraInterestNote: row.extraInterestNote,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
 export async function createStory(
   userId: string,
   data: CreateStory,
 ): Promise<StoryDTO> {
   const ownedCharacters = await db
-    .select({ id: characterSchema.id })
+    .select()
     .from(characterSchema)
     .where(
       and(
@@ -62,15 +87,20 @@ export async function createStory(
     throw BadRequest("One or more characters do not belong to this user");
   }
 
-  return db.transaction(async (tx) => {
+  const orderedCharacters = data.characterIds.map(
+    (id) => ownedCharacters.find((c) => c.id === id)!,
+  );
+
+  const insertedId = await db.transaction(async (tx) => {
     const [created] = await tx
       .insert(storySchema)
       .values({
         userId,
         modeKey: data.modeKey,
         generationInput: data.input,
+        status: "generating",
       })
-      .returning();
+      .returning({ id: storySchema.id });
 
     await tx.insert(storyCharacterSchema).values(
       data.characterIds.map((characterId, position) => ({
@@ -80,8 +110,41 @@ export async function createStory(
       })),
     );
 
-    return toDTO(created, data.characterIds);
+    return created.id;
   });
+
+  try {
+    const generated = await generateStory({
+      characters: orderedCharacters.map(characterRowToDTO),
+      modeKey: data.modeKey,
+      input: data.input,
+    });
+
+    const [updated] = await db
+      .update(storySchema)
+      .set({
+        status: "ready",
+        title: generated.title,
+        summary: generated.summary,
+        bodyText: generated.bodyText,
+        content: generated.content,
+        coverSymbol: generated.coverSymbol,
+        coverTint: generated.coverTint,
+      })
+      .where(eq(storySchema.id, insertedId))
+      .returning();
+
+    return toDTO(updated, data.characterIds);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Generation failed";
+    await db
+      .update(storySchema)
+      .set({ status: "failed", errorMessage: message })
+      .where(eq(storySchema.id, insertedId));
+
+    logger.error({ err, storyId: insertedId }, "Story generation failed");
+    throw InternalError("Failed to generate story");
+  }
 }
 
 export async function getStoriesByUser(

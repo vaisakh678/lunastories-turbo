@@ -32,10 +32,7 @@ struct ModeSheetView: View {
                 modeView(for: mode)
             }
             .navigationDestination(for: GeneratingStoryRoute.self) { _ in
-                GeneratingStoryView(
-                    onClose: { dismiss() },
-                    onReady: { handleStoryReady() }
-                )
+                GeneratingStoryView(onClose: { dismiss() })
             }
         }
         .alert(
@@ -130,15 +127,12 @@ struct ModeSheetView: View {
         Task {
             do {
                 _ = try await StoryAPI.create(request)
+                onComplete()
+                dismiss()
             } catch {
                 errorMessage = (error as? APIError)?.errorDescription
                     ?? error.localizedDescription
             }
         }
-    }
-
-    private func handleStoryReady() {
-        onComplete()
-        dismiss()
     }
 }
