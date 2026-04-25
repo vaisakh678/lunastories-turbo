@@ -6,7 +6,9 @@ const TTS_AUDIO_OUTPUT_USD_PER_1M = 12; // gpt-4o-mini-tts audio output tokens
 
 // Rough heuristics for the things OpenAI doesn't return directly:
 const CHARS_PER_TOKEN = 4; // average for English prose
-const AUDIO_TOKENS_PER_SECOND = 50; // OpenAI TTS rate of thumb
+// OpenAI publishes ~$0.015/min for gpt-4o-mini-tts audio. At $12/1M tokens,
+// ($0.015 / 60s) / ($12 / 1_000_000) ≈ 20.8 tokens/sec.
+const AUDIO_TOKENS_PER_SECOND = 20.8;
 
 export interface StoryUsage {
   textInputTokens: number | null;
