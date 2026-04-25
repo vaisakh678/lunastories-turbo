@@ -10,7 +10,7 @@ struct ModeSheetView: View {
     let onComplete: () -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var path: [String] = []   // mode titles
+    @State private var path = NavigationPath()
 
     private let supportedModes: Set<String> = [
         "Creative", "Inventors", "Construction Site", "Vegetable",
@@ -22,14 +22,13 @@ struct ModeSheetView: View {
                 onClose: { dismiss() },
                 onSelect: { mode in
                     if supportedModes.contains(mode.title) {
-                        path.append(mode.title)
+                        path.append(mode)
                     }
-                    // unsupported modes are silent until specced
                 }
             )
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: String.self) { modeTitle in
-                modeView(for: modeTitle)
+            .navigationDestination(for: StoryMode.self) { mode in
+                modeView(for: mode)
                     .toolbar(.hidden, for: .navigationBar)
                     .navigationBarBackButtonHidden(true)
             }
@@ -37,43 +36,39 @@ struct ModeSheetView: View {
     }
 
     @ViewBuilder
-    private func modeView(for title: String) -> some View {
-        switch title {
+    private func modeView(for mode: StoryMode) -> some View {
+        switch mode.title {
         case "Creative":
             CreativeModeView(
                 characters: characters,
+                path: $path,
                 onClose: { dismiss() },
-                onBackToParent: { popPath() },
                 onComplete: { handleComplete() }
             )
         case "Inventors":
             InventorsModeView(
                 characters: characters,
+                path: $path,
                 onClose: { dismiss() },
-                onBackToParent: { popPath() },
                 onComplete: { handleComplete() }
             )
         case "Construction Site":
             ConstructionSiteModeView(
                 characters: characters,
+                path: $path,
                 onClose: { dismiss() },
-                onBackToParent: { popPath() },
                 onComplete: { handleComplete() }
             )
         case "Vegetable":
             VegetableModeView(
                 characters: characters,
+                path: $path,
                 onClose: { dismiss() },
-                onBackToParent: { popPath() },
                 onComplete: { handleComplete() }
             )
         default:
             EmptyView()
         }
-    }
-
-    private func popPath() {
-        if !path.isEmpty { path.removeLast() }
     }
 
     private func handleComplete() {

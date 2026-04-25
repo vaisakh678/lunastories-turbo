@@ -7,14 +7,14 @@ import SwiftUI
 
 struct VegetableModeView: View {
     let characters: [Character]
+    @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onBackToParent: () -> Void
     let onComplete: () -> Void
 
-    @State private var stepIndex: Int = 0
+    enum Step: Hashable { case place }
+
     @State private var picked: PickOption?
     @State private var place: String = ""
-    @State private var direction: TransitionDirection = .forward
 
     private let totalSteps = 2
 
@@ -28,64 +28,63 @@ struct VegetableModeView: View {
     ]
 
     var body: some View {
+        characterPickStep
+            .navigationDestination(for: Step.self) { step in
+                switch step {
+                case .place:
+                    placeStep
+                        .toolbar(.hidden, for: .navigationBar)
+                        .navigationBarBackButtonHidden(true)
+                }
+            }
+    }
+
+    private var characterPickStep: some View {
         VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: handleBack)
+            ModeTopBar(onClose: onClose, onBack: popPath)
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
-
-            ProgressDots(currentIndex: stepIndex, total: totalSteps)
+            ProgressDots(currentIndex: 0, total: totalSteps)
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
                 .padding(.bottom, 16)
-
-            ZStack {
-                stepBody
-                    .id(stepIndex)
-                    .transition(.slide(direction))
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-        }
-        .animation(.easeInOut(duration: 0.3), value: stepIndex)
-    }
-
-    @ViewBuilder
-    private var stepBody: some View {
-        switch stepIndex {
-        case 0:
-            VStack(spacing: 0) {
-                PlainStepHeader(title: "Pick a character", subtitle: "Who joins the story?")
-                    .padding(.bottom, 16)
-                ScrollView {
-                    OptionGrid(options: characterOptions) { handlePick($0) }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 24)
-                }
-            }
-        case 1:
-            VStack(spacing: 0) {
-                PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
-                    .padding(.bottom, 16)
-                ScrollView {
-                    PlaceTextInput(
-                        text: $place,
-                        placeholder: "e.g. a sunny garden patch",
-                        isLastStep: true,
-                        onSubmit: handleSubmitPlace
-                    )
+            PlainStepHeader(title: "Pick a character", subtitle: "Who joins the story?")
+                .padding(.bottom, 16)
+            ScrollView {
+                OptionGrid(options: characterOptions) { handlePick($0) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
-                }
             }
-        default:
-            EmptyView()
+        }
+    }
+
+    private var placeStep: some View {
+        VStack(spacing: 0) {
+            ModeTopBar(onClose: onClose, onBack: popPath)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+            ProgressDots(currentIndex: 1, total: totalSteps)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
+            PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
+                .padding(.bottom, 16)
+            ScrollView {
+                PlaceTextInput(
+                    text: $place,
+                    placeholder: "e.g. a sunny garden patch",
+                    isLastStep: true,
+                    onSubmit: handleSubmitPlace
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 24)
+            }
         }
     }
 
     private func handlePick(_ option: PickOption) {
         picked = option
-        direction = .forward
-        stepIndex = 1
+        path.append(Step.place)
     }
 
     private func handleSubmitPlace() {
@@ -93,12 +92,7 @@ struct VegetableModeView: View {
         onComplete()
     }
 
-    private func handleBack() {
-        if stepIndex > 0 {
-            direction = .backward
-            stepIndex -= 1
-        } else {
-            onBackToParent()
-        }
+    private func popPath() {
+        if !path.isEmpty { path.removeLast() }
     }
 }

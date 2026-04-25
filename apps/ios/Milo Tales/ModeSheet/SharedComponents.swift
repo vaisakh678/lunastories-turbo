@@ -12,18 +12,6 @@ struct PickOption: Identifiable, Hashable {
     let tint: Color
 }
 
-enum TransitionDirection { case forward, backward }
-
-extension AnyTransition {
-    static func slide(_ direction: TransitionDirection) -> AnyTransition {
-        let forward = direction == .forward
-        return .asymmetric(
-            insertion: .move(edge: forward ? .trailing : .leading).combined(with: .opacity),
-            removal: .move(edge: forward ? .leading : .trailing).combined(with: .opacity)
-        )
-    }
-}
-
 struct ModeTopBar: View {
     let onClose: () -> Void
     let onBack: (() -> Void)?

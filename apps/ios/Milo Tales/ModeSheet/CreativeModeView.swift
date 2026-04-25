@@ -7,35 +7,21 @@ import SwiftUI
 
 struct CreativeModeView: View {
     let characters: [Character]
+    @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onBackToParent: () -> Void
     let onComplete: () -> Void
 
-    @State private var phase: Phase = .type
-    @State private var charIndex: Int = 0
+    enum Step: Hashable {
+        case type(charIndex: Int)
+        case profession(charIndex: Int)
+        case moral
+    }
+
     @State private var typeByChar: [UUID: PickOption] = [:]
     @State private var professionByChar: [UUID: PickOption] = [:]
     @State private var moral: PickOption?
-    @State private var direction: TransitionDirection = .forward
 
-    enum Phase: Hashable { case type, profession, moral }
-
-    private var totalSubsteps: Int {
-        max(characters.count * 2 + 1, 1)
-    }
-
-    private var currentSubstepIndex: Int {
-        switch phase {
-        case .type: return charIndex
-        case .profession: return characters.count + charIndex
-        case .moral: return characters.count * 2
-        }
-    }
-
-    private var currentCharacter: Character? {
-        guard phase != .moral, charIndex < characters.count else { return nil }
-        return characters[charIndex]
-    }
+    private var totalSubsteps: Int { max(characters.count * 2 + 1, 1) }
 
     private let typeOptions: [PickOption] = [
         .init(title: "Fox",      symbolName: "pawprint.fill",  tint: .orange),
@@ -93,88 +79,105 @@ struct CreativeModeView: View {
     ]
 
     var body: some View {
+        // Root = type for character 0
+        typeStep(charIndex: 0)
+            .navigationDestination(for: Step.self) { step in
+                Group {
+                    switch step {
+                    case .type(let i):       typeStep(charIndex: i)
+                    case .profession(let i): professionStep(charIndex: i)
+                    case .moral:             moralStep
+                    }
+                }
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationBarBackButtonHidden(true)
+            }
+    }
+
+    private func typeStep(charIndex: Int) -> some View {
         VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: handleBack)
+            ModeTopBar(onClose: onClose, onBack: popPath)
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
-
-            ProgressDots(currentIndex: currentSubstepIndex, total: totalSubsteps)
+            ProgressDots(currentIndex: charIndex, total: totalSubsteps)
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
                 .padding(.bottom, 16)
-
-            ZStack {
-                stepBody
-                    .id(currentSubstepIndex)
-                    .transition(.slide(direction))
+            if charIndex < characters.count {
+                CharacterStepHeader(
+                    character: characters[charIndex],
+                    title: "Choose a type"
+                )
+                .padding(.bottom, 16)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-        }
-        .animation(.easeInOut(duration: 0.3), value: currentSubstepIndex)
-    }
-
-    @ViewBuilder
-    private var stepBody: some View {
-        switch phase {
-        case .type:
-            VStack(spacing: 0) {
-                if let character = currentCharacter {
-                    CharacterStepHeader(character: character, title: "Choose a type")
-                        .padding(.bottom, 16)
-                }
-                ScrollView {
-                    OptionGrid(options: typeOptions) { handleType($0) }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 24)
-                }
-            }
-        case .profession:
-            VStack(spacing: 0) {
-                if let character = currentCharacter {
-                    CharacterStepHeader(character: character, title: "Choose a profession")
-                        .padding(.bottom, 16)
-                }
-                ScrollView {
-                    OptionGrid(options: professionOptions) { handleProfession($0) }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 24)
-                }
-            }
-        case .moral:
-            VStack(spacing: 0) {
-                PlainStepHeader(title: "Choose a moral", subtitle: "Pick a lesson for your story.")
-                    .padding(.bottom, 16)
-                ScrollView {
-                    OptionList(options: moralOptions) { handleMoral($0) }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 24)
-                }
+            ScrollView {
+                OptionGrid(options: typeOptions) { handleType($0, charIndex: charIndex) }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
             }
         }
     }
 
-    private func handleType(_ option: PickOption) {
-        guard let character = currentCharacter else { return }
-        typeByChar[character.id] = option
-        direction = .forward
+    private func professionStep(charIndex: Int) -> some View {
+        VStack(spacing: 0) {
+            ModeTopBar(onClose: onClose, onBack: popPath)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+            ProgressDots(currentIndex: characters.count + charIndex, total: totalSubsteps)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
+            if charIndex < characters.count {
+                CharacterStepHeader(
+                    character: characters[charIndex],
+                    title: "Choose a profession"
+                )
+                .padding(.bottom, 16)
+            }
+            ScrollView {
+                OptionGrid(options: professionOptions) { handleProfession($0, charIndex: charIndex) }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
+            }
+        }
+    }
+
+    private var moralStep: some View {
+        VStack(spacing: 0) {
+            ModeTopBar(onClose: onClose, onBack: popPath)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+            ProgressDots(currentIndex: characters.count * 2, total: totalSubsteps)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
+            PlainStepHeader(title: "Choose a moral", subtitle: "Pick a lesson for your story.")
+                .padding(.bottom, 16)
+            ScrollView {
+                OptionList(options: moralOptions) { handleMoral($0) }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
+            }
+        }
+    }
+
+    private func handleType(_ option: PickOption, charIndex: Int) {
+        guard charIndex < characters.count else { return }
+        typeByChar[characters[charIndex].id] = option
         if charIndex < characters.count - 1 {
-            charIndex += 1
+            path.append(Step.type(charIndex: charIndex + 1))
         } else {
-            phase = .profession
-            charIndex = 0
+            path.append(Step.profession(charIndex: 0))
         }
     }
 
-    private func handleProfession(_ option: PickOption) {
-        guard let character = currentCharacter else { return }
-        professionByChar[character.id] = option
-        direction = .forward
+    private func handleProfession(_ option: PickOption, charIndex: Int) {
+        guard charIndex < characters.count else { return }
+        professionByChar[characters[charIndex].id] = option
         if charIndex < characters.count - 1 {
-            charIndex += 1
+            path.append(Step.profession(charIndex: charIndex + 1))
         } else {
-            phase = .moral
-            charIndex = 0
+            path.append(Step.moral)
         }
     }
 
@@ -183,25 +186,7 @@ struct CreativeModeView: View {
         onComplete()
     }
 
-    private func handleBack() {
-        direction = .backward
-        switch phase {
-        case .type:
-            if charIndex > 0 {
-                charIndex -= 1
-            } else {
-                onBackToParent()
-            }
-        case .profession:
-            if charIndex > 0 {
-                charIndex -= 1
-            } else {
-                phase = .type
-                charIndex = max(characters.count - 1, 0)
-            }
-        case .moral:
-            phase = .profession
-            charIndex = max(characters.count - 1, 0)
-        }
+    private func popPath() {
+        if !path.isEmpty { path.removeLast() }
     }
 }
