@@ -98,9 +98,38 @@ struct ContentView: View {
                 VStack(spacing: 0) {
                     Spacer()
                     ZStack(alignment: .bottom) {
-                        Color.yellow
-                            .frame(height: 150)
-                            .allowsHitTesting(false)
+                        ZStack {
+                            Rectangle()
+                                .fill(.ultraThinMaterial)
+                                .mask(
+                                    LinearGradient(
+                                        stops: [
+                                            .init(color: .clear, location: 0),
+                                            .init(color: .black.opacity(0.5), location: 0.4),
+                                            .init(color: .black, location: 1),
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+
+                            Rectangle()
+                                .fill(.regularMaterial)
+                                .mask(
+                                    LinearGradient(
+                                        stops: [
+                                            .init(color: .clear, location: 0),
+                                            .init(color: .clear, location: 0.35),
+                                            .init(color: .black.opacity(0.6), location: 0.7),
+                                            .init(color: .black, location: 1),
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                        }
+                        .frame(height: 200)
+                        .allowsHitTesting(false)
 
                         StartButton(action: {})
                             .padding(.horizontal, 24)
