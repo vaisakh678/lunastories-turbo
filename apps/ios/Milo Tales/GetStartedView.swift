@@ -4,13 +4,16 @@
 //
 
 import SwiftUI
+import ClerkKit
 
 struct GetStartedView: View {
-    let onContinue: () -> Void
-
     @State private var sheetStep: SignInSheet?
     @State private var pendingStep: SignInSheet?
     @State private var email: String = ""
+    @State private var inProgressSignIn: SignIn?
+    @State private var inProgressSignUp: SignUp?
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String?
 
     var body: some View {
         ZStack {
@@ -56,7 +59,9 @@ struct GetStartedView: View {
                 Spacer()
 
                 VStack(spacing: 12) {
-                    Button(action: onContinue) {
+                    Button {
+                        sheetStep = .providers
+                    } label: {
                         Text("Get Started")
                             .font(.headline)
                             .foregroundStyle(.white)
@@ -89,13 +94,15 @@ struct GetStartedView: View {
                 .presentationDetents(detents(for: step))
                 .presentationDragIndicator(.visible)
         }
-    }
-
-    private func detents(for step: SignInSheet) -> Set<PresentationDetent> {
-        switch step {
-        case .providers: return [.medium]
-        case .email, .otp: return [.large]
-        }
+        .alert(
+            "Sign in failed",
+            isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+            ),
+            actions: { Button("OK") { errorMessage = nil } },
+            message: { Text(errorMessage ?? "") }
+        )
     }
 
     @ViewBuilder
@@ -103,20 +110,30 @@ struct GetStartedView: View {
         switch step {
         case .providers:
             ProviderSheet(
-                onApple: completeAuth,
-                onGoogle: completeAuth,
+                isLoading: isLoading,
+                onApple: { Task { await handleApple() } },
+                onGoogle: { Task { await handleGoogle() } },
                 onEmail: { transition(to: .email) }
             )
         case .email:
             EmailSheet(
                 email: $email,
-                onContinue: { transition(to: .otp) }
+                isLoading: isLoading,
+                onContinue: { Task { await handleEmailContinue() } }
             )
         case .otp:
             OtpSheet(
                 email: email,
-                onVerified: completeAuth
+                isLoading: isLoading,
+                onVerify: { code in Task { await handleVerify(code: code) } }
             )
+        }
+    }
+
+    private func detents(for step: SignInSheet) -> Set<PresentationDetent> {
+        switch step {
+        case .providers: return [.medium]
+        case .email, .otp: return [.large]
         }
     }
 
@@ -133,9 +150,92 @@ struct GetStartedView: View {
         }
     }
 
-    private func completeAuth() {
-        pendingStep = nil
-        sheetStep = nil
-        onContinue()
+    // MARK: - Clerk auth handlers
+
+    private func handleEmailContinue() async {
+        let trimmed = email.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !trimmed.isEmpty else { return }
+        isLoading = true
+        defer { isLoading = false }
+
+        // Try sign-in first; if user not found, fall back to sign-up.
+        do {
+            var signIn = try await Clerk.shared.auth.signIn(trimmed)
+            signIn = try await signIn.sendEmailCode()
+            inProgressSignIn = signIn
+            inProgressSignUp = nil
+            transition(to: .otp)
+            return
+        } catch {
+            // Try sign-up.
+            do {
+                var signUp = try await Clerk.shared.auth.signUp(emailAddress: trimmed)
+                signUp = try await signUp.sendEmailCode()
+                inProgressSignUp = signUp
+                inProgressSignIn = nil
+                transition(to: .otp)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func handleVerify(code: String) async {
+        guard code.count == 6 else { return }
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            if let signIn = inProgressSignIn {
+                let updated = try await signIn.verifyCode(code)
+                inProgressSignIn = updated
+                if updated.status == .complete, let sessionId = updated.createdSessionId {
+                    try await Clerk.shared.auth.setActive(sessionId: sessionId)
+                }
+            } else if let signUp = inProgressSignUp {
+                let updated = try await signUp.verifyEmailCode(code)
+                inProgressSignUp = updated
+                if updated.status == .complete, let sessionId = updated.createdSessionId {
+                    try await Clerk.shared.auth.setActive(sessionId: sessionId)
+                }
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func handleApple() async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let result = try await Clerk.shared.auth.signInWithApple()
+            try await activateSession(from: result)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func handleGoogle() async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let result = try await Clerk.shared.auth.signInWithOAuth(provider: .google)
+            try await activateSession(from: result)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func activateSession(from result: TransferFlowResult) async throws {
+        switch result {
+        case .signIn(let signIn):
+            if let sessionId = signIn.createdSessionId {
+                try await Clerk.shared.auth.setActive(sessionId: sessionId)
+            }
+        case .signUp(let signUp):
+            if let sessionId = signUp.createdSessionId {
+                try await Clerk.shared.auth.setActive(sessionId: sessionId)
+            }
+        }
     }
 }

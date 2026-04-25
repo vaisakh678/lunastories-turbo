@@ -29,6 +29,7 @@ enum SignInSheet: Identifiable {
 }
 
 struct ProviderSheet: View {
+    let isLoading: Bool
     let onApple: () -> Void
     let onGoogle: () -> Void
     let onEmail: () -> Void
@@ -174,13 +175,14 @@ struct ProviderSheet: View {
 
 struct EmailSheet: View {
     @Binding var email: String
+    let isLoading: Bool
     let onContinue: () -> Void
 
     @Environment(\.dismiss) private var dismiss
 
     private var canContinue: Bool {
         let trimmed = email.trimmingCharacters(in: .whitespaces)
-        return trimmed.contains("@") && trimmed.contains(".")
+        return !isLoading && trimmed.contains("@") && trimmed.contains(".")
     }
 
     var body: some View {
@@ -237,13 +239,19 @@ struct EmailSheet: View {
             .padding(.bottom, 14)
 
             Button(action: onContinue) {
-                Text("Continue")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Capsule().fill(primaryBlue))
-                    .opacity(canContinue ? 1 : 0.7)
+                ZStack {
+                    Text("Continue")
+                        .opacity(isLoading ? 0 : 1)
+                    if isLoading {
+                        ProgressView().tint(.white)
+                    }
+                }
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Capsule().fill(primaryBlue))
+                .opacity(canContinue || isLoading ? 1 : 0.7)
             }
             .buttonStyle(.plain)
             .disabled(!canContinue)
@@ -259,13 +267,14 @@ struct EmailSheet: View {
 
 struct OtpSheet: View {
     let email: String
-    let onVerified: () -> Void
+    let isLoading: Bool
+    let onVerify: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var code: String = ""
     @State private var showResendConfirm: Bool = false
 
-    private var canVerify: Bool { code.count == 6 }
+    private var canVerify: Bool { !isLoading && code.count == 6 }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -322,7 +331,7 @@ struct OtpSheet: View {
                     .keyboardType(.numberPad)
                     .textContentType(.oneTimeCode)
                     .submitLabel(.done)
-                    .onSubmit { if canVerify { onVerified() } }
+                    .onSubmit { if canVerify { onVerify(code) } }
                     .onChange(of: code) { _, newValue in
                         let filtered = String(newValue.filter { $0.isNumber }.prefix(6))
                         if filtered != newValue { code = filtered }
@@ -339,14 +348,22 @@ struct OtpSheet: View {
             )
             .padding(.bottom, 14)
 
-            Button(action: onVerified) {
-                Text("Verify")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Capsule().fill(primaryBlue))
-                    .opacity(canVerify ? 1 : 0.7)
+            Button {
+                onVerify(code)
+            } label: {
+                ZStack {
+                    Text("Verify")
+                        .opacity(isLoading ? 0 : 1)
+                    if isLoading {
+                        ProgressView().tint(.white)
+                    }
+                }
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Capsule().fill(primaryBlue))
+                .opacity(canVerify || isLoading ? 1 : 0.7)
             }
             .buttonStyle(.plain)
             .disabled(!canVerify)

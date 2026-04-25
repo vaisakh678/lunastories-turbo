@@ -6,19 +6,16 @@
 //
 
 import SwiftUI
+import ClerkKit
 
 struct ContentView: View {
-    @State private var hasOnboarded: Bool = false
+    @Environment(Clerk.self) private var clerk
 
     var body: some View {
-        if hasOnboarded {
+        if clerk.user != nil {
             HomeView()
         } else {
-            GetStartedView(onContinue: { hasOnboarded = true })
+            GetStartedView()
         }
     }
-}
-
-#Preview {
-    ContentView()
 }
