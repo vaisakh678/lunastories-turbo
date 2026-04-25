@@ -10,10 +10,10 @@ const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
 
 export async function verifyClerkSession(token: string): Promise<string> {
   try {
-    const options = env.CLERK_JWT_KEY
-      ? { jwtKey: env.CLERK_JWT_KEY }
-      : { secretKey: env.CLERK_SECRET_KEY };
-    const verified = await verifyToken(token, options);
+    const verified = await verifyToken(token, {
+      jwtKey: env.CLERK_JWT_KEY,
+      secretKey: env.CLERK_SECRET_KEY,
+    });
     if (!verified.sub) throw Unauthorized("Invalid token");
     return verified.sub;
   } catch (err) {
