@@ -38,6 +38,15 @@ nonisolated enum StoryStatus: String, Decodable {
     case generating
     case ready
     case failed
+
+    var displayText: String {
+        switch self {
+        case .pending: "Queued…"
+        case .generating: "Generating…"
+        case .ready: "Ready"
+        case .failed: "Failed"
+        }
+    }
 }
 
 nonisolated struct CreateStoryRequest: Encodable {
@@ -46,7 +55,40 @@ nonisolated struct CreateStoryRequest: Encodable {
     let input: AnyJSON
 }
 
-nonisolated struct StoryResponse: Decodable {
+nonisolated enum StoryBlock: Decodable {
+    case text(String)
+    case illustration(symbolName: String, tint: String)
+
+    private enum CodingKeys: String, CodingKey {
+        case kind, text, symbolName, tint
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let kind = try c.decode(String.self, forKey: .kind)
+        switch kind {
+        case "text":
+            self = .text(try c.decode(String.self, forKey: .text))
+        case "illustration":
+            self = .illustration(
+                symbolName: try c.decode(String.self, forKey: .symbolName),
+                tint: try c.decode(String.self, forKey: .tint)
+            )
+        default:
+            throw DecodingError.dataCorruptedError(
+                forKey: .kind,
+                in: c,
+                debugDescription: "Unknown story block kind: \(kind)"
+            )
+        }
+    }
+}
+
+nonisolated struct StoryContent: Decodable {
+    let blocks: [StoryBlock]
+}
+
+nonisolated struct StoryResponse: Decodable, Identifiable {
     let id: String
     let status: StoryStatus
     let modeKey: String
@@ -57,11 +99,22 @@ nonisolated struct StoryResponse: Decodable {
     let durationSeconds: Int?
     let createdAt: String
     let updatedAt: String
+
+    // Detail-only (absent in list responses)
+    let characterIds: [String]?
+    let bodyText: String?
+    let content: StoryContent?
+    let audioUrl: String?
+    let errorMessage: String?
 }
 
 enum StoryAPI {
     static func create(_ request: CreateStoryRequest) async throws -> StoryResponse {
         try await APIClient.shared.post("/api/v1/stories", body: request)
+    }
+
+    static func list() async throws -> [StoryResponse] {
+        try await APIClient.shared.get("/api/v1/stories")
     }
 
     static func get(_ id: String) async throws -> StoryResponse {
