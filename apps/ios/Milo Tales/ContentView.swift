@@ -12,10 +12,13 @@ struct ContentView: View {
     @Environment(Clerk.self) private var clerk
 
     var body: some View {
-        if clerk.user != nil {
-            HomeView()
-        } else {
-            GetStartedView()
+        Group {
+            if clerk.user != nil {
+                HomeView()
+            } else {
+                GetStartedView()
+            }
         }
+        .animation(.easeInOut(duration: 0.3), value: clerk.user != nil)
     }
 }

@@ -20,6 +20,20 @@ struct HomeView: View {
     ]
 
     @State private var addingRole: CharacterRole?
+    @State private var showStoryFlow: Bool = false
+    @State private var selectedCharacterIds: Set<UUID> = []
+
+    private var selectedCharacters: [Character] {
+        (mainCharacters + sideCharacters).filter { selectedCharacterIds.contains($0.id) }
+    }
+
+    private func toggle(_ character: Character) {
+        if selectedCharacterIds.contains(character.id) {
+            selectedCharacterIds.remove(character.id)
+        } else {
+            selectedCharacterIds.insert(character.id)
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -29,12 +43,16 @@ struct HomeView: View {
                         CharacterSection(
                             role: .main,
                             characters: mainCharacters,
-                            onAdd: { addingRole = .main }
+                            selectedIds: selectedCharacterIds,
+                            onAdd: { addingRole = .main },
+                            onToggle: toggle
                         )
                         CharacterSection(
                             role: .side,
                             characters: sideCharacters,
-                            onAdd: { addingRole = .side }
+                            selectedIds: selectedCharacterIds,
+                            onAdd: { addingRole = .side },
+                            onToggle: toggle
                         )
                     }
                     .padding(.top, 20)
@@ -78,9 +96,12 @@ struct HomeView: View {
                         .frame(height: 200)
                         .allowsHitTesting(false)
 
-                        StartButton(action: {})
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 36)
+                        StartButton(
+                            isEnabled: !selectedCharacterIds.isEmpty,
+                            action: { showStoryFlow = true }
+                        )
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 36)
                     }
                 }
                 .ignoresSafeArea(edges: .bottom)
@@ -106,11 +127,20 @@ struct HomeView: View {
                     }
                 }
             }
+            .sheet(isPresented: $showStoryFlow) {
+                ModeSheetView(characters: selectedCharacters) {
+                    // wizard finished — wire to story generation later
+                }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(.white)
+            }
         }
     }
 }
 
 private struct StartButton: View {
+    let isEnabled: Bool
     let action: () -> Void
 
     var body: some View {
@@ -121,18 +151,21 @@ private struct StartButton: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(
-                    Capsule().fill(Color.accentColor)
+                    Capsule().fill(isEnabled ? Color.accentColor : Color.gray.opacity(0.45))
                 )
-                .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 6)
+                .shadow(color: .black.opacity(isEnabled ? 0.18 : 0), radius: 12, x: 0, y: 6)
         }
         .buttonStyle(.plain)
+        .disabled(!isEnabled)
     }
 }
 
 private struct CharacterSection: View {
     let role: CharacterRole
     let characters: [Character]
+    let selectedIds: Set<UUID>
     let onAdd: () -> Void
+    let onToggle: (Character) -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -147,7 +180,11 @@ private struct CharacterSection: View {
 
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(characters) { character in
-                    CharacterCard(character: character)
+                    CharacterCard(
+                        character: character,
+                        isSelected: selectedIds.contains(character.id),
+                        onTap: { onToggle(character) }
+                    )
                 }
                 AddCharacterTile(action: onAdd)
                     .accessibilityLabel("Add \(role.sectionTitle)")
@@ -181,30 +218,51 @@ private struct AddCharacterTile: View {
 
 private struct CharacterCard: View {
     let character: Character
+    let isSelected: Bool
+    let onTap: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(character.tint.opacity(0.18))
-                Image(systemName: character.symbolName)
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(character.tint)
-            }
-            .frame(maxWidth: .infinity)
-            .aspectRatio(1, contentMode: .fit)
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 6) {
+                ZStack(alignment: .topTrailing) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(character.tint.opacity(0.18))
+                        Image(systemName: character.symbolName)
+                            .font(.system(size: 30, weight: .semibold))
+                            .foregroundStyle(character.tint)
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(
+                                isSelected ? Color.accentColor : Color.clear,
+                                lineWidth: 3
+                            )
+                    )
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text(character.name)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                Text(character.tagline)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.white, Color.accentColor)
+                            .padding(6)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1, contentMode: .fit)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(character.name)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    Text(character.tagline)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .buttonStyle(.plain)
     }
 }

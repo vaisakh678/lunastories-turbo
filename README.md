@@ -1,159 +1,181 @@
-# Turborepo starter
+# Milo Tales
 
-This Turborepo starter is maintained by the Turborepo core team.
+## Story modes
 
-## Using this example
+Spec for the in-app story creation flow. Each mode appears as a tile in the "Choose a mode" sheet and walks the user through `steps`. `null` `steps` means the mode is shown but not yet implemented.
 
-Run the following command:
+Step `kind` values:
+- `gridPick` — a grid of icon tiles. `perCharacter: true` repeats the step once per selected character.
+- `listPick` — a vertical list of long-text rows.
+- `textInput` — a free-form text field.
 
-```sh
-npx create-turbo@latest
+```json
+{
+  "modes": [
+    {
+      "title": "Creative",
+      "icon": "paintpalette.fill",
+      "tint": "pink",
+      "steps": [
+        {
+          "title": "Choose a type",
+          "kind": "gridPick",
+          "perCharacter": true,
+          "options": [
+            { "title": "Fox",      "icon": "pawprint.fill",  "tint": "orange" },
+            { "title": "Dragon",   "icon": "flame.fill",     "tint": "red" },
+            { "title": "Elf",      "icon": "leaf.fill",      "tint": "green" },
+            { "title": "Dinosaur", "icon": "lizard.fill",    "tint": "mint" },
+            { "title": "Robot",    "icon": "gearshape.fill", "tint": "gray" },
+            { "title": "Unicorn",  "icon": "sparkles",       "tint": "pink" },
+            { "title": "Dog",      "icon": "dog.fill",       "tint": "brown" },
+            { "title": "Bear",     "icon": "teddybear.fill", "tint": "yellow" },
+            { "title": "Cat",      "icon": "cat.fill",       "tint": "orange" },
+            { "title": "Rabbit",   "icon": "hare.fill",      "tint": "gray" },
+            { "title": "Dolphin",  "icon": "fish.fill",      "tint": "blue" },
+            { "title": "Fairy",    "icon": "wand.and.stars", "tint": "purple" }
+          ]
+        },
+        {
+          "title": "Choose a profession",
+          "kind": "gridPick",
+          "perCharacter": true,
+          "options": [
+            { "title": "Astronaut",      "icon": "globe.americas.fill",     "tint": "blue" },
+            { "title": "Detective",      "icon": "magnifyingglass",         "tint": "gray" },
+            { "title": "Police Officer", "icon": "shield.fill",             "tint": "blue" },
+            { "title": "Prince",         "icon": "crown.fill",              "tint": "yellow" },
+            { "title": "Superhero",      "icon": "bolt.fill",               "tint": "red" },
+            { "title": "Wizard",         "icon": "wand.and.stars",          "tint": "purple" },
+            { "title": "Athlete",        "icon": "figure.run",              "tint": "green" },
+            { "title": "Teacher",        "icon": "book.fill",               "tint": "orange" },
+            { "title": "Cowboy",         "icon": "lasso",                   "tint": "brown" },
+            { "title": "Doctor",         "icon": "stethoscope",             "tint": "red" },
+            { "title": "Explorer",       "icon": "binoculars.fill",         "tint": "indigo" },
+            { "title": "Mechanic",       "icon": "wrench.adjustable.fill",  "tint": "gray" },
+            { "title": "Ninja",          "icon": "figure.martial.arts",     "tint": "black" },
+            { "title": "Pilot",          "icon": "airplane",                "tint": "blue" },
+            { "title": "Scientist",      "icon": "atom",                    "tint": "mint" },
+            { "title": "Spy",            "icon": "eye.fill",                "tint": "indigo" }
+          ]
+        },
+        {
+          "title": "Choose a moral",
+          "subtitle": "Pick a lesson for your story.",
+          "kind": "listPick",
+          "options": [
+            { "title": "No specific moral", "icon": "minus.circle", "tint": "gray" },
+            { "title": "Always be kind", "icon": "heart.fill", "tint": "pink" },
+            { "title": "Be honest", "icon": "checkmark.seal.fill", "tint": "blue" },
+            { "title": "Be the change you want to see in the world", "icon": "globe", "tint": "green" },
+            { "title": "Always tell the truth because a liar won't be trusted", "icon": "checkmark.shield.fill", "tint": "indigo" },
+            { "title": "Think before you act", "icon": "brain", "tint": "purple" },
+            { "title": "Never give up", "icon": "flame.fill", "tint": "red" },
+            { "title": "Respect others", "icon": "hand.raised.fill", "tint": "orange" },
+            { "title": "The importance of being a good friend", "icon": "person.2.fill", "tint": "teal" },
+            { "title": "Learning to forgive", "icon": "arrow.uturn.backward.circle.fill", "tint": "pink" },
+            { "title": "You can't always get what you want", "icon": "hourglass", "tint": "gray" },
+            { "title": "Good things come to those who wait", "icon": "clock.fill", "tint": "yellow" },
+            { "title": "Keeping promises and respecting boundaries", "icon": "lock.fill", "tint": "blue" },
+            { "title": "Actions speak louder than words", "icon": "bolt.fill", "tint": "green" },
+            { "title": "Don't be greedy, be content with what you have", "icon": "leaf.fill", "tint": "mint" },
+            { "title": "Treat others the way you want to be treated", "icon": "arrow.left.arrow.right", "tint": "purple" },
+            { "title": "Always be fair to others", "icon": "scalemass", "tint": "indigo" },
+            { "title": "Learning to respect others", "icon": "person.fill.checkmark", "tint": "orange" }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Inventors",
+      "icon": "lightbulb.fill",
+      "tint": "yellow",
+      "steps": [
+        {
+          "title": "Pick an inventor",
+          "subtitle": "Who joins the story?",
+          "kind": "gridPick",
+          "perCharacter": false,
+          "options": [
+            { "title": "Ada Lovelace",         "icon": "laptopcomputer",     "tint": "pink" },
+            { "title": "Albert Einstein",      "icon": "function",           "tint": "gray" },
+            { "title": "Charles Darwin",       "icon": "leaf.fill",          "tint": "green" },
+            { "title": "Florence Nightingale", "icon": "cross.case.fill",    "tint": "red" },
+            { "title": "Galileo Galilei",      "icon": "moon.stars.fill",    "tint": "indigo" },
+            { "title": "Isaac Newton",         "icon": "atom",               "tint": "orange" },
+            { "title": "Leonardo da Vinci",    "icon": "paintpalette.fill",  "tint": "yellow" },
+            { "title": "Marie Curie",          "icon": "atom",               "tint": "mint" },
+            { "title": "Nikola Tesla",         "icon": "bolt.fill",          "tint": "blue" },
+            { "title": "Rosalind Franklin",    "icon": "waveform.path",      "tint": "purple" }
+          ]
+        },
+        {
+          "title": "Choose a place",
+          "subtitle": "Where does the story happen?",
+          "kind": "textInput",
+          "placeholder": "e.g. a moonlit observatory"
+        }
+      ]
+    },
+    {
+      "title": "Construction Site",
+      "icon": "hammer.fill",
+      "tint": "orange",
+      "steps": [
+        {
+          "title": "Pick a character",
+          "subtitle": "Who joins the story?",
+          "kind": "gridPick",
+          "perCharacter": false,
+          "options": [
+            { "title": "Benny the Bulldozer",             "icon": "car.fill",       "tint": "yellow" },
+            { "title": "Charlie the Construction Worker", "icon": "person.fill",    "tint": "orange" },
+            { "title": "Kara the Crane",                  "icon": "arrow.up.right", "tint": "blue" },
+            { "title": "Molly the Mixer",                 "icon": "drop.fill",      "tint": "gray" },
+            { "title": "Patty the Paver",                 "icon": "rectangle.fill", "tint": "brown" },
+            { "title": "Sammy the Safety Cone",           "icon": "triangle.fill",  "tint": "orange" }
+          ]
+        },
+        {
+          "title": "Choose a place",
+          "subtitle": "Where does the story happen?",
+          "kind": "textInput",
+          "placeholder": "e.g. a busy downtown site"
+        }
+      ]
+    },
+    {
+      "title": "Vegetable",
+      "icon": "leaf.fill",
+      "tint": "green",
+      "steps": [
+        {
+          "title": "Pick a character",
+          "subtitle": "Who joins the story?",
+          "kind": "gridPick",
+          "perCharacter": false,
+          "options": [
+            { "title": "Bella the Broccoli", "icon": "leaf.fill",   "tint": "green" },
+            { "title": "Carla the Carrot",   "icon": "carrot.fill", "tint": "orange" },
+            { "title": "Olivia the Onion",   "icon": "circle.fill", "tint": "purple" },
+            { "title": "Peppy the Pepper",   "icon": "flame.fill",  "tint": "red" },
+            { "title": "Peter the Potato",   "icon": "circle.fill", "tint": "brown" },
+            { "title": "Tommy the Tomato",   "icon": "circle.fill", "tint": "red" }
+          ]
+        },
+        {
+          "title": "Choose a place",
+          "subtitle": "Where does the story happen?",
+          "kind": "textInput",
+          "placeholder": "e.g. a sunny garden patch"
+        }
+      ]
+    },
+    { "title": "Environment",         "icon": "globe.americas.fill", "tint": "blue",   "steps": null },
+    { "title": "Jungle Book",         "icon": "pawprint.fill",       "tint": "brown",  "steps": null },
+    { "title": "Alice in Wonderland", "icon": "cup.and.saucer.fill", "tint": "purple", "steps": null },
+    { "title": "Grimm's Tales",       "icon": "book.closed.fill",    "tint": "indigo", "steps": null },
+    { "title": "Wizard of Oz",        "icon": "tornado",             "tint": "teal",   "steps": null }
+  ]
+}
 ```
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
