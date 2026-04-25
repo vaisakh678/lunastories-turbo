@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import type { APIResponse } from "@repo/types";
-import { createCharacterSchema } from "@repo/zod";
+import { createCharacterSchema, updateCharacterSchema } from "@repo/zod";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -9,6 +9,7 @@ import {
   createCharacter,
   getCharactersByUser,
   softDeleteCharacter,
+  updateCharacter,
 } from "../services/character-service";
 
 const characterIdParamSchema = z.object({ id: z.string().uuid() });
@@ -27,6 +28,19 @@ const characterRoute = new Hono()
     const characters = await getCharactersByUser(userId);
     return c.json<APIResponse<typeof characters>>({ data: characters });
   })
+  .patch(
+    "/:id",
+    zValidator("param", characterIdParamSchema),
+    zValidator("json", updateCharacterSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const data = c.req.valid("json");
+      const userId = getUserIdFromCTX(c);
+
+      const character = await updateCharacter(userId, id, data);
+      return c.json<APIResponse<typeof character>>({ data: character });
+    },
+  )
   .delete(
     "/:id",
     zValidator("param", characterIdParamSchema),
