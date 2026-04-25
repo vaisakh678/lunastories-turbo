@@ -8,6 +8,13 @@ try {
 
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
+  CLERK_SECRET_KEY: z.string().min(1),
+  // PEM public key from Clerk Dashboard → API Keys → "JWT public key".
+  // Pasted as a single line — `\n` escapes are unfolded back into real newlines.
+  CLERK_JWT_KEY: z
+    .string()
+    .min(1)
+    .transform((s) => s.replace(/\\n/g, "\n")),
 });
 
 const parsed = envSchema.safeParse(process.env);
