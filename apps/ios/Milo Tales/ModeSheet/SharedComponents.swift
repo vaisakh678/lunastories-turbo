@@ -39,21 +39,6 @@ private struct ModeStepChromeContainer<Content: View>: View {
     }
 }
 
-struct ProgressDots: View {
-    let currentIndex: Int
-    let total: Int
-
-    var body: some View {
-        HStack(spacing: 6) {
-            ForEach(0..<max(total, 1), id: \.self) { i in
-                Capsule()
-                    .fill(i <= currentIndex ? Color.accentColor : Color.gray.opacity(0.25))
-                    .frame(height: 4)
-            }
-        }
-    }
-}
-
 struct CharacterStepHeader: View {
     let character: Character
     let title: String

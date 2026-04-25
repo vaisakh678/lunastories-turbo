@@ -16,9 +16,7 @@ struct InventorsModeView: View {
     @State private var inventor: PickOption?
     @State private var place: String = ""
 
-    private let totalSteps = 2
-
-    private let inventorOptions: [PickOption] = [
+private let inventorOptions: [PickOption] = [
         .init(title: "Ada Lovelace",         symbolName: "laptopcomputer",     tint: .pink),
         .init(title: "Albert Einstein",      symbolName: "function",           tint: .gray),
         .init(title: "Charles Darwin",       symbolName: "leaf.fill",          tint: .green),
@@ -43,11 +41,8 @@ struct InventorsModeView: View {
     private var inventorPickStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ProgressDots(currentIndex: 0, total: totalSteps)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
                 PlainStepHeader(title: "Pick an inventor", subtitle: "Who joins the story?")
+                    .padding(.top, 16)
                     .padding(.bottom, 16)
                 OptionGrid(options: inventorOptions) { handlePickInventor($0) }
                     .padding(.horizontal, 20)
@@ -60,11 +55,8 @@ struct InventorsModeView: View {
     private var placeStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ProgressDots(currentIndex: 1, total: totalSteps)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
                 PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
+                    .padding(.top, 16)
                     .padding(.bottom, 16)
                 PlaceTextInput(
                     text: $place,

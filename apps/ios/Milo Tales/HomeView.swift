@@ -250,17 +250,11 @@ private struct CharacterCard: View {
                 .frame(maxWidth: .infinity)
                 .aspectRatio(1, contentMode: .fit)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(character.name)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                    Text(character.tagline)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                Text(character.name)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .buttonStyle(.plain)

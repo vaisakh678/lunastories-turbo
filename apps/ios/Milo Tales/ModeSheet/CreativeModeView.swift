@@ -21,8 +21,6 @@ struct CreativeModeView: View {
     @State private var professionByChar: [UUID: PickOption] = [:]
     @State private var moral: PickOption?
 
-    private var totalSubsteps: Int { max(characters.count * 2 + 1, 1) }
-
     private let typeOptions: [PickOption] = [
         .init(title: "Fox",      symbolName: "pawprint.fill",  tint: .orange),
         .init(title: "Dragon",   symbolName: "flame.fill",     tint: .red),
@@ -93,10 +91,6 @@ struct CreativeModeView: View {
     private func typeStep(charIndex: Int) -> some View {
         ScrollView {
             VStack(spacing: 0) {
-                ProgressDots(currentIndex: charIndex, total: totalSubsteps)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
                 if charIndex < characters.count {
                     CharacterStepHeader(
                         character: characters[charIndex],
@@ -115,10 +109,6 @@ struct CreativeModeView: View {
     private func professionStep(charIndex: Int) -> some View {
         ScrollView {
             VStack(spacing: 0) {
-                ProgressDots(currentIndex: characters.count + charIndex, total: totalSubsteps)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
                 if charIndex < characters.count {
                     CharacterStepHeader(
                         character: characters[charIndex],
@@ -137,10 +127,6 @@ struct CreativeModeView: View {
     private var moralStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ProgressDots(currentIndex: characters.count * 2, total: totalSubsteps)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
                 PlainStepHeader(title: "Choose a moral", subtitle: "Pick a lesson for your story.")
                     .padding(.bottom, 16)
                 OptionList(options: moralOptions) { handleMoral($0) }

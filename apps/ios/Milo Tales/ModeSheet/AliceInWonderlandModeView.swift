@@ -16,8 +16,6 @@ struct AliceInWonderlandModeView: View {
     @State private var picked: PickOption?
     @State private var place: String = ""
 
-    private let totalSteps = 2
-
     private let characterOptions: [PickOption] = [
         .init(title: "Alice",            symbolName: "figure.child",       tint: .blue),
         .init(title: "Mad Hatter",       symbolName: "cup.and.saucer.fill", tint: .green),
@@ -39,10 +37,6 @@ struct AliceInWonderlandModeView: View {
     private var characterPickStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ProgressDots(currentIndex: 0, total: totalSteps)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
                 PlainStepHeader(title: "Pick a character", subtitle: "Who joins the story?")
                     .padding(.bottom, 16)
                 OptionGrid(options: characterOptions) { handlePick($0) }
@@ -56,10 +50,6 @@ struct AliceInWonderlandModeView: View {
     private var placeStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ProgressDots(currentIndex: 1, total: totalSteps)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
                 PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
                     .padding(.bottom, 16)
                 PlaceTextInput(
