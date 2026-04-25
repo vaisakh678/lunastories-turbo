@@ -152,24 +152,10 @@ struct ProviderSheet: View {
     }
 
     private var googleLogo: some View {
-        ZStack {
-            Circle().fill(Color.white)
-            Text("G")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 234 / 255, green: 67 / 255, blue: 53 / 255),
-                            Color(red: 251 / 255, green: 188 / 255, blue: 5 / 255),
-                            Color(red: 52 / 255, green: 168 / 255, blue: 83 / 255),
-                            Color(red: 66 / 255, green: 133 / 255, blue: 244 / 255),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        }
-        .frame(width: 20, height: 20)
+        Image("GoogleLogo")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 20, height: 20)
     }
 }
 

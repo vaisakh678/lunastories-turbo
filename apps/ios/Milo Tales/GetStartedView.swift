@@ -93,6 +93,7 @@ struct GetStartedView: View {
             sheetContent(for: step)
                 .presentationDetents(detents(for: step))
                 .presentationDragIndicator(.visible)
+                .presentationBackground(.white)
         }
         .alert(
             "Sign in failed",

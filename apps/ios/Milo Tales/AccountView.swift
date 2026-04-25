@@ -4,8 +4,21 @@
 //
 
 import SwiftUI
+import ClerkKit
 
 struct AccountView: View {
+    @Environment(Clerk.self) private var clerk
+    @State private var confirmingLogout: Bool = false
+    @State private var isLoggingOut: Bool = false
+    @State private var errorMessage: String?
+
+    private var greeting: String {
+        if let name = clerk.user?.firstName, !name.isEmpty {
+            return "Hello, \(name)"
+        }
+        return "Hello, Storyteller"
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -19,7 +32,7 @@ struct AccountView: View {
                                 .foregroundStyle(.tint)
                         )
                     VStack(spacing: 2) {
-                        Text("Hello, Storyteller")
+                        Text(greeting)
                             .font(.title3.weight(.semibold))
                         Text("Manage your profile")
                             .font(.subheadline)
@@ -60,7 +73,9 @@ struct AccountView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .padding(.horizontal, 16)
 
-                Button {} label: {
+                Button {
+                    confirmingLogout = true
+                } label: {
                     MenuRowLabel(
                         icon: "rectangle.portrait.and.arrow.right",
                         title: "Logout",
@@ -68,6 +83,7 @@ struct AccountView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .disabled(isLoggingOut)
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .padding(.horizontal, 16)
@@ -75,6 +91,35 @@ struct AccountView: View {
             .padding(.vertical, 20)
         }
         .background(Color.gray.opacity(0.08))
+        .confirmationDialog(
+            "Sign out of Milo Tales?",
+            isPresented: $confirmingLogout,
+            titleVisibility: .visible
+        ) {
+            Button("Sign out", role: .destructive) {
+                Task { await handleLogout() }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .alert(
+            "Sign out failed",
+            isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+            ),
+            actions: { Button("OK") { errorMessage = nil } },
+            message: { Text(errorMessage ?? "") }
+        )
+    }
+
+    private func handleLogout() async {
+        isLoggingOut = true
+        defer { isLoggingOut = false }
+        do {
+            try await Clerk.shared.auth.signOut()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
