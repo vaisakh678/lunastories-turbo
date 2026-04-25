@@ -16,9 +16,7 @@ struct InventorsModeView: View {
     @State private var inventor: PickOption?
     @State private var place: String = ""
 
-    private let totalSteps = 2
-
-    private let inventorOptions: [PickOption] = [
+private let inventorOptions: [PickOption] = [
         .init(title: "Ada Lovelace",         symbolName: "laptopcomputer",     tint: .pink),
         .init(title: "Albert Einstein",      symbolName: "function",           tint: .gray),
         .init(title: "Charles Darwin",       symbolName: "leaf.fill",          tint: .green),
@@ -35,45 +33,31 @@ struct InventorsModeView: View {
         inventorPickStep
             .navigationDestination(for: Step.self) { step in
                 switch step {
-                case .place:
-                    placeStep
-                        .toolbar(.hidden, for: .navigationBar)
-                        .navigationBarBackButtonHidden(true)
+                case .place: placeStep
                 }
             }
     }
 
     private var inventorPickStep: some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: 0, total: totalSteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            PlainStepHeader(title: "Pick an inventor", subtitle: "Who joins the story?")
-                .padding(.bottom, 16)
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                PlainStepHeader(title: "Pick an inventor", subtitle: "Who joins the story?")
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
                 OptionGrid(options: inventorOptions) { handlePickInventor($0) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(isRoot: false, onClose: onClose)
     }
 
     private var placeStep: some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: 1, total: totalSteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
-                .padding(.bottom, 16)
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
                 PlaceTextInput(
                     text: $place,
                     placeholder: "e.g. a moonlit observatory",
@@ -84,6 +68,7 @@ struct InventorsModeView: View {
                 .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(isRoot: false, onClose: onClose)
     }
 
     private func handlePickInventor(_ option: PickOption) {
@@ -94,9 +79,5 @@ struct InventorsModeView: View {
     private func handleSubmitPlace() {
         guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         onComplete()
-    }
-
-    private func popPath() {
-        if !path.isEmpty { path.removeLast() }
     }
 }

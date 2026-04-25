@@ -1,11 +1,11 @@
 //
-//  ConstructionSiteModeView.swift
+//  GrimmsTalesModeView.swift
 //  Milo Tales
 //
 
 import SwiftUI
 
-struct ConstructionSiteModeView: View {
+struct GrimmsTalesModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
@@ -17,12 +17,14 @@ struct ConstructionSiteModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Benny the Bulldozer",          symbolName: "car.fill",       tint: .yellow),
-        .init(title: "Charlie the Construction Worker", symbolName: "person.fill", tint: .orange),
-        .init(title: "Kara the Crane",               symbolName: "arrow.up.right", tint: .blue),
-        .init(title: "Molly the Mixer",              symbolName: "drop.fill",      tint: .gray),
-        .init(title: "Patty the Paver",              symbolName: "rectangle.fill", tint: .brown),
-        .init(title: "Sammy the Safety Cone",        symbolName: "triangle.fill",  tint: .orange),
+        .init(title: "Cinderella",        symbolName: "sparkles",       tint: .yellow),
+        .init(title: "Red Riding Hood",   symbolName: "figure.child",   tint: .red),
+        .init(title: "Hansel and Gretel", symbolName: "house.fill",     tint: .brown),
+        .init(title: "Snow White",        symbolName: "heart.fill",     tint: .pink),
+        .init(title: "Rapunzel",          symbolName: "scissors",       tint: .yellow),
+        .init(title: "Rumpelstiltskin",   symbolName: "wand.and.rays",  tint: .orange),
+        .init(title: "Sleeping Beauty",   symbolName: "moon.zzz.fill",  tint: .indigo),
+        .init(title: "The Frog Prince",   symbolName: "crown.fill",     tint: .green),
     ]
 
     var body: some View {
@@ -54,7 +56,7 @@ struct ConstructionSiteModeView: View {
                     .padding(.bottom, 16)
                 PlaceTextInput(
                     text: $place,
-                    placeholder: "e.g. a busy downtown site",
+                    placeholder: "e.g. an enchanted forest",
                     isLastStep: true,
                     onSubmit: handleSubmitPlace
                 )

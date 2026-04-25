@@ -12,51 +12,46 @@ struct PickOption: Identifiable, Hashable {
     let tint: Color
 }
 
-struct ModeTopBar: View {
-    let onClose: () -> Void
-    let onBack: (() -> Void)?
-
-    var body: some View {
-        HStack {
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.primary)
-                    .frame(width: 32, height: 32)
-                    .glassEffect(in: Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Close")
-
-            Spacer()
-
-            if let onBack {
-                Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .frame(width: 32, height: 32)
-                        .glassEffect(in: Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Back")
-            }
-        }
+extension View {
+    func modeStepChrome(isRoot: Bool, onClose: @escaping () -> Void) -> some View {
+        modifier(ModeStepChromeModifier(isRoot: isRoot, onClose: onClose))
     }
 }
 
-struct ProgressDots: View {
-    let currentIndex: Int
-    let total: Int
+private struct ModeStepChromeModifier: ViewModifier {
+    let isRoot: Bool
+    let onClose: () -> Void
 
-    var body: some View {
-        HStack(spacing: 6) {
-            ForEach(0..<max(total, 1), id: \.self) { i in
-                Capsule()
-                    .fill(i <= currentIndex ? Color.accentColor : Color.gray.opacity(0.25))
-                    .frame(height: 4)
+    @Environment(\.dismiss) private var dismiss
+
+    func body(content: Content) -> some View {
+        content
+            .navigationBarBackButtonHidden(true)
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        if isRoot {
+                            onClose()
+                        } else {
+                            dismiss()
+                        }
+                    } label: {
+                        Image(systemName: isRoot ? "xmark" : "chevron.left")
+                    }
+                    .accessibilityLabel(isRoot ? "Close" : "Back")
+                }
+                if !isRoot {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(action: onClose) {
+                            Image(systemName: "xmark")
+                        }
+                        .accessibilityLabel("Close")
+                    }
+                }
             }
-        }
     }
 }
 
@@ -130,7 +125,7 @@ struct OptionTile: View {
         Button(action: action) {
             VStack(spacing: 6) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .fill(option.tint.opacity(0.18))
                     Image(systemName: option.symbolName)
                         .font(.system(size: 28, weight: .semibold))
@@ -172,7 +167,7 @@ struct OptionRow: View {
         Button(action: action) {
             HStack(spacing: 14) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(option.tint.opacity(0.18))
                         .frame(width: 44, height: 44)
                     Image(systemName: option.symbolName)

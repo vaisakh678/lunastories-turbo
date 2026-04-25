@@ -108,7 +108,7 @@ private struct StoryCard: View {
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(story.tint.opacity(0.18))
                 Image(systemName: story.symbolName)
                     .font(.system(size: 30, weight: .semibold))

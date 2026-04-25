@@ -178,7 +178,7 @@ private struct CharacterSection: View {
             Text(role.sectionTitle)
                 .font(.title2.weight(.bold))
 
-            LazyVGrid(columns: columns, spacing: 12) {
+            LazyVGrid(columns: columns, spacing: 20) {
                 ForEach(characters) { character in
                     CharacterCard(
                         character: character,
@@ -200,7 +200,7 @@ private struct AddCharacterTile: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .strokeBorder(
                         Color.accentColor.opacity(0.5),
                         style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
@@ -226,14 +226,14 @@ private struct CharacterCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 ZStack(alignment: .topTrailing) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .fill(character.tint.opacity(0.18))
                         Image(systemName: character.symbolName)
                             .font(.system(size: 30, weight: .semibold))
                             .foregroundStyle(character.tint)
                     }
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .strokeBorder(
                                 isSelected ? Color.accentColor : Color.clear,
                                 lineWidth: 3
@@ -250,17 +250,11 @@ private struct CharacterCard: View {
                 .frame(maxWidth: .infinity)
                 .aspectRatio(1, contentMode: .fit)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(character.name)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                    Text(character.tagline)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                Text(character.name)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .buttonStyle(.plain)

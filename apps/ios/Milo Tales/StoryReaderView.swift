@@ -21,7 +21,7 @@ struct StoryReaderView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(spacing: 16) {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            RoundedRectangle(cornerRadius: 32, style: .continuous)
                                 .fill(story.tint.opacity(0.18))
                             Image(systemName: story.symbolName)
                                 .font(.system(size: 80, weight: .semibold))
@@ -54,7 +54,7 @@ struct StoryReaderView: View {
                                     .padding(.horizontal, 24)
                             case .illustration(let symbol, let tint):
                                 ZStack {
-                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    RoundedRectangle(cornerRadius: 28, style: .continuous)
                                         .fill(tint.opacity(0.18))
                                     Image(systemName: symbol)
                                         .font(.system(size: 60, weight: .semibold))

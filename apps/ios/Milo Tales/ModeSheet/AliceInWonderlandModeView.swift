@@ -1,11 +1,11 @@
 //
-//  ConstructionSiteModeView.swift
+//  AliceInWonderlandModeView.swift
 //  Milo Tales
 //
 
 import SwiftUI
 
-struct ConstructionSiteModeView: View {
+struct AliceInWonderlandModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
@@ -17,12 +17,12 @@ struct ConstructionSiteModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Benny the Bulldozer",          symbolName: "car.fill",       tint: .yellow),
-        .init(title: "Charlie the Construction Worker", symbolName: "person.fill", tint: .orange),
-        .init(title: "Kara the Crane",               symbolName: "arrow.up.right", tint: .blue),
-        .init(title: "Molly the Mixer",              symbolName: "drop.fill",      tint: .gray),
-        .init(title: "Patty the Paver",              symbolName: "rectangle.fill", tint: .brown),
-        .init(title: "Sammy the Safety Cone",        symbolName: "triangle.fill",  tint: .orange),
+        .init(title: "Alice",            symbolName: "figure.child",       tint: .blue),
+        .init(title: "Mad Hatter",       symbolName: "cup.and.saucer.fill", tint: .green),
+        .init(title: "Queen of Hearts",  symbolName: "heart.fill",          tint: .red),
+        .init(title: "Cheshire Cat",     symbolName: "cat.fill",            tint: .purple),
+        .init(title: "The White Rabbit", symbolName: "hare.fill",           tint: .gray),
+        .init(title: "Caterpillar",      symbolName: "ant.fill",            tint: .green),
     ]
 
     var body: some View {
@@ -54,7 +54,7 @@ struct ConstructionSiteModeView: View {
                     .padding(.bottom, 16)
                 PlaceTextInput(
                     text: $place,
-                    placeholder: "e.g. a busy downtown site",
+                    placeholder: "e.g. down the rabbit hole",
                     isLastStep: true,
                     onSubmit: handleSubmitPlace
                 )

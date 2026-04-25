@@ -18,6 +18,7 @@ struct Milo_TalesApp: App {
         WindowGroup {
             ContentView()
                 .environment(Clerk.shared)
+                .preferredColorScheme(.light)
         }
     }
 }

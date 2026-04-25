@@ -13,7 +13,8 @@ struct ModeSheetView: View {
     @State private var path = NavigationPath()
 
     private let supportedModes: Set<String> = [
-        "Creative", "Inventors", "Construction Site", "Vegetable",
+        "Creative", "Inventors", "Construction Site", "Vegetable", "Environment",
+        "Jungle Book", "Alice in Wonderland", "Grimm's Tales", "Wizard of Oz",
     ]
 
     var body: some View {
@@ -26,11 +27,8 @@ struct ModeSheetView: View {
                     }
                 }
             )
-            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: StoryMode.self) { mode in
                 modeView(for: mode)
-                    .toolbar(.hidden, for: .navigationBar)
-                    .navigationBarBackButtonHidden(true)
             }
         }
     }
@@ -61,6 +59,41 @@ struct ModeSheetView: View {
             )
         case "Vegetable":
             VegetableModeView(
+                characters: characters,
+                path: $path,
+                onClose: { dismiss() },
+                onComplete: { handleComplete() }
+            )
+        case "Environment":
+            EnvironmentModeView(
+                characters: characters,
+                path: $path,
+                onClose: { dismiss() },
+                onComplete: { handleComplete() }
+            )
+        case "Jungle Book":
+            JungleBookModeView(
+                characters: characters,
+                path: $path,
+                onClose: { dismiss() },
+                onComplete: { handleComplete() }
+            )
+        case "Alice in Wonderland":
+            AliceInWonderlandModeView(
+                characters: characters,
+                path: $path,
+                onClose: { dismiss() },
+                onComplete: { handleComplete() }
+            )
+        case "Grimm's Tales":
+            GrimmsTalesModeView(
+                characters: characters,
+                path: $path,
+                onClose: { dismiss() },
+                onComplete: { handleComplete() }
+            )
+        case "Wizard of Oz":
+            WizardOfOzModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },

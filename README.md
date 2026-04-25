@@ -171,11 +171,143 @@ Step `kind` values:
         }
       ]
     },
-    { "title": "Environment",         "icon": "globe.americas.fill", "tint": "blue",   "steps": null },
-    { "title": "Jungle Book",         "icon": "pawprint.fill",       "tint": "brown",  "steps": null },
-    { "title": "Alice in Wonderland", "icon": "cup.and.saucer.fill", "tint": "purple", "steps": null },
-    { "title": "Grimm's Tales",       "icon": "book.closed.fill",    "tint": "indigo", "steps": null },
-    { "title": "Wizard of Oz",        "icon": "tornado",             "tint": "teal",   "steps": null }
+    {
+      "title": "Environment",
+      "icon": "globe.americas.fill",
+      "tint": "blue",
+      "steps": [
+        {
+          "title": "Pick a character",
+          "subtitle": "Who joins the story?",
+          "kind": "gridPick",
+          "perCharacter": false,
+          "options": [
+            { "title": "Greeny the Tree",        "icon": "tree.fill",             "tint": "green" },
+            { "title": "Polly the Pollinator",   "icon": "ant.fill",              "tint": "yellow" },
+            { "title": "Recycle the Bin",        "icon": "arrow.3.trianglepath",  "tint": "mint" },
+            { "title": "Sunny the Solar Panel",  "icon": "sun.max.fill",          "tint": "orange" },
+            { "title": "Wally the Water Drop",   "icon": "drop.fill",             "tint": "blue" },
+            { "title": "Windy the Wind Turbine", "icon": "wind",                  "tint": "teal" }
+          ]
+        },
+        {
+          "title": "Choose a place",
+          "subtitle": "Where does the story happen?",
+          "kind": "textInput",
+          "placeholder": "e.g. a meadow at sunrise"
+        }
+      ]
+    },
+    {
+      "title": "Jungle Book",
+      "icon": "pawprint.fill",
+      "tint": "brown",
+      "steps": [
+        {
+          "title": "Pick a character",
+          "subtitle": "Who joins the story?",
+          "kind": "gridPick",
+          "perCharacter": false,
+          "options": [
+            { "title": "Mowgli",     "icon": "figure.child",   "tint": "orange" },
+            { "title": "Baloo",      "icon": "teddybear.fill", "tint": "brown" },
+            { "title": "Bagheera",   "icon": "cat.fill",       "tint": "indigo" },
+            { "title": "Shere Khan", "icon": "cat.fill",       "tint": "orange" },
+            { "title": "Kaa",        "icon": "lizard.fill",    "tint": "green" },
+            { "title": "King Louie", "icon": "pawprint.fill",  "tint": "yellow" }
+          ]
+        },
+        {
+          "title": "Choose a place",
+          "subtitle": "Where does the story happen?",
+          "kind": "textInput",
+          "placeholder": "e.g. deep in the rainforest"
+        }
+      ]
+    },
+    {
+      "title": "Alice in Wonderland",
+      "icon": "cup.and.saucer.fill",
+      "tint": "purple",
+      "steps": [
+        {
+          "title": "Pick a character",
+          "subtitle": "Who joins the story?",
+          "kind": "gridPick",
+          "perCharacter": false,
+          "options": [
+            { "title": "Alice",            "icon": "figure.child",        "tint": "blue" },
+            { "title": "Mad Hatter",       "icon": "cup.and.saucer.fill", "tint": "green" },
+            { "title": "Queen of Hearts",  "icon": "heart.fill",          "tint": "red" },
+            { "title": "Cheshire Cat",     "icon": "cat.fill",            "tint": "purple" },
+            { "title": "The White Rabbit", "icon": "hare.fill",           "tint": "gray" },
+            { "title": "Caterpillar",      "icon": "ant.fill",            "tint": "green" }
+          ]
+        },
+        {
+          "title": "Choose a place",
+          "subtitle": "Where does the story happen?",
+          "kind": "textInput",
+          "placeholder": "e.g. down the rabbit hole"
+        }
+      ]
+    },
+    {
+      "title": "Grimm's Tales",
+      "icon": "book.closed.fill",
+      "tint": "indigo",
+      "steps": [
+        {
+          "title": "Pick a character",
+          "subtitle": "Who joins the story?",
+          "kind": "gridPick",
+          "perCharacter": false,
+          "options": [
+            { "title": "Cinderella",        "icon": "sparkles",      "tint": "yellow" },
+            { "title": "Red Riding Hood",   "icon": "figure.child",  "tint": "red" },
+            { "title": "Hansel and Gretel", "icon": "house.fill",    "tint": "brown" },
+            { "title": "Snow White",        "icon": "heart.fill",    "tint": "pink" },
+            { "title": "Rapunzel",          "icon": "scissors",      "tint": "yellow" },
+            { "title": "Rumpelstiltskin",   "icon": "wand.and.rays", "tint": "orange" },
+            { "title": "Sleeping Beauty",   "icon": "moon.zzz.fill", "tint": "indigo" },
+            { "title": "The Frog Prince",   "icon": "crown.fill",    "tint": "green" }
+          ]
+        },
+        {
+          "title": "Choose a place",
+          "subtitle": "Where does the story happen?",
+          "kind": "textInput",
+          "placeholder": "e.g. an enchanted forest"
+        }
+      ]
+    },
+    {
+      "title": "Wizard of Oz",
+      "icon": "tornado",
+      "tint": "teal",
+      "steps": [
+        {
+          "title": "Pick a character",
+          "subtitle": "Who joins the story?",
+          "kind": "gridPick",
+          "perCharacter": false,
+          "options": [
+            { "title": "Dorothy",       "icon": "figure.child",   "tint": "blue" },
+            { "title": "Toto",          "icon": "dog.fill",       "tint": "gray" },
+            { "title": "Scarecrow",     "icon": "leaf.fill",      "tint": "yellow" },
+            { "title": "Tin Man",       "icon": "gearshape.fill", "tint": "gray" },
+            { "title": "Cowardly Lion", "icon": "pawprint.fill",  "tint": "yellow" },
+            { "title": "Glinda",        "icon": "wand.and.stars", "tint": "pink" }
+          ]
+        },
+        {
+          "title": "Choose a place",
+          "subtitle": "Where does the story happen?",
+          "kind": "textInput",
+          "placeholder": "e.g. the Yellow Brick Road"
+        }
+      ]
+    }
   ]
 }
 ```

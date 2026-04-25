@@ -16,8 +16,6 @@ struct VegetableModeView: View {
     @State private var picked: PickOption?
     @State private var place: String = ""
 
-    private let totalSteps = 2
-
     private let characterOptions: [PickOption] = [
         .init(title: "Bella the Broccoli", symbolName: "leaf.fill",   tint: .green),
         .init(title: "Carla the Carrot",   symbolName: "carrot.fill", tint: .orange),
@@ -31,45 +29,29 @@ struct VegetableModeView: View {
         characterPickStep
             .navigationDestination(for: Step.self) { step in
                 switch step {
-                case .place:
-                    placeStep
-                        .toolbar(.hidden, for: .navigationBar)
-                        .navigationBarBackButtonHidden(true)
+                case .place: placeStep
                 }
             }
     }
 
     private var characterPickStep: some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: 0, total: totalSteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            PlainStepHeader(title: "Pick a character", subtitle: "Who joins the story?")
-                .padding(.bottom, 16)
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                PlainStepHeader(title: "Pick a character", subtitle: "Who joins the story?")
+                    .padding(.bottom, 16)
                 OptionGrid(options: characterOptions) { handlePick($0) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(isRoot: false, onClose: onClose)
     }
 
     private var placeStep: some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose, onBack: popPath)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-            ProgressDots(currentIndex: 1, total: totalSteps)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
-                .padding(.bottom, 16)
-            ScrollView {
+        ScrollView {
+            VStack(spacing: 0) {
+                PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
+                    .padding(.bottom, 16)
                 PlaceTextInput(
                     text: $place,
                     placeholder: "e.g. a sunny garden patch",
@@ -80,6 +62,7 @@ struct VegetableModeView: View {
                 .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(isRoot: false, onClose: onClose)
     }
 
     private func handlePick(_ option: PickOption) {
@@ -90,9 +73,5 @@ struct VegetableModeView: View {
     private func handleSubmitPlace() {
         guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         onComplete()
-    }
-
-    private func popPath() {
-        if !path.isEmpty { path.removeLast() }
     }
 }
