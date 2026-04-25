@@ -120,4 +120,13 @@ enum StoryAPI {
     static func get(_ id: String) async throws -> StoryResponse {
         try await APIClient.shared.get("/api/v1/stories/\(id)")
     }
+
+    static func generateAudio(_ id: String) async throws -> StoryResponse {
+        try await APIClient.shared.post(
+            "/api/v1/stories/\(id)/audio",
+            body: EmptyBody()
+        )
+    }
 }
+
+private nonisolated struct EmptyBody: Encodable {}
