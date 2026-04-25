@@ -68,6 +68,10 @@ actor APIClient {
         return try await request(path: path, method: "PATCH", body: data)
     }
 
+    func delete<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+        try await request(path: path, method: "DELETE", body: nil)
+    }
+
     private func request<T: Decodable>(
         path: String,
         method: String,

@@ -55,7 +55,9 @@ struct AccountView: View {
                     }
                     .buttonStyle(.plain)
                     Divider().padding(.leading, 60)
-                    Button {} label: {
+                    NavigationLink {
+                        SettingsView()
+                    } label: {
                         MenuRowLabel(icon: "gearshape.fill", title: "Settings")
                     }
                     .buttonStyle(.plain)
