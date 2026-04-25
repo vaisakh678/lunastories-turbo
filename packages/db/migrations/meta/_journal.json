@@ -29,6 +29,27 @@
       "when": 1777133100000,
       "tag": "0003_rename_audio_url_to_storage_key",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777138701406,
+      "tag": "0004_dark_stone_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1777139307973,
+      "tag": "0005_tidy_iceman",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1777141135330,
+      "tag": "0006_fair_skin",
+      "breakpoints": true
     }
   ]
 }

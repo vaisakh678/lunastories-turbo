@@ -2,6 +2,8 @@ import { pgEnum } from "drizzle-orm/pg-core";
 
 export const characterRoleEnum = pgEnum("character_role", ["main", "side"]);
 
+export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
+
 export const genderEnum = pgEnum("gender", ["male", "female", "na"]);
 
 export const storyStatusEnum = pgEnum("story_status", [
@@ -9,4 +11,11 @@ export const storyStatusEnum = pgEnum("story_status", [
   "generating",
   "ready",
   "failed",
+]);
+
+export const feedbackCategoryEnum = pgEnum("feedback_category", [
+  "bug",
+  "idea",
+  "praise",
+  "other",
 ]);

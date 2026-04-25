@@ -34,7 +34,7 @@ final class StoryAudioPlayer {
             forInterval: CMTime(seconds: 0.25, preferredTimescale: 600),
             queue: .main
         ) { [weak self] time in
-            Task { @MainActor in
+            MainActor.assumeIsolated {
                 guard let self else { return }
                 self.elapsed = time.seconds.isFinite ? time.seconds : 0
                 if let dur = self.player?.currentItem?.duration,
@@ -50,7 +50,7 @@ final class StoryAudioPlayer {
             object: item,
             queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in
+            MainActor.assumeIsolated {
                 guard let self else { return }
                 self.isPlaying = false
                 self.player?.seek(to: .zero)

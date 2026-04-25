@@ -17,6 +17,9 @@ export interface StorySummaryDTO {
   coverSymbol: string | null;
   coverTint: string | null;
   durationSeconds: number | null;
+  textInputTokens: number | null;
+  textOutputTokens: number | null;
+  audioInputChars: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,4 +31,7 @@ export interface StoryDTO extends StorySummaryDTO {
   bodyText: string | null;
   audioUrl: string | null;
   errorMessage: string | null;
+  textInputTokens: number | null;
+  textOutputTokens: number | null;
+  audioInputChars: number | null;
 }

@@ -13,6 +13,7 @@ const WORDS_PER_MINUTE = 150;
 export interface GeneratedAudio {
   buffer: Buffer;
   durationSeconds: number;
+  inputChars: number;
   contentType: "audio/mpeg";
 }
 
@@ -29,5 +30,10 @@ export async function generateAudio(bodyText: string): Promise<GeneratedAudio> {
   const wordCount = bodyText.split(/\s+/).filter(Boolean).length;
   const durationSeconds = Math.max(1, Math.ceil((wordCount / WORDS_PER_MINUTE) * 60));
 
-  return { buffer, durationSeconds, contentType: "audio/mpeg" };
+  return {
+    buffer,
+    durationSeconds,
+    inputChars: bodyText.length,
+    contentType: "audio/mpeg",
+  };
 }

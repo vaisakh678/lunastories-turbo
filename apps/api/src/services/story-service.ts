@@ -28,6 +28,9 @@ function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
     coverSymbol: row.coverSymbol,
     coverTint: row.coverTint,
     durationSeconds: row.durationSeconds,
+    textInputTokens: row.textInputTokens,
+    textOutputTokens: row.textOutputTokens,
+    audioInputChars: row.audioInputChars,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -48,6 +51,9 @@ async function toDTO(
     bodyText: row.bodyText,
     audioUrl,
     errorMessage: row.errorMessage,
+    textInputTokens: row.textInputTokens,
+    textOutputTokens: row.textOutputTokens,
+    audioInputChars: row.audioInputChars,
   };
 }
 
@@ -135,6 +141,8 @@ export async function createStory(
         content: generated.content,
         coverSymbol: generated.coverSymbol,
         coverTint: generated.coverTint,
+        textInputTokens: generated.textInputTokens,
+        textOutputTokens: generated.textOutputTokens,
       })
       .where(eq(storySchema.id, insertedId))
       .returning();
@@ -226,6 +234,7 @@ export async function generateStoryAudio(
     .set({
       audioStorageKey: key,
       durationSeconds: audio.durationSeconds,
+      audioInputChars: audio.inputChars,
     })
     .where(eq(storySchema.id, storyId))
     .returning();
