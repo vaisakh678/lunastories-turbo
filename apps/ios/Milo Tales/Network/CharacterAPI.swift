@@ -20,6 +20,21 @@ nonisolated struct CreateCharacterRequest: Encodable {
     let extraInterestNote: String
 }
 
+nonisolated struct UpdateCharacterRequest: Encodable {
+    var role: CharacterRole? = nil
+    var name: String? = nil
+    var symbolName: String? = nil
+    var tint: String? = nil
+    var tagline: String? = nil
+    var age: Int? = nil
+    var gender: Gender? = nil
+    var hairColor: String? = nil
+    var eyeColor: String? = nil
+    var hairstyle: String? = nil
+    var interests: [String]? = nil
+    var extraInterestNote: String? = nil
+}
+
 nonisolated struct CharacterResponse: Decodable {
     let id: String
     let role: CharacterRole
@@ -66,6 +81,14 @@ enum CharacterAPI {
         let payload: CharacterResponse = try await APIClient.shared.post(
             "/api/v1/characters",
             body: input
+        )
+        return payload.toCharacter()
+    }
+
+    static func update(_ id: UUID, _ patch: UpdateCharacterRequest) async throws -> Character {
+        let payload: CharacterResponse = try await APIClient.shared.patch(
+            "/api/v1/characters/\(id.uuidString.lowercased())",
+            body: patch
         )
         return payload.toCharacter()
     }

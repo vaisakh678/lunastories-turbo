@@ -8,6 +8,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var vm = CharactersViewModel()
     @State private var addingRole: CharacterRole?
+    @State private var editingCharacter: Character?
     @State private var showStoryFlow: Bool = false
     @State private var selectedCharacterIds: Set<UUID> = []
 
@@ -33,14 +34,16 @@ struct HomeView: View {
                             characters: vm.mainCharacters,
                             selectedIds: selectedCharacterIds,
                             onAdd: { addingRole = .main },
-                            onToggle: toggle
+                            onToggle: toggle,
+                            onEdit: { editingCharacter = $0 }
                         )
                         CharacterSection(
                             role: .side,
                             characters: vm.sideCharacters,
                             selectedIds: selectedCharacterIds,
                             onAdd: { addingRole = .side },
-                            onToggle: toggle
+                            onToggle: toggle,
+                            onEdit: { editingCharacter = $0 }
                         )
                     }
                     .padding(.top, 20)
@@ -108,7 +111,7 @@ struct HomeView: View {
                 }
             }
             .sheet(item: $addingRole) { role in
-                AddCharacterSheet(role: role) { newCharacter in
+                CharacterWizardSheet(role: role) { newCharacter in
                     Task {
                         await vm.add(
                             CreateCharacterRequest(
@@ -124,6 +127,29 @@ struct HomeView: View {
                                 hairstyle: newCharacter.hairstyle,
                                 interests: newCharacter.interests,
                                 extraInterestNote: newCharacter.extraInterestNote
+                            )
+                        )
+                    }
+                }
+            }
+            .sheet(item: $editingCharacter) { character in
+                CharacterWizardSheet(role: character.role, editing: character) { updated in
+                    Task {
+                        await vm.update(
+                            character.id,
+                            UpdateCharacterRequest(
+                                role: updated.role,
+                                name: updated.name,
+                                symbolName: updated.symbolName,
+                                tint: updated.tintName,
+                                tagline: updated.tagline.isEmpty ? nil : updated.tagline,
+                                age: updated.age,
+                                gender: updated.gender,
+                                hairColor: updated.hairColor,
+                                eyeColor: updated.eyeColor,
+                                hairstyle: updated.hairstyle,
+                                interests: updated.interests,
+                                extraInterestNote: updated.extraInterestNote
                             )
                         )
                     }
@@ -178,6 +204,7 @@ private struct CharacterSection: View {
     let selectedIds: Set<UUID>
     let onAdd: () -> Void
     let onToggle: (Character) -> Void
+    let onEdit: (Character) -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -197,6 +224,13 @@ private struct CharacterSection: View {
                         isSelected: selectedIds.contains(character.id),
                         onTap: { onToggle(character) }
                     )
+                    .contextMenu {
+                        Button {
+                            onEdit(character)
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                    }
                 }
                 AddCharacterTile(action: onAdd)
                     .accessibilityLabel("Add \(role.sectionTitle)")

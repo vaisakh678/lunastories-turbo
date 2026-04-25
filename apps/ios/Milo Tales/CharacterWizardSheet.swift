@@ -1,17 +1,34 @@
 //
-//  AddCharacterSheet.swift
+//  CharacterWizardSheet.swift
 //  Milo Tales
 //
 
 import SwiftUI
 
-struct AddCharacterSheet: View {
+struct CharacterWizardSheet: View {
     let role: CharacterRole
+    var editing: Character? = nil
     let onSave: (Character) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var step: WizardStep = .basicInfo
-    @State private var draft = CharacterDraft()
+    @State private var draft: CharacterDraft
+
+    init(
+        role: CharacterRole,
+        editing: Character? = nil,
+        onSave: @escaping (Character) -> Void,
+    ) {
+        self.role = role
+        self.editing = editing
+        self.onSave = onSave
+        _draft = State(initialValue: CharacterDraft(editing: editing))
+    }
+
+    private var isEditing: Bool { editing != nil }
+    private var navTitle: String {
+        isEditing ? "Edit Character" : role.addPromptTitle
+    }
 
     private var canAdvance: Bool {
         switch step {
@@ -56,7 +73,7 @@ struct AddCharacterSheet: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
             }
-            .navigationTitle(role.addPromptTitle)
+            .navigationTitle(navTitle)
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -117,10 +134,11 @@ struct AddCharacterSheet: View {
     private func save() {
         let trimmedName = draft.name.trimmingCharacters(in: .whitespaces)
         let character = Character(
+            id: editing?.id ?? UUID(),
             name: trimmedName,
             role: role,
             symbolName: draft.iconName,
-            tintName: role.defaultTintName,
+            tintName: editing?.tintName ?? role.defaultTintName,
             tagline: draft.interests.sorted().prefix(2).joined(separator: " · "),
             age: draft.age,
             gender: draft.gender,
@@ -147,6 +165,19 @@ private struct CharacterDraft {
     var hairstyle: String? = nil
     var interests: Set<String> = []
     var extraInterestNote: String = ""
+
+    init(editing: Character? = nil) {
+        guard let c = editing else { return }
+        name = c.name
+        age = c.age ?? 6
+        gender = c.gender ?? .na
+        iconName = c.symbolName
+        hairColor = c.hairColor
+        eyeColor = c.eyeColor
+        hairstyle = c.hairstyle
+        interests = Set(c.interests)
+        extraInterestNote = c.extraInterestNote
+    }
 }
 
 private enum WizardStep: Int, CaseIterable {

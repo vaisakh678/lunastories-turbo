@@ -38,4 +38,17 @@ final class CharactersViewModel {
                 ?? error.localizedDescription
         }
     }
+
+    func update(_ id: UUID, _ patch: UpdateCharacterRequest) async {
+        errorMessage = nil
+        do {
+            let updated = try await CharacterAPI.update(id, patch)
+            if let idx = characters.firstIndex(where: { $0.id == id }) {
+                characters[idx] = updated
+            }
+        } catch {
+            errorMessage = (error as? APIError)?.errorDescription
+                ?? error.localizedDescription
+        }
+    }
 }
