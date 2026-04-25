@@ -13,6 +13,8 @@ export interface GeneratedStory {
   content: StoryContent;
   coverSymbol: string;
   coverTint: string;
+  textInputTokens: number;
+  textOutputTokens: number;
 }
 
 export interface GenerateStoryArgs {
@@ -143,5 +145,7 @@ export async function generateStory(
     content: { blocks: paragraphsToBlocks(parsed.body_text) },
     coverSymbol: cover.symbol,
     coverTint: cover.tint,
+    textInputTokens: response.usage?.prompt_tokens ?? 0,
+    textOutputTokens: response.usage?.completion_tokens ?? 0,
   };
 }

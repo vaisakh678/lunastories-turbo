@@ -36,6 +36,10 @@ export const storySchema = pgTable("stories", {
   audioStorageKey: text("audio_storage_key"),
   durationSeconds: integer("duration_seconds"),
 
+  textInputTokens: integer("text_input_tokens"),
+  textOutputTokens: integer("text_output_tokens"),
+  audioInputChars: integer("audio_input_chars"),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

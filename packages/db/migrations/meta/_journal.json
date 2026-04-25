@@ -43,6 +43,13 @@
       "when": 1777139307973,
       "tag": "0005_tidy_iceman",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1777141135330,
+      "tag": "0006_fair_skin",
+      "breakpoints": true
     }
   ]
 }

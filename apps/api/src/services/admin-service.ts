@@ -174,6 +174,9 @@ export async function getStoryAdmin(storyId: string): Promise<StoryDTO> {
     bodyText: row.bodyText,
     audioUrl,
     errorMessage: row.errorMessage,
+    textInputTokens: row.textInputTokens,
+    textOutputTokens: row.textOutputTokens,
+    audioInputChars: row.audioInputChars,
   };
 }
 
