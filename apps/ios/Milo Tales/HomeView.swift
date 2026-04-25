@@ -211,18 +211,25 @@ private struct AddCharacterTile: View {
 
     var body: some View {
         Button(action: action) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .strokeBorder(
-                        Color.accentColor.opacity(0.5),
-                        style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
-                    )
-                Image(systemName: "plus")
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(.tint)
+            VStack(alignment: .leading, spacing: 6) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(
+                            Color.accentColor.opacity(0.5),
+                            style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
+                        )
+                    Image(systemName: "plus")
+                        .font(.system(size: 30, weight: .semibold))
+                        .foregroundStyle(.tint)
+                }
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1, contentMode: .fit)
+
+                Text(" ")
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity)
-            .aspectRatio(1, contentMode: .fit)
         }
         .buttonStyle(.plain)
     }
