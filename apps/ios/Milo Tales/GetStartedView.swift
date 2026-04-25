@@ -9,6 +9,7 @@ import ClerkKit
 struct GetStartedView: View {
     @State private var sheetStep: SignInSheet?
     @State private var pendingStep: SignInSheet?
+    @State private var providerMode: ProviderSheet.Mode = .signIn
     @State private var email: String = ""
     @State private var inProgressSignIn: SignIn?
     @State private var inProgressSignUp: SignUp?
@@ -60,6 +61,7 @@ struct GetStartedView: View {
 
                 VStack(spacing: 12) {
                     Button {
+                        providerMode = .signUp
                         sheetStep = .providers
                     } label: {
                         Text("Get Started")
@@ -72,6 +74,7 @@ struct GetStartedView: View {
                     .buttonStyle(.plain)
 
                     Button {
+                        providerMode = .signIn
                         sheetStep = .providers
                     } label: {
                         HStack(spacing: 4) {
@@ -111,6 +114,7 @@ struct GetStartedView: View {
         switch step {
         case .providers:
             ProviderSheet(
+                mode: providerMode,
                 isLoading: isLoading,
                 onApple: { Task { await handleApple() } },
                 onGoogle: { Task { await handleGoogle() } },
