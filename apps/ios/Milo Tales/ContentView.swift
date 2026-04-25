@@ -139,6 +139,18 @@ struct ContentView: View {
                 .ignoresSafeArea(edges: .bottom)
             }
             .navigationTitle("Milo Tales")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        // menu action
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                    }
+                    .accessibilityLabel("Menu")
+                }
+            }
             .sheet(item: $addingRole) { role in
                 AddCharacterSheet(role: role) { newCharacter in
                     switch role {
