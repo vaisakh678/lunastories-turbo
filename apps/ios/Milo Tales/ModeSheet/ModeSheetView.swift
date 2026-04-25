@@ -30,6 +30,12 @@ struct ModeSheetView: View {
             .navigationDestination(for: StoryMode.self) { mode in
                 modeView(for: mode)
             }
+            .navigationDestination(for: GeneratingStoryRoute.self) { _ in
+                GeneratingStoryView(
+                    onClose: { dismiss() },
+                    onReady: { handleStoryReady() }
+                )
+            }
         }
     }
 
@@ -105,6 +111,10 @@ struct ModeSheetView: View {
     }
 
     private func handleComplete() {
+        path.append(GeneratingStoryRoute())
+    }
+
+    private func handleStoryReady() {
         onComplete()
         dismiss()
     }

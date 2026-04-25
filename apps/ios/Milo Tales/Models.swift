@@ -49,7 +49,7 @@ nonisolated enum Gender: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-enum ColorPalette {
+nonisolated enum ColorPalette {
     static func color(for name: String) -> Color {
         switch name.lowercased() {
         case "orange": .orange
