@@ -13,7 +13,9 @@ import type { CreateStory } from "@repo/zod";
 import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 
 import { BadRequest, InternalError, NotFound } from "../lib/api-error";
+import { generateAudio } from "../lib/audio-generator";
 import { logger } from "../lib/logger";
+import { presignAudio, uploadAudio } from "../lib/storage";
 import { generateStory } from "../lib/story-generator";
 
 function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
@@ -31,17 +33,20 @@ function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
   };
 }
 
-function toDTO(
+async function toDTO(
   row: typeof storySchema.$inferSelect,
   characterIds: string[],
-): StoryDTO {
+): Promise<StoryDTO> {
+  const audioUrl = row.audioStorageKey
+    ? await presignAudio(row.audioStorageKey)
+    : null;
   return {
     ...toSummaryDTO(row),
     characterIds,
     generationInput: (row.generationInput ?? {}) as Record<string, unknown>,
     content: (row.content ?? null) as StoryContent | null,
     bodyText: row.bodyText,
-    audioUrl: row.audioUrl,
+    audioUrl,
     errorMessage: row.errorMessage,
   };
 }
@@ -186,6 +191,55 @@ export async function getStoryById(
     .orderBy(asc(storyCharacterSchema.position));
 
   return toDTO(row, links.map((l) => l.characterId));
+}
+
+export async function generateStoryAudio(
+  userId: string,
+  storyId: string,
+): Promise<StoryDTO> {
+  const [row] = await db
+    .select()
+    .from(storySchema)
+    .where(
+      and(
+        eq(storySchema.id, storyId),
+        eq(storySchema.userId, userId),
+        isNull(storySchema.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!row) throw NotFound("Story not found");
+  if (row.status !== "ready") {
+    throw BadRequest("Story isn't ready yet");
+  }
+  if (!row.bodyText) {
+    throw BadRequest("Story has no body text to narrate");
+  }
+
+  const audio = await generateAudio(row.bodyText);
+  const key = `stories/${storyId}.mp3`;
+  await uploadAudio(key, audio.buffer, audio.contentType);
+
+  const [updated] = await db
+    .update(storySchema)
+    .set({
+      audioStorageKey: key,
+      durationSeconds: audio.durationSeconds,
+    })
+    .where(eq(storySchema.id, storyId))
+    .returning();
+
+  const links = await db
+    .select({ characterId: storyCharacterSchema.characterId })
+    .from(storyCharacterSchema)
+    .where(eq(storyCharacterSchema.storyId, storyId))
+    .orderBy(asc(storyCharacterSchema.position));
+
+  return toDTO(
+    updated,
+    links.map((l) => l.characterId),
+  );
 }
 
 export async function softDeleteStory(

@@ -33,7 +33,7 @@ export const storySchema = pgTable("stories", {
   content: jsonb("content"),
   bodyText: text("body_text"),
 
-  audioUrl: text("audio_url"),
+  audioStorageKey: text("audio_storage_key"),
   durationSeconds: integer("duration_seconds"),
 
   createdAt: timestamp("created_at", { withTimezone: true })

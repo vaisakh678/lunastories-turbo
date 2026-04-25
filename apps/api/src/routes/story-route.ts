@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getUserIdFromCTX } from "../lib/helpers";
 import {
   createStory,
+  generateStoryAudio,
   getStoriesByUser,
   getStoryById,
   softDeleteStory,
@@ -35,6 +36,17 @@ const storyRoute = new Hono()
     const story = await getStoryById(userId, id);
     return c.json<APIResponse<typeof story>>({ data: story });
   })
+  .post(
+    "/:id/audio",
+    zValidator("param", storyIdParamSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const userId = getUserIdFromCTX(c);
+
+      const story = await generateStoryAudio(userId, id);
+      return c.json<APIResponse<typeof story>>({ data: story });
+    },
+  )
   .delete("/:id", zValidator("param", storyIdParamSchema), async (c) => {
     const { id } = c.req.valid("param");
     const userId = getUserIdFromCTX(c);

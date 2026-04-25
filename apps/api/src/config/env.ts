@@ -19,6 +19,13 @@ const envSchema = z.object({
     .default("info"),
   OPENAI_API_KEY: z.string().min(1),
   OPENAI_MODEL: z.string().min(1).default("gpt-4o-mini"),
+  OPENAI_TTS_MODEL: z.string().min(1).default("gpt-4o-mini-tts"),
+  OPENAI_TTS_VOICE: z.string().min(1).default("shimmer"),
+
+  AWS_REGION: z.string().min(1),
+  AWS_ACCESS_KEY_ID: z.string().min(1),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1),
+  S3_BUCKET: z.string().min(1),
 });
 
 const parsed = envSchema.safeParse(process.env);
