@@ -10,3 +10,10 @@ export const storyStatusEnum = pgEnum("story_status", [
   "ready",
   "failed",
 ]);
+
+export const feedbackCategoryEnum = pgEnum("feedback_category", [
+  "bug",
+  "idea",
+  "praise",
+  "other",
+]);

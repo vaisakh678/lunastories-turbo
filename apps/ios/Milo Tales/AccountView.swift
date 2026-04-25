@@ -65,7 +65,9 @@ struct AccountView: View {
                     }
                     .buttonStyle(.plain)
                     Divider().padding(.leading, 60)
-                    Button {} label: {
+                    NavigationLink {
+                        FeedbackView()
+                    } label: {
                         MenuRowLabel(icon: "bubble.left.fill", title: "Send Feedback")
                     }
                     .buttonStyle(.plain)
