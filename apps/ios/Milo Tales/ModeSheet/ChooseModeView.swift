@@ -1,32 +1,31 @@
 //
-//  ChooseModeSheet.swift
+//  ChooseModeView.swift
 //  Milo Tales
 //
 
 import SwiftUI
 
-struct StoryMode: Identifiable {
+struct StoryMode: Identifiable, Hashable {
     let id = UUID()
     let title: String
     let symbolName: String
     let tint: Color
 }
 
-struct ChooseModeSheet: View {
+struct ChooseModeView: View {
+    let onClose: () -> Void
     let onSelect: (StoryMode) -> Void
 
-    @Environment(\.dismiss) private var dismiss
-
     private let modes: [StoryMode] = [
-        StoryMode(title: "Creative", symbolName: "paintpalette.fill", tint: .pink),
-        StoryMode(title: "Inventors", symbolName: "lightbulb.fill", tint: .yellow),
-        StoryMode(title: "Construction Site", symbolName: "hammer.fill", tint: .orange),
-        StoryMode(title: "Vegetable", symbolName: "leaf.fill", tint: .green),
-        StoryMode(title: "Environment", symbolName: "globe.americas.fill", tint: .blue),
-        StoryMode(title: "Jungle Book", symbolName: "pawprint.fill", tint: .brown),
-        StoryMode(title: "Alice in Wonderland", symbolName: "cup.and.saucer.fill", tint: .purple),
-        StoryMode(title: "Grimm's Tales", symbolName: "book.closed.fill", tint: .indigo),
-        StoryMode(title: "Wizard of Oz", symbolName: "tornado", tint: .teal),
+        StoryMode(title: "Creative",            symbolName: "paintpalette.fill",       tint: .pink),
+        StoryMode(title: "Inventors",           symbolName: "lightbulb.fill",          tint: .yellow),
+        StoryMode(title: "Construction Site",   symbolName: "hammer.fill",             tint: .orange),
+        StoryMode(title: "Vegetable",           symbolName: "leaf.fill",               tint: .green),
+        StoryMode(title: "Environment",         symbolName: "globe.americas.fill",     tint: .blue),
+        StoryMode(title: "Jungle Book",         symbolName: "pawprint.fill",           tint: .brown),
+        StoryMode(title: "Alice in Wonderland", symbolName: "cup.and.saucer.fill",     tint: .purple),
+        StoryMode(title: "Grimm's Tales",       symbolName: "book.closed.fill",        tint: .indigo),
+        StoryMode(title: "Wizard of Oz",        symbolName: "tornado",                 tint: .teal),
     ]
 
     private let columns = [
@@ -37,23 +36,10 @@ struct ChooseModeSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .frame(width: 32, height: 32)
-                        .glassEffect(in: Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Close")
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 12)
+            ModeTopBar(onClose: onClose, onBack: nil)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
 
             VStack(spacing: 6) {
                 Text("Choose a mode")
@@ -67,10 +53,7 @@ struct ChooseModeSheet: View {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(modes) { mode in
-                        ModeTile(mode: mode) {
-                            onSelect(mode)
-                            dismiss()
-                        }
+                        ModeTile(mode: mode) { onSelect(mode) }
                     }
                 }
                 .padding(.horizontal, 20)
