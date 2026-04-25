@@ -1,7 +1,9 @@
 import db, { characterSchema } from "@repo/db";
 import type { CharacterDTO } from "@repo/dto";
 import type { CreateCharacter } from "@repo/zod";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
+
+import { NotFound } from "../lib/api-error";
 
 function toDTO(row: typeof characterSchema.$inferSelect): CharacterDTO {
   return {
@@ -55,8 +57,32 @@ export async function getCharactersByUser(
   const rows = await db
     .select()
     .from(characterSchema)
-    .where(eq(characterSchema.userId, userId))
+    .where(
+      and(
+        eq(characterSchema.userId, userId),
+        isNull(characterSchema.deletedAt),
+      ),
+    )
     .orderBy(desc(characterSchema.createdAt));
 
   return rows.map(toDTO);
+}
+
+export async function softDeleteCharacter(
+  userId: string,
+  characterId: string,
+): Promise<void> {
+  const [deleted] = await db
+    .update(characterSchema)
+    .set({ deletedAt: new Date() })
+    .where(
+      and(
+        eq(characterSchema.id, characterId),
+        eq(characterSchema.userId, userId),
+        isNull(characterSchema.deletedAt),
+      ),
+    )
+    .returning({ id: characterSchema.id });
+
+  if (!deleted) throw NotFound("Character not found");
 }

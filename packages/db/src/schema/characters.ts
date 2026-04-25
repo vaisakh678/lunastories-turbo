@@ -38,6 +38,7 @@ export const characterSchema = pgTable("characters", {
     .notNull()
     .defaultNow()
     .$onUpdate(() => new Date()),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 export type Character = typeof characterSchema.$inferSelect;
