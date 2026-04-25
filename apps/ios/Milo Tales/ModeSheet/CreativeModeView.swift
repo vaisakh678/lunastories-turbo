@@ -9,7 +9,7 @@ struct CreativeModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onComplete: () -> Void
+    let onComplete: (StoryInputPayload) -> Void
 
     enum Step: Hashable {
         case type(charIndex: Int)
@@ -159,6 +159,25 @@ struct CreativeModeView: View {
 
     private func handleMoral(_ option: PickOption) {
         moral = option
-        onComplete()
+        let typeMap: [String: AnyJSON] = Dictionary(
+            uniqueKeysWithValues: typeByChar.map {
+                ($0.key.uuidString.lowercased(), .string($0.value.title))
+            }
+        )
+        let professionMap: [String: AnyJSON] = Dictionary(
+            uniqueKeysWithValues: professionByChar.map {
+                ($0.key.uuidString.lowercased(), .string($0.value.title))
+            }
+        )
+        onComplete(
+            StoryInputPayload(
+                modeKey: "creative",
+                input: .object([
+                    "typeByChar": .object(typeMap),
+                    "professionByChar": .object(professionMap),
+                    "moral": .string(option.title),
+                ])
+            )
+        )
     }
 }

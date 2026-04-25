@@ -9,7 +9,7 @@ struct GrimmsTalesModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onComplete: () -> Void
+    let onComplete: (StoryInputPayload) -> Void
 
     enum Step: Hashable { case place }
 
@@ -74,6 +74,14 @@ struct GrimmsTalesModeView: View {
 
     private func handleSubmitPlace() {
         guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        onComplete()
+        onComplete(
+            StoryInputPayload(
+                modeKey: "grimms_tales",
+                input: .object([
+                    "picked": picked.map { .string($0.title) } ?? .null,
+                    "place": .string(place.trimmingCharacters(in: .whitespaces)),
+                ])
+            )
+        )
     }
 }
