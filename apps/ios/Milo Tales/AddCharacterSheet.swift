@@ -120,7 +120,7 @@ struct AddCharacterSheet: View {
             name: trimmedName,
             role: role,
             symbolName: draft.iconName,
-            tint: role.defaultTint,
+            tintName: role.defaultTintName,
             tagline: draft.interests.sorted().prefix(2).joined(separator: " · "),
             age: draft.age,
             gender: draft.gender,
@@ -226,7 +226,18 @@ private struct BasicInfoStep: View {
         VStack(alignment: .leading, spacing: 18) {
             FieldLabel("Name")
             TextField("e.g. Milo", text: $draft.name)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .font(.title3)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color.gray.opacity(0.08))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color.gray.opacity(0.2), lineWidth: 1)
+                )
 
             FieldLabel("Age")
             HStack {
@@ -320,34 +331,35 @@ private struct ColorChipRow: View {
     let options: [(name: String, color: Color)]
     @Binding var selectedName: String?
 
+    private let columns = [GridItem(.adaptive(minimum: 60), spacing: 12)]
+
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(options, id: \.name) { option in
-                    let isSelected = selectedName == option.name
-                    Button {
-                        selectedName = isSelected ? nil : option.name
-                    } label: {
-                        VStack(spacing: 6) {
-                            Circle()
-                                .fill(option.color)
-                                .frame(width: 36, height: 36)
-                                .overlay(
-                                    Circle()
-                                        .strokeBorder(
-                                            isSelected ? Color.accentColor : Color.gray.opacity(0.3),
-                                            lineWidth: isSelected ? 3 : 1
-                                        )
-                                )
-                            Text(option.name)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+        LazyVGrid(columns: columns, spacing: 12) {
+            ForEach(options, id: \.name) { option in
+                let isSelected = selectedName == option.name
+                Button {
+                    selectedName = isSelected ? nil : option.name
+                } label: {
+                    VStack(spacing: 6) {
+                        Circle()
+                            .fill(option.color)
+                            .frame(width: 44, height: 44)
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(
+                                        isSelected ? Color.accentColor : Color.gray.opacity(0.3),
+                                        lineWidth: isSelected ? 3 : 1
+                                    )
+                            )
+                        Text(option.name)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
                     }
-                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.plain)
             }
-            .padding(.vertical, 4)
         }
     }
 }
@@ -374,8 +386,20 @@ private struct InterestsStep: View {
 
             FieldLabel("Tell us more")
             TextField("Anything else? e.g. loves dinosaurs", text: $draft.extraInterestNote, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .lineLimit(3...5)
+                .textFieldStyle(.plain)
+                .font(.body)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .frame(minHeight: 140, alignment: .topLeading)
+                .lineLimit(6...10)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color.gray.opacity(0.08))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color.gray.opacity(0.2), lineWidth: 1)
+                )
         }
     }
 }
