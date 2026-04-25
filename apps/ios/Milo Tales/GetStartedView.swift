@@ -8,6 +8,10 @@ import SwiftUI
 struct GetStartedView: View {
     let onContinue: () -> Void
 
+    @State private var sheetStep: SignInSheet?
+    @State private var pendingStep: SignInSheet?
+    @State private var email: String = ""
+
     var body: some View {
         ZStack {
             LinearGradient(
@@ -62,7 +66,9 @@ struct GetStartedView: View {
                     }
                     .buttonStyle(.plain)
 
-                    Button(action: onContinue) {
+                    Button {
+                        sheetStep = .providers
+                    } label: {
                         HStack(spacing: 4) {
                             Text("Already have an account?")
                                 .foregroundStyle(.secondary)
@@ -78,5 +84,58 @@ struct GetStartedView: View {
                 .padding(.bottom, 28)
             }
         }
+        .sheet(item: $sheetStep, onDismiss: openPendingIfAny) { step in
+            sheetContent(for: step)
+                .presentationDetents(detents(for: step))
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    private func detents(for step: SignInSheet) -> Set<PresentationDetent> {
+        switch step {
+        case .providers: return [.medium]
+        case .email, .otp: return [.large]
+        }
+    }
+
+    @ViewBuilder
+    private func sheetContent(for step: SignInSheet) -> some View {
+        switch step {
+        case .providers:
+            ProviderSheet(
+                onApple: completeAuth,
+                onGoogle: completeAuth,
+                onEmail: { transition(to: .email) }
+            )
+        case .email:
+            EmailSheet(
+                email: $email,
+                onContinue: { transition(to: .otp) }
+            )
+        case .otp:
+            OtpSheet(
+                email: email,
+                onVerified: completeAuth
+            )
+        }
+    }
+
+    private func transition(to next: SignInSheet) {
+        pendingStep = next
+        sheetStep = nil
+    }
+
+    private func openPendingIfAny() {
+        guard let next = pendingStep else { return }
+        pendingStep = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            sheetStep = next
+        }
+    }
+
+    private func completeAuth() {
+        pendingStep = nil
+        sheetStep = nil
+        onContinue()
     }
 }
