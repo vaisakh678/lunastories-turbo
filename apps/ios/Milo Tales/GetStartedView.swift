@@ -248,7 +248,7 @@ struct GetStartedView: View {
     private func dismissThenActivate(sessionId: String) async {
         pendingStep = nil
         sheetStep = nil
-        try? await Task.sleep(for: .milliseconds(350))
+        try? await Task.sleep(for: .milliseconds(500))
         do {
             try await Clerk.shared.auth.setActive(sessionId: sessionId)
         } catch {
