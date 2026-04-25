@@ -20,6 +20,7 @@ struct HomeView: View {
     ]
 
     @State private var addingRole: CharacterRole?
+    @State private var showModeSheet: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -78,7 +79,7 @@ struct HomeView: View {
                         .frame(height: 200)
                         .allowsHitTesting(false)
 
-                        StartButton(action: {})
+                        StartButton(action: { showModeSheet = true })
                             .padding(.horizontal, 24)
                             .padding(.bottom, 36)
                     }
@@ -105,6 +106,14 @@ struct HomeView: View {
                     case .side: sideCharacters.append(newCharacter)
                     }
                 }
+            }
+            .sheet(isPresented: $showModeSheet) {
+                ChooseModeSheet { _ in
+                    // selected mode — wire to next step later
+                }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(.white)
             }
         }
     }
