@@ -78,17 +78,17 @@ struct CreativeModeView: View {
 
     var body: some View {
         // Root = type for character 0
-        typeStep(charIndex: 0, isRoot: true)
+        typeStep(charIndex: 0)
             .navigationDestination(for: Step.self) { step in
                 switch step {
-                case .type(let i):       typeStep(charIndex: i, isRoot: false)
+                case .type(let i):       typeStep(charIndex: i)
                 case .profession(let i): professionStep(charIndex: i)
                 case .moral:             moralStep
                 }
             }
     }
 
-    private func typeStep(charIndex: Int, isRoot: Bool) -> some View {
+    private func typeStep(charIndex: Int) -> some View {
         ScrollView {
             VStack(spacing: 0) {
                 if charIndex < characters.count {
@@ -103,7 +103,7 @@ struct CreativeModeView: View {
                     .padding(.bottom, 24)
             }
         }
-        .modeStepChrome(isRoot: isRoot, onClose: onClose)
+        .modeStepChrome(isRoot: false, onClose: onClose)
     }
 
     private func professionStep(charIndex: Int) -> some View {

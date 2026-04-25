@@ -43,6 +43,14 @@ private struct ModeStepChromeModifier: ViewModifier {
                     }
                     .accessibilityLabel(isRoot ? "Close" : "Back")
                 }
+                if !isRoot {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(action: onClose) {
+                            Image(systemName: "xmark")
+                        }
+                        .accessibilityLabel("Close")
+                    }
+                }
             }
     }
 }

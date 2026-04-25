@@ -46,7 +46,7 @@ struct GrimmsTalesModeView: View {
                     .padding(.bottom, 24)
             }
         }
-        .modeStepChrome(isRoot: true, onClose: onClose)
+        .modeStepChrome(isRoot: false, onClose: onClose)
     }
 
     private var placeStep: some View {
