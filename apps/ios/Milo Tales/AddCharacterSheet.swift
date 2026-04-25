@@ -120,7 +120,7 @@ struct AddCharacterSheet: View {
             name: trimmedName,
             role: role,
             symbolName: draft.iconName,
-            tint: role.defaultTint,
+            tintName: role.defaultTintName,
             tagline: draft.interests.sorted().prefix(2).joined(separator: " · "),
             age: draft.age,
             gender: draft.gender,

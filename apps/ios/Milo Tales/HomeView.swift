@@ -6,25 +6,13 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var mainCharacters: [Character] = [
-        Character(name: "Milo", role: .main, symbolName: "figure.child", tint: .orange, tagline: "A curious little explorer"),
-        Character(name: "Luna", role: .main, symbolName: "moon.stars.fill", tint: .purple, tagline: "Dreamy stargazer"),
-        Character(name: "Finn", role: .main, symbolName: "sailboat.fill", tint: .blue, tagline: "Brave young sailor"),
-    ]
-
-    @State private var sideCharacters: [Character] = [
-        Character(name: "Whiskers", role: .side, symbolName: "cat.fill", tint: .gray, tagline: "Loyal companion"),
-        Character(name: "Hoot", role: .side, symbolName: "bird.fill", tint: .brown, tagline: "Wise night-watcher"),
-        Character(name: "Pebble", role: .side, symbolName: "tortoise.fill", tint: .green, tagline: "Slow but steady"),
-        Character(name: "Spark", role: .side, symbolName: "sparkles", tint: .yellow, tagline: "Lights the way"),
-    ]
-
+    @State private var vm = CharactersViewModel()
     @State private var addingRole: CharacterRole?
     @State private var showStoryFlow: Bool = false
     @State private var selectedCharacterIds: Set<UUID> = []
 
     private var selectedCharacters: [Character] {
-        (mainCharacters + sideCharacters).filter { selectedCharacterIds.contains($0.id) }
+        vm.characters.filter { selectedCharacterIds.contains($0.id) }
     }
 
     private func toggle(_ character: Character) {
@@ -42,14 +30,14 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 28) {
                         CharacterSection(
                             role: .main,
-                            characters: mainCharacters,
+                            characters: vm.mainCharacters,
                             selectedIds: selectedCharacterIds,
                             onAdd: { addingRole = .main },
                             onToggle: toggle
                         )
                         CharacterSection(
                             role: .side,
-                            characters: sideCharacters,
+                            characters: vm.sideCharacters,
                             selectedIds: selectedCharacterIds,
                             onAdd: { addingRole = .side },
                             onToggle: toggle
@@ -121,12 +109,36 @@ struct HomeView: View {
             }
             .sheet(item: $addingRole) { role in
                 AddCharacterSheet(role: role) { newCharacter in
-                    switch role {
-                    case .main: mainCharacters.append(newCharacter)
-                    case .side: sideCharacters.append(newCharacter)
+                    Task {
+                        await vm.add(
+                            CreateCharacterRequest(
+                                role: newCharacter.role,
+                                name: newCharacter.name,
+                                symbolName: newCharacter.symbolName,
+                                tint: newCharacter.tintName,
+                                tagline: newCharacter.tagline.isEmpty ? nil : newCharacter.tagline,
+                                age: newCharacter.age,
+                                gender: newCharacter.gender,
+                                hairColor: newCharacter.hairColor,
+                                eyeColor: newCharacter.eyeColor,
+                                hairstyle: newCharacter.hairstyle,
+                                interests: newCharacter.interests,
+                                extraInterestNote: newCharacter.extraInterestNote
+                            )
+                        )
                     }
                 }
             }
+            .task { await vm.load() }
+            .alert(
+                "Something went wrong",
+                isPresented: Binding(
+                    get: { vm.errorMessage != nil },
+                    set: { if !$0 { vm.errorMessage = nil } }
+                ),
+                actions: { Button("OK") { vm.errorMessage = nil } },
+                message: { Text(vm.errorMessage ?? "") }
+            )
             .sheet(isPresented: $showStoryFlow) {
                 ModeSheetView(characters: selectedCharacters) {
                     // wizard finished — wire to story generation later
