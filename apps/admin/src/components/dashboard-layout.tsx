@@ -12,14 +12,12 @@ export function DashboardLayout() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+        <header className="bg-background/70 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-20 flex h-12 items-center gap-2 border-b px-4 backdrop-blur">
           <SidebarTrigger />
         </header>
-        <main className="flex-1 overflow-auto">
-          <div className="mx-auto max-w-7xl p-6">
-            <Outlet />
-          </div>
-        </main>
+        <div className="mx-auto w-full max-w-7xl p-6">
+          <Outlet />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
