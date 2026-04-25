@@ -46,7 +46,7 @@ struct GrimmsTalesModeView: View {
                     .padding(.bottom, 24)
             }
         }
-        .modeStepChrome(onClose: onClose)
+        .modeStepChrome(isRoot: true, onClose: onClose)
     }
 
     private var placeStep: some View {
@@ -64,7 +64,7 @@ struct GrimmsTalesModeView: View {
                 .padding(.bottom, 24)
             }
         }
-        .modeStepChrome(onClose: onClose)
+        .modeStepChrome(isRoot: false, onClose: onClose)
     }
 
     private func handlePick(_ option: PickOption) {

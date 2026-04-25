@@ -49,7 +49,7 @@ private let inventorOptions: [PickOption] = [
                     .padding(.bottom, 24)
             }
         }
-        .modeStepChrome(onClose: onClose)
+        .modeStepChrome(isRoot: true, onClose: onClose)
     }
 
     private var placeStep: some View {
@@ -68,7 +68,7 @@ private let inventorOptions: [PickOption] = [
                 .padding(.bottom, 24)
             }
         }
-        .modeStepChrome(onClose: onClose)
+        .modeStepChrome(isRoot: false, onClose: onClose)
     }
 
     private func handlePickInventor(_ option: PickOption) {

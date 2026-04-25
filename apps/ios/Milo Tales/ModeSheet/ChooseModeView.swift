@@ -56,7 +56,7 @@ struct ChooseModeView: View {
                 .padding(.bottom, 24)
             }
         }
-        .modeStepChrome(onClose: onClose)
+        .modeStepChrome(isRoot: true, onClose: onClose)
     }
 }
 

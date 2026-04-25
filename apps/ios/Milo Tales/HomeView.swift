@@ -178,7 +178,7 @@ private struct CharacterSection: View {
             Text(role.sectionTitle)
                 .font(.title2.weight(.bold))
 
-            LazyVGrid(columns: columns, spacing: 12) {
+            LazyVGrid(columns: columns, spacing: 20) {
                 ForEach(characters) { character in
                     CharacterCard(
                         character: character,

@@ -13,16 +13,18 @@ struct PickOption: Identifiable, Hashable {
 }
 
 extension View {
-    func modeStepChrome(onClose: @escaping () -> Void) -> some View {
-        ModeStepChromeContainer(content: self, onClose: onClose)
+    func modeStepChrome(isRoot: Bool, onClose: @escaping () -> Void) -> some View {
+        modifier(ModeStepChromeModifier(isRoot: isRoot, onClose: onClose))
     }
 }
 
-private struct ModeStepChromeContainer<Content: View>: View {
-    let content: Content
+private struct ModeStepChromeModifier: ViewModifier {
+    let isRoot: Bool
     let onClose: () -> Void
 
-    var body: some View {
+    @Environment(\.dismiss) private var dismiss
+
+    func body(content: Content) -> some View {
         content
             .navigationBarBackButtonHidden(true)
             #if os(iOS)
@@ -30,10 +32,16 @@ private struct ModeStepChromeContainer<Content: View>: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(action: onClose) {
-                        Image(systemName: "xmark")
+                    Button {
+                        if isRoot {
+                            onClose()
+                        } else {
+                            dismiss()
+                        }
+                    } label: {
+                        Image(systemName: isRoot ? "xmark" : "chevron.left")
                     }
-                    .accessibilityLabel("Close")
+                    .accessibilityLabel(isRoot ? "Close" : "Back")
                 }
             }
     }
