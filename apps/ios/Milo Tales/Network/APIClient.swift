@@ -71,8 +71,23 @@ actor APIClient {
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         req.httpBody = body
 
-        if let token = try? await Clerk.shared.session?.getToken() {
-            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let clerkSession = await Clerk.shared.session
+        let clerkUser = await Clerk.shared.user
+        do {
+            if let token = try await clerkSession?.getToken() {
+                req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                #if DEBUG
+                print("[API] \(method) \(path) → attached token (\(token.prefix(20))…)")
+                #endif
+            } else {
+                #if DEBUG
+                print("[API] \(method) \(path) → NO token (session=\(clerkSession != nil), user=\(clerkUser != nil))")
+                #endif
+            }
+        } catch {
+            #if DEBUG
+            print("[API] \(method) \(path) → token fetch threw: \(error.localizedDescription)")
+            #endif
         }
 
         let (data, response): (Data, URLResponse)
