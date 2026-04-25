@@ -13,8 +13,7 @@ const envSchema = z.object({
   // Pasted as a single line — `\n` escapes are unfolded back into real newlines.
   CLERK_JWT_KEY: z
     .string()
-    .min(1)
-    .transform((s) => s.replace(/\\n/g, "\n")),
+	.optional()
 });
 
 const parsed = envSchema.safeParse(process.env);
