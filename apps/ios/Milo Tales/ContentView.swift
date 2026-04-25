@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 enum CharacterRole: Identifiable {
     case main
@@ -139,6 +140,18 @@ struct ContentView: View {
                 .ignoresSafeArea(edges: .bottom)
             }
             .navigationTitle("Milo Tales")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    NavigationLink {
+                        AccountView()
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                    }
+                    .accessibilityLabel("Account")
+                }
+            }
             .sheet(item: $addingRole) { role in
                 AddCharacterSheet(role: role) { newCharacter in
                     switch role {
@@ -148,6 +161,436 @@ struct ContentView: View {
                 }
             }
         }
+    }
+}
+
+private struct AccountView: View {
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                VStack(spacing: 12) {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.18))
+                        .frame(width: 96, height: 96)
+                        .overlay(
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 40, weight: .semibold))
+                                .foregroundStyle(.tint)
+                        )
+                    VStack(spacing: 2) {
+                        Text("Hello, Storyteller")
+                            .font(.title3.weight(.semibold))
+                        Text("Manage your profile")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.top, 12)
+
+                VStack(spacing: 0) {
+                    NavigationLink {
+                        MyStoriesView()
+                    } label: {
+                        MenuRowLabel(icon: "book.fill", title: "My Stories")
+                    }
+                    .buttonStyle(.plain)
+                    Divider().padding(.leading, 60)
+                    Button {} label: {
+                        MenuRowLabel(icon: "star.circle.fill", title: "Subscribe")
+                    }
+                    .buttonStyle(.plain)
+                    Divider().padding(.leading, 60)
+                    Button {} label: {
+                        MenuRowLabel(icon: "gearshape.fill", title: "Settings")
+                    }
+                    .buttonStyle(.plain)
+                    Divider().padding(.leading, 60)
+                    Button {} label: {
+                        MenuRowLabel(icon: "gift.fill", title: "Share and Earn")
+                    }
+                    .buttonStyle(.plain)
+                    Divider().padding(.leading, 60)
+                    Button {} label: {
+                        MenuRowLabel(icon: "bubble.left.fill", title: "Send Feedback")
+                    }
+                    .buttonStyle(.plain)
+                }
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .padding(.horizontal, 16)
+
+                Button {} label: {
+                    MenuRowLabel(
+                        icon: "rectangle.portrait.and.arrow.right",
+                        title: "Logout",
+                        tint: .red
+                    )
+                }
+                .buttonStyle(.plain)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .padding(.horizontal, 16)
+            }
+            .padding(.vertical, 20)
+        }
+        .background(Color.gray.opacity(0.08))
+    }
+}
+
+struct Story: Identifiable {
+    let id = UUID()
+    let title: String
+    let summary: String
+    let symbolName: String
+    let tint: Color
+    let duration: String
+    let createdAt: String
+    var totalSeconds: Int = 300
+    var blocks: [StoryBlock] = []
+}
+
+struct StoryBlock: Identifiable {
+    let id = UUID()
+    let kind: Kind
+
+    enum Kind {
+        case text(String)
+        case illustration(symbolName: String, tint: Color)
+    }
+}
+
+private struct MyStoriesView: View {
+    private let stories: [Story] = [
+        Story(title: "Milo and the Moon Cookie",
+              summary: "A bedtime adventure through a cinnamon-scented sky.",
+              symbolName: "moon.stars.fill",
+              tint: .purple,
+              duration: "5 min",
+              createdAt: "Today",
+              totalSeconds: 300,
+              blocks: [
+                .init(kind: .text("Milo woke up to a soft humming sound. Outside his window, the moon was singing a song made of cinnamon and stardust.")),
+                .init(kind: .text("He tiptoed to the sill, climbed onto a cloud-shaped stool, and reached for the night sky.")),
+                .init(kind: .illustration(symbolName: "moon.stars.fill", tint: .purple)),
+                .init(kind: .text("In his hand he held a tiny moon cookie, warm and round, with sugar sprinkled like little stars.")),
+                .init(kind: .text("\"One bite for courage,\" he whispered, \"and one for wishes.\" The cookie giggled.")),
+                .init(kind: .illustration(symbolName: "sparkles", tint: .yellow)),
+                .init(kind: .text("That night Milo dreamed of cinnamon clouds, jumping over them all the way until morning.")),
+              ]),
+        Story(title: "Luna's Stargazing Trip",
+              summary: "Luna discovers a constellation that hums lullabies.",
+              symbolName: "sparkles",
+              tint: .indigo,
+              duration: "7 min",
+              createdAt: "Yesterday",
+              totalSeconds: 420,
+              blocks: [
+                .init(kind: .text("Luna packed her telescope, three blankets, and a thermos of warm cocoa. Tonight she would find the Singing Star.")),
+                .init(kind: .illustration(symbolName: "binoculars.fill", tint: .indigo)),
+                .init(kind: .text("On the hill behind her house, she pointed her telescope upward and listened very, very carefully.")),
+                .init(kind: .text("A tiny tune drifted down — high notes like silver bells. Luna smiled. The constellation was humming a lullaby just for her.")),
+                .init(kind: .illustration(symbolName: "moon.stars.fill", tint: .purple)),
+                .init(kind: .text("She closed her eyes and listened until the stars sang her gently to sleep.")),
+              ]),
+        Story(title: "Finn Sails the Rainbow Sea",
+              summary: "A brave little sailor charts a course to Color Island.",
+              symbolName: "sailboat.fill",
+              tint: .blue,
+              duration: "6 min",
+              createdAt: "2 days ago",
+              totalSeconds: 360,
+              blocks: [
+                .init(kind: .text("Finn raised the sails of his little boat and pushed off from the cinnamon shore.")),
+                .init(kind: .illustration(symbolName: "sailboat.fill", tint: .blue)),
+                .init(kind: .text("The sea ahead shimmered in stripes of red, orange, yellow, green, blue, indigo, and violet.")),
+                .init(kind: .text("\"Color Island, here I come!\" he called as a friendly wind nudged him forward.")),
+                .init(kind: .illustration(symbolName: "rainbow", tint: .pink)),
+                .init(kind: .text("By sundown Finn dropped anchor at a beach made of crayons, where every wave painted the sand a new color.")),
+              ]),
+        Story(title: "Whiskers Finds the Cozy Hat",
+              summary: "A curious cat searches the attic for the perfect winter hat.",
+              symbolName: "cat.fill",
+              tint: .orange,
+              duration: "4 min",
+              createdAt: "Last week",
+              totalSeconds: 240,
+              blocks: [
+                .init(kind: .text("Whiskers padded up the dusty attic stairs, tail twitching. Somewhere up here was the perfect hat.")),
+                .init(kind: .illustration(symbolName: "cat.fill", tint: .orange)),
+                .init(kind: .text("She tried a top hat (too tall), a sunhat (too floppy), and a cowboy hat (too jingly).")),
+                .init(kind: .text("Then, in the very last box, she found a tiny knitted beanie with a pom-pom. Purrrfect.")),
+              ]),
+        Story(title: "Hoot's Midnight Library",
+              summary: "An owl who reads to the stars opens a secret door.",
+              symbolName: "bird.fill",
+              tint: .brown,
+              duration: "8 min",
+              createdAt: "Last week",
+              totalSeconds: 480,
+              blocks: [
+                .init(kind: .text("Every night when the clock struck twelve, Hoot the owl unlocked his secret library in the old oak tree.")),
+                .init(kind: .illustration(symbolName: "books.vertical.fill", tint: .brown)),
+                .init(kind: .text("He chose a book, opened it slowly, and began to read aloud — softly, just for the stars.")),
+                .init(kind: .text("Tonight, behind the very last shelf, he found a door he had never seen before. It glowed gently.")),
+                .init(kind: .illustration(symbolName: "door.left.hand.open", tint: .yellow)),
+                .init(kind: .text("Hoot pushed it open and stepped inside, and a brand-new story began.")),
+              ]),
+    ]
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 12) {
+                ForEach(stories) { story in
+                    NavigationLink {
+                        StoryReaderView(story: story)
+                    } label: {
+                        StoryCard(story: story)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(16)
+        }
+        .background(Color.gray.opacity(0.08))
+        .navigationTitle("My Stories")
+    }
+}
+
+private struct StoryCard: View {
+    let story: Story
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(story.tint.opacity(0.18))
+                Image(systemName: story.symbolName)
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(story.tint)
+            }
+            .frame(width: 84, height: 84)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(story.title)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                Text(story.summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+
+                HStack(spacing: 6) {
+                    Image(systemName: "clock")
+                    Text(story.duration)
+                    Text("·")
+                    Text(story.createdAt)
+                }
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .padding(.top, 2)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct StoryReaderView: View {
+    let story: Story
+
+    @State private var isFavorited = false
+    @State private var isPlaying = false
+    @State private var elapsedSeconds: Double = 0
+
+    private let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(spacing: 16) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(story.tint.opacity(0.18))
+                            Image(systemName: story.symbolName)
+                                .font(.system(size: 80, weight: .semibold))
+                                .foregroundStyle(story.tint)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .aspectRatio(1.3, contentMode: .fit)
+
+                        VStack(spacing: 8) {
+                            Text(story.title)
+                                .font(.title.weight(.bold))
+                                .multilineTextAlignment(.center)
+                            Text(story.summary)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+
+                    VStack(alignment: .leading, spacing: 20) {
+                        ForEach(story.blocks) { block in
+                            switch block.kind {
+                            case .text(let text):
+                                Text(text)
+                                    .font(.body)
+                                    .lineSpacing(6)
+                                    .padding(.horizontal, 24)
+                            case .illustration(let symbol, let tint):
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                        .fill(tint.opacity(0.18))
+                                    Image(systemName: symbol)
+                                        .font(.system(size: 60, weight: .semibold))
+                                        .foregroundStyle(tint)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .aspectRatio(1.5, contentMode: .fit)
+                                .padding(.horizontal, 24)
+                            }
+                        }
+                    }
+                }
+                .padding(.bottom, 220)
+            }
+            .background(Color.gray.opacity(0.08))
+
+            VStack(spacing: 0) {
+                Spacer()
+                AudioBar(
+                    isPlaying: $isPlaying,
+                    elapsed: $elapsedSeconds,
+                    total: Double(story.totalSeconds)
+                )
+                .background(Color.white)
+            }
+            .ignoresSafeArea(edges: .bottom)
+        }
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    isFavorited.toggle()
+                } label: {
+                    Image(systemName: isFavorited ? "heart.fill" : "heart")
+                        .foregroundStyle(isFavorited ? .red : .primary)
+                }
+                .accessibilityLabel(isFavorited ? "Unfavorite" : "Favorite")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    // share action
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .foregroundStyle(.primary)
+                }
+                .accessibilityLabel("Share")
+            }
+        }
+        .onReceive(timer) { _ in
+            guard isPlaying else { return }
+            let total = Double(story.totalSeconds)
+            elapsedSeconds = min(elapsedSeconds + 0.5, total)
+            if elapsedSeconds >= total {
+                isPlaying = false
+            }
+        }
+    }
+}
+
+private struct AudioBar: View {
+    @Binding var isPlaying: Bool
+    @Binding var elapsed: Double
+    let total: Double
+
+    private func format(_ seconds: Double) -> String {
+        let s = max(0, Int(seconds))
+        return String(format: "%d:%02d", s / 60, s % 60)
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 36) {
+                Button {
+                    elapsed = max(0, elapsed - 15)
+                } label: {
+                    Image(systemName: "gobackward.15")
+                        .font(.title2)
+                        .foregroundStyle(.primary)
+                }
+
+                Button {
+                    isPlaying.toggle()
+                } label: {
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 64, height: 64)
+                        .background(Circle().fill(Color.accentColor))
+                }
+                .accessibilityLabel(isPlaying ? "Pause" : "Play")
+
+                Button {
+                    elapsed = min(total, elapsed + 15)
+                } label: {
+                    Image(systemName: "goforward.15")
+                        .font(.title2)
+                        .foregroundStyle(.primary)
+                }
+            }
+
+            VStack(spacing: 4) {
+                Slider(value: $elapsed, in: 0...max(total, 1))
+                    .tint(.accentColor)
+
+                HStack {
+                    Text(format(elapsed))
+                    Spacer()
+                    Text(format(total))
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
+        .padding(.bottom, 36)
+    }
+}
+
+private struct MenuRowLabel: View {
+    let icon: String
+    let title: String
+    var tint: Color = .primary
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(tint == .primary ? Color.accentColor : tint)
+                .frame(width: 24)
+            Text(title)
+                .font(.body)
+                .foregroundStyle(tint)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
     }
 }
 
