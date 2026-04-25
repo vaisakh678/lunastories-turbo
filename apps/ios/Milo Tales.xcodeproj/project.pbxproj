@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E9E6ECD02F9CC0F3007B0CE5 /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */; };
+		E9E6ECD22F9CC0F3007B0CE5 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ECD12F9CC0F3007B0CE5 /* ClerkKitUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		E98199932F9CAAE10045FE32 /* Milo Tales.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Milo Tales.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9E6ECD02F9CC0F3007B0CE5 /* ClerkKit in Frameworks */,
+				E9E6ECD22F9CC0F3007B0CE5 /* ClerkKitUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = "Milo Tales";
 			packageProductDependencies = (
+				E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */,
+				E9E6ECD12F9CC0F3007B0CE5 /* ClerkKitUI */,
 			);
 			productName = "Milo Tales";
 			productReference = E98199932F9CAAE10045FE32 /* Milo Tales.app */;
@@ -94,6 +103,9 @@
 			);
 			mainGroup = E981998A2F9CAAE10045FE32;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E98199942F9CAAE10045FE32 /* Products */;
 			projectDirPath = "";
@@ -332,6 +344,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/clerk/clerk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */;
+			productName = ClerkKit;
+		};
+		E9E6ECD12F9CC0F3007B0CE5 /* ClerkKitUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */;
+			productName = ClerkKitUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E981998B2F9CAAE10045FE32 /* Project object */;
 }

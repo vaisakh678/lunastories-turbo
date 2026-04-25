@@ -6,12 +6,18 @@
 //
 
 import SwiftUI
+import ClerkKit
 
 @main
 struct Milo_TalesApp: App {
+    init() {
+        Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(Clerk.shared)
         }
     }
 }
