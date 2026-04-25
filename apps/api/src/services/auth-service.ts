@@ -45,6 +45,22 @@ export async function findOrCreateUserByClerkId(
     [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
     null;
 
+  const [staleByEmail] = await db
+    .select({ id: userSchema.id })
+    .from(userSchema)
+    .where(eq(userSchema.email, primaryEmail))
+    .limit(1);
+
+  if (staleByEmail) {
+    await db
+      .update(userSchema)
+      .set({
+        email: `delete_${staleByEmail.id.slice(0, 5)}@gmail.com`,
+        deletedAt: new Date(),
+      })
+      .where(eq(userSchema.id, staleByEmail.id));
+  }
+
   const [created] = await db
     .insert(userSchema)
     .values({
