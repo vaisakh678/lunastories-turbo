@@ -12,10 +12,21 @@ import type {
   PagedResponse,
   StoryDTO,
   StorySummaryDTO,
+  UsagePeriodDTO,
   UserDTO,
 } from "@repo/dto";
 import type { AdminListQuery, AdminStoryListQuery } from "@repo/zod";
-import { and, count, desc, eq, ilike, isNull, or } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gte,
+  ilike,
+  isNull,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { NotFound } from "../lib/api-error";
 import { presignAudio } from "../lib/storage";
@@ -108,6 +119,9 @@ function storyRowToSummary(
     coverSymbol: row.coverSymbol,
     coverTint: row.coverTint,
     durationSeconds: row.durationSeconds,
+    textInputTokens: row.textInputTokens,
+    textOutputTokens: row.textOutputTokens,
+    audioInputChars: row.audioInputChars,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -309,11 +323,56 @@ export async function getStatsAdmin(): Promise<AdminStatsDTO> {
     .select({ value: count() })
     .from(feedbackSchema);
 
+  const usage = await getUsagePeriods();
+
   return {
     totalUsers,
     totalCharacters,
     totalStories,
     storiesByStatus,
     totalFeedback,
+    usage,
+  };
+}
+
+async function getUsagePeriods(): Promise<AdminStatsDTO["usage"]> {
+  const now = new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const [today, last7Days, last30Days, allTime] = await Promise.all([
+    aggregateUsage(startOfToday),
+    aggregateUsage(sevenDaysAgo),
+    aggregateUsage(thirtyDaysAgo),
+    aggregateUsage(null),
+  ]);
+
+  return { today, last7Days, last30Days, allTime };
+}
+
+async function aggregateUsage(since: Date | null): Promise<UsagePeriodDTO> {
+  const where = since
+    ? and(isNull(storySchema.deletedAt), gte(storySchema.createdAt, since))
+    : isNull(storySchema.deletedAt);
+
+  const [row] = await db
+    .select({
+      storiesCount: count(),
+      textInputTokens: sql<string | null>`coalesce(sum(${storySchema.textInputTokens}), 0)`,
+      textOutputTokens: sql<string | null>`coalesce(sum(${storySchema.textOutputTokens}), 0)`,
+      audioInputChars: sql<string | null>`coalesce(sum(${storySchema.audioInputChars}), 0)`,
+      audioDurationSeconds: sql<string | null>`coalesce(sum(${storySchema.durationSeconds}), 0)`,
+    })
+    .from(storySchema)
+    .where(where);
+
+  return {
+    storiesCount: Number(row?.storiesCount ?? 0),
+    textInputTokens: Number(row?.textInputTokens ?? 0),
+    textOutputTokens: Number(row?.textOutputTokens ?? 0),
+    audioInputChars: Number(row?.audioInputChars ?? 0),
+    audioDurationSeconds: Number(row?.audioDurationSeconds ?? 0),
   };
 }

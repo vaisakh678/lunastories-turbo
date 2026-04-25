@@ -1,4 +1,4 @@
-import type { AdminStatsDTO } from "@repo/dto";
+import type { AdminStatsDTO, UsagePeriodDTO } from "@repo/dto";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, MessageSquare, PersonStanding, Users } from "lucide-react";
 
@@ -11,7 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDuration } from "@/lib/format";
 import { apiGet } from "@/lib/http";
+import { estimateStoryCost, formatUsd } from "@/lib/openai-pricing";
 
 export function DashboardPage() {
   const { data, isLoading } = useQuery({
@@ -47,6 +49,83 @@ export function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Usage & spend</CardTitle>
+          <CardDescription>
+            Estimated OpenAI cost based on stored token counts and audio
+            duration. TTS values are derived; text gen tokens are exact.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading || !data ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <UsageTile label="Today" usage={data.usage.today} />
+              <UsageTile label="Last 7 days" usage={data.usage.last7Days} />
+              <UsageTile label="Last 30 days" usage={data.usage.last30Days} />
+              <UsageTile label="All time" usage={data.usage.allTime} highlight />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function UsageTile({
+  label,
+  usage,
+  highlight,
+}: {
+  label: string;
+  usage: UsagePeriodDTO;
+  highlight?: boolean;
+}) {
+  const cost = estimateStoryCost({
+    textInputTokens: usage.textInputTokens,
+    textOutputTokens: usage.textOutputTokens,
+    audioInputChars: usage.audioInputChars,
+    durationSeconds: usage.audioDurationSeconds,
+  });
+  return (
+    <div
+      className={
+        highlight
+          ? "border-primary/40 bg-primary/5 rounded-lg border p-4"
+          : "rounded-lg border p-4"
+      }
+    >
+      <div className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+        {label}
+      </div>
+      <div className="mt-2 text-3xl font-bold tabular-nums">
+        {formatUsd(cost.totalUsd)}
+      </div>
+      <div className="text-muted-foreground mt-3 space-y-1 text-xs">
+        <Row label="Stories" value={usage.storiesCount.toLocaleString()} />
+        <Row
+          label="Text tokens"
+          value={(usage.textInputTokens + usage.textOutputTokens).toLocaleString()}
+        />
+        <Row label="TTS chars" value={usage.audioInputChars.toLocaleString()} />
+        <Row label="Audio" value={formatDuration(usage.audioDurationSeconds)} />
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-2">
+      <span>{label}</span>
+      <span className="text-foreground font-medium tabular-nums">{value}</span>
     </div>
   );
 }

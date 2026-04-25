@@ -15,6 +15,14 @@ export interface AdminUserDTO extends UserDTO {
   characterCount: number;
 }
 
+export interface UsagePeriodDTO {
+  storiesCount: number;
+  textInputTokens: number;
+  textOutputTokens: number;
+  audioInputChars: number;
+  audioDurationSeconds: number;
+}
+
 export interface AdminStatsDTO {
   totalUsers: number;
   totalCharacters: number;
@@ -26,6 +34,12 @@ export interface AdminStatsDTO {
     failed: number;
   };
   totalFeedback: number;
+  usage: {
+    today: UsagePeriodDTO;
+    last7Days: UsagePeriodDTO;
+    last30Days: UsagePeriodDTO;
+    allTime: UsagePeriodDTO;
+  };
 }
 
 export interface PageMeta {

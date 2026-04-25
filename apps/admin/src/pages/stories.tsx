@@ -18,6 +18,7 @@ import {
 import { usePagination } from "@/hooks/use-pagination";
 import { formatDuration, formatRelative } from "@/lib/format";
 import { apiGet } from "@/lib/http";
+import { estimateStoryCost, formatUsd } from "@/lib/openai-pricing";
 import { serialNumber } from "@/lib/utils";
 
 type StoryRow = StorySummaryDTO & { userId: string };
@@ -71,19 +72,20 @@ export function StoriesPage() {
               <TableHead>Mode</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Duration</TableHead>
+              <TableHead>Cost (est.)</TableHead>
               <TableHead>Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+                <TableCell colSpan={7} className="text-muted-foreground py-8 text-center">
                   Loading…
                 </TableCell>
               </TableRow>
             ) : (data?.items ?? []).length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+                <TableCell colSpan={7} className="text-muted-foreground py-8 text-center">
                   No stories found.
                 </TableCell>
               </TableRow>
@@ -115,6 +117,9 @@ export function StoriesPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDuration(s.durationSeconds)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {formatUsd(estimateStoryCost(s).totalUsd)}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatRelative(s.createdAt)}

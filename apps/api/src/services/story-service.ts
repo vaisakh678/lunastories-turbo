@@ -28,6 +28,9 @@ function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
     coverSymbol: row.coverSymbol,
     coverTint: row.coverTint,
     durationSeconds: row.durationSeconds,
+    textInputTokens: row.textInputTokens,
+    textOutputTokens: row.textOutputTokens,
+    audioInputChars: row.audioInputChars,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
