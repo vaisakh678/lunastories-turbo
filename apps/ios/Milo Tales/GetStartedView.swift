@@ -184,59 +184,75 @@ struct GetStartedView: View {
     private func handleVerify(code: String) async {
         guard code.count == 6 else { return }
         isLoading = true
-        defer { isLoading = false }
 
         do {
+            var sessionId: String?
             if let signIn = inProgressSignIn {
                 let updated = try await signIn.verifyCode(code)
                 inProgressSignIn = updated
-                if updated.status == .complete, let sessionId = updated.createdSessionId {
-                    try await Clerk.shared.auth.setActive(sessionId: sessionId)
+                if updated.status == .complete {
+                    sessionId = updated.createdSessionId
                 }
             } else if let signUp = inProgressSignUp {
                 let updated = try await signUp.verifyEmailCode(code)
                 inProgressSignUp = updated
-                if updated.status == .complete, let sessionId = updated.createdSessionId {
-                    try await Clerk.shared.auth.setActive(sessionId: sessionId)
+                if updated.status == .complete {
+                    sessionId = updated.createdSessionId
                 }
             }
+            isLoading = false
+            if let sessionId {
+                await dismissThenActivate(sessionId: sessionId)
+            }
         } catch {
+            isLoading = false
             errorMessage = error.localizedDescription
         }
     }
 
     private func handleApple() async {
         isLoading = true
-        defer { isLoading = false }
         do {
             let result = try await Clerk.shared.auth.signInWithApple()
-            try await activateSession(from: result)
+            isLoading = false
+            if let sessionId = sessionId(from: result) {
+                await dismissThenActivate(sessionId: sessionId)
+            }
         } catch {
+            isLoading = false
             errorMessage = error.localizedDescription
         }
     }
 
     private func handleGoogle() async {
         isLoading = true
-        defer { isLoading = false }
         do {
             let result = try await Clerk.shared.auth.signInWithOAuth(provider: .google)
-            try await activateSession(from: result)
+            isLoading = false
+            if let sessionId = sessionId(from: result) {
+                await dismissThenActivate(sessionId: sessionId)
+            }
         } catch {
+            isLoading = false
             errorMessage = error.localizedDescription
         }
     }
 
-    private func activateSession(from result: TransferFlowResult) async throws {
+    private func sessionId(from result: TransferFlowResult) -> String? {
         switch result {
-        case .signIn(let signIn):
-            if let sessionId = signIn.createdSessionId {
-                try await Clerk.shared.auth.setActive(sessionId: sessionId)
-            }
-        case .signUp(let signUp):
-            if let sessionId = signUp.createdSessionId {
-                try await Clerk.shared.auth.setActive(sessionId: sessionId)
-            }
+        case .signIn(let signIn): return signIn.createdSessionId
+        case .signUp(let signUp): return signUp.createdSessionId
+        }
+    }
+
+    private func dismissThenActivate(sessionId: String) async {
+        pendingStep = nil
+        sheetStep = nil
+        try? await Task.sleep(for: .milliseconds(350))
+        do {
+            try await Clerk.shared.auth.setActive(sessionId: sessionId)
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }

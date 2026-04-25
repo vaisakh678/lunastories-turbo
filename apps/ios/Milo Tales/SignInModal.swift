@@ -110,18 +110,10 @@ struct ProviderSheet: View {
 
             Spacer(minLength: 24)
 
-            (
-                Text("By continuing you agree to Milo Tales's ")
-                    .foregroundStyle(textMedium)
-                + Text("Terms & Conditions")
-                    .foregroundStyle(primaryBlue)
-                + Text(" and ")
-                    .foregroundStyle(textMedium)
-                + Text("Privacy Policy")
-                    .foregroundStyle(primaryBlue)
-            )
-            .font(.system(size: 13))
-            .multilineTextAlignment(.center)
+            Text("By continuing you agree to Milo Tales's \(Text("Terms & Conditions").foregroundStyle(primaryBlue)) and \(Text("Privacy Policy").foregroundStyle(primaryBlue))")
+                .foregroundStyle(textMedium)
+                .font(.system(size: 13))
+                .multilineTextAlignment(.center)
             .padding(.horizontal, 8)
             .padding(.bottom, 8)
         }
@@ -294,16 +286,11 @@ struct OtpSheet: View {
                     .foregroundStyle(textDark)
                     .padding(.bottom, 8)
 
-                (
-                    Text("We sent a 6-digit code to ")
-                        .foregroundStyle(textMedium)
-                    + Text(email)
-                        .foregroundStyle(textDark)
-                        .fontWeight(.semibold)
-                )
-                .font(.system(size: 15))
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
+                Text("We sent a 6-digit code to \(Text(email).foregroundStyle(textDark).fontWeight(.semibold))")
+                    .foregroundStyle(textMedium)
+                    .font(.system(size: 15))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
             }
             .padding(.bottom, 24)
 
@@ -358,14 +345,9 @@ struct OtpSheet: View {
             Button {
                 showResendConfirm = true
             } label: {
-                (
-                    Text("Didn’t receive a code? ")
-                        .foregroundStyle(textMedium)
-                    + Text("Resend")
-                        .foregroundStyle(primaryBlue)
-                        .fontWeight(.semibold)
-                )
-                .font(.system(size: 14))
+                Text("Didn’t receive a code? \(Text("Resend").foregroundStyle(primaryBlue).fontWeight(.semibold))")
+                    .foregroundStyle(textMedium)
+                    .font(.system(size: 14))
             }
             .buttonStyle(.plain)
             .padding(.top, 14)
