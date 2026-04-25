@@ -1,11 +1,12 @@
 import { serve } from "@hono/node-server";
 import "./config/env";
 import { createApp } from "./app";
+import { logger } from "./lib/logger";
 
 const app = createApp();
 
 const server = serve({ fetch: app.fetch, port: 3001 }, (info) => {
-  console.log(`Server running at http://localhost:${info.port}`);
+  logger.info({ port: info.port }, `Server running at http://localhost:${info.port}`);
 });
 
 const shutdown = () => {

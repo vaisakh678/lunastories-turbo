@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 import { env } from "../config/env";
 import { Unauthorized } from "../lib/api-error";
+import { logger } from "../lib/logger";
 
 const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
 
@@ -17,7 +18,7 @@ export async function verifyClerkSession(token: string): Promise<string> {
     return verified.sub;
   } catch (err) {
     if (err instanceof Error && err.name === "APIError") throw err;
-    console.error("[verifyClerkSession] verify failed:", err);
+    logger.error({ err }, "verifyClerkSession verify failed");
     throw Unauthorized("Invalid token");
   }
 }

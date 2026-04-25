@@ -1,24 +1,32 @@
 import type { Context, Next } from "hono";
 
-import { findOrCreateUserByClerkId, verifyClerkSession } from "../services/auth-service";
+import { logger } from "../lib/logger";
+import {
+  findOrCreateUserByClerkId,
+  verifyClerkSession,
+} from "../services/auth-service";
 
 export async function authMiddleware(c: Context, next: Next) {
-	console.log("authMiddleware called");
-	const header = c.req.header("authorization");
-	if (!header?.startsWith("Bearer ")) {
-		console.log("No Bearer token found in authorization header");
-		return c.json({ data: null, error: "Unauthorized" }, 401);
-	}
-	const token = header.slice(7).trim();
-	if (!token) {
-		console.log("No token found after Bearer in authorization header");
-		return c.json({ data: null, error: "Unauthorized" }, 401);
-	}
+  logger.debug({ path: c.req.path }, "authMiddleware called");
 
-	const clerkId = await verifyClerkSession(token);
-	console.log(`Clerk session verified, clerkId: ${clerkId}`);
-	const userId = await findOrCreateUserByClerkId(clerkId);
-	console.log(`User found or created, userId: ${userId}`);
-	c.set("userId", userId);
-	await next();
+  const header = c.req.header("authorization");
+  if (!header?.startsWith("Bearer ")) {
+    logger.debug("No Bearer token found in authorization header");
+    return c.json({ data: null, error: "Unauthorized" }, 401);
+  }
+
+  const token = header.slice(7).trim();
+  if (!token) {
+    logger.debug("No token found after Bearer in authorization header");
+    return c.json({ data: null, error: "Unauthorized" }, 401);
+  }
+
+  const clerkId = await verifyClerkSession(token);
+  logger.debug({ clerkId }, "Clerk session verified");
+
+  const userId = await findOrCreateUserByClerkId(clerkId);
+  logger.debug({ userId }, "User found or created");
+
+  c.set("userId", userId);
+  await next();
 }

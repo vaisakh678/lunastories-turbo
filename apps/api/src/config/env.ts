@@ -13,7 +13,10 @@ const envSchema = z.object({
   // Pasted as a single line — `\n` escapes are unfolded back into real newlines.
   CLERK_JWT_KEY: z
     .string()
-	.optional()
+	.optional(),
+  LOG_LEVEL: z
+    .enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"])
+    .default("info"),
 });
 
 const parsed = envSchema.safeParse(process.env);
