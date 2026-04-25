@@ -19,17 +19,29 @@ struct MyStoriesView: View {
                     )
                     .padding(.top, 80)
                 } else {
-                    ForEach(vm.stories) { story in
-                        if story.status == .ready {
-                            NavigationLink {
-                                StoryReaderView(storyId: story.id)
-                            } label: {
+                    ForEach(Array(vm.stories.enumerated()), id: \.element.id) { idx, story in
+                        Group {
+                            if story.status == .ready {
+                                NavigationLink {
+                                    StoryReaderView(storyId: story.id)
+                                } label: {
+                                    StoryCard(story: story)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
                                 StoryCard(story: story)
                             }
-                            .buttonStyle(.plain)
-                        } else {
-                            StoryCard(story: story)
                         }
+                        .onAppear {
+                            if idx >= vm.stories.count - 5 {
+                                Task { await vm.loadMore() }
+                            }
+                        }
+                    }
+
+                    if vm.isLoadingMore {
+                        ProgressView()
+                            .padding(.vertical, 16)
                     }
                 }
             }

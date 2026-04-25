@@ -68,12 +68,18 @@ actor APIClient {
         return try await request(path: path, method: "PATCH", body: data)
     }
 
+    func delete<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+        try await request(path: path, method: "DELETE", body: nil)
+    }
+
     private func request<T: Decodable>(
         path: String,
         method: String,
         body: Data?
     ) async throws -> T {
-        let url = baseURL.appendingPathComponent(path)
+        guard let url = URL(string: baseURL.absoluteString + path) else {
+            throw APIError.invalidResponse
+        }
         var req = URLRequest(url: url)
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")

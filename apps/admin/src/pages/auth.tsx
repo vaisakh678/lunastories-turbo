@@ -101,7 +101,7 @@ export function AuthPage() {
   }
 
   return (
-    <div className="bg-muted/40 flex h-full items-center justify-center p-4">
+    <div className="bg-muted/40 flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Milo Tales Admin</CardTitle>
@@ -230,7 +230,7 @@ export function AuthPage() {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+    <div className="text-muted-foreground flex min-h-screen items-center justify-center text-sm">
       {children}
     </div>
   );
