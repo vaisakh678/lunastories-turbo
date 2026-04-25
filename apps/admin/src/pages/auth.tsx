@@ -3,6 +3,17 @@ import { Loader2, Mail } from "lucide-react";
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+
 type Step = "providers" | "email" | "otp";
 
 export function AuthPage() {
@@ -16,16 +27,12 @@ export function AuthPage() {
   const [busy, setBusy] = useState<"apple" | "google" | "email" | "verify" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isLoaded) {
+  if (!isLoaded || !signInLoaded) {
     return <Centered>Loading…</Centered>;
   }
 
   if (isSignedIn) {
     return <Navigate to="/" replace />;
-  }
-
-  if (!signInLoaded) {
-    return <Centered>Loading…</Centered>;
   }
 
   async function handleOAuth(strategy: "oauth_apple" | "oauth_google") {
@@ -94,167 +101,138 @@ export function AuthPage() {
   }
 
   return (
-    <div className="flex h-full items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <div className="mb-6 text-center">
-          <h1 className="text-xl font-bold text-gray-900">Milo Tales Admin</h1>
-          <p className="mt-1 text-sm text-gray-500">
+    <div className="bg-muted/40 flex h-full items-center justify-center p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Milo Tales Admin</CardTitle>
+          <CardDescription>
             {step === "otp"
               ? `Enter the code sent to ${email}.`
               : "Sign in to continue."}
-          </p>
-        </div>
+          </CardDescription>
+        </CardHeader>
 
-        {step === "providers" && (
-          <div className="space-y-3">
-            <ProviderButton
-              label="Continue with Apple"
-              icon={<AppleGlyph />}
-              onClick={() => handleOAuth("oauth_apple")}
-              disabled={busy !== null}
-              loading={busy === "apple"}
-              dark
-            />
-            <ProviderButton
-              label="Continue with Google"
-              icon={<GoogleGlyph />}
-              onClick={() => handleOAuth("oauth_google")}
-              disabled={busy !== null}
-              loading={busy === "google"}
-            />
-            <Divider />
-            <ProviderButton
-              label="Continue with Email"
-              icon={<Mail className="size-4" />}
-              onClick={() => setStep("email")}
-              disabled={busy !== null}
-            />
-          </div>
-        )}
+        <CardContent className="space-y-3">
+          {step === "providers" && (
+            <>
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => handleOAuth("oauth_apple")}
+                disabled={busy !== null}
+              >
+                {busy === "apple" ? <Loader2 className="size-4 animate-spin" /> : <AppleGlyph />}
+                Continue with Apple
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleOAuth("oauth_google")}
+                disabled={busy !== null}
+              >
+                {busy === "google" ? <Loader2 className="size-4 animate-spin" /> : <GoogleGlyph />}
+                Continue with Google
+              </Button>
 
-        {step === "email" && (
-          <div className="space-y-3">
-            <input
-              type="email"
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <button
-              type="button"
-              onClick={handleEmailContinue}
-              disabled={busy !== null || !email.trim()}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-gray-900 px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-800"
-            >
-              {busy === "email" && <Loader2 className="size-4 animate-spin" />}
-              Send code
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStep("providers");
-                setError(null);
-              }}
-              className="w-full text-sm text-gray-500 hover:text-gray-900"
-            >
-              Back
-            </button>
-          </div>
-        )}
+              <div className="flex items-center gap-3 py-1">
+                <Separator className="flex-1" />
+                <span className="text-muted-foreground text-xs uppercase">or</span>
+                <Separator className="flex-1" />
+              </div>
 
-        {step === "otp" && (
-          <div className="space-y-3">
-            <input
-              type="text"
-              autoFocus
-              inputMode="numeric"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-              placeholder="123456"
-              className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-center font-mono text-lg tracking-widest focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <button
-              type="button"
-              onClick={handleVerify}
-              disabled={busy !== null || code.trim().length < 4}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-gray-900 px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-800"
-            >
-              {busy === "verify" && <Loader2 className="size-4 animate-spin" />}
-              Verify
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStep("email");
-                setCode("");
-                setError(null);
-              }}
-              className="w-full text-sm text-gray-500 hover:text-gray-900"
-            >
-              Use a different email
-            </button>
-          </div>
-        )}
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setStep("email")}
+                disabled={busy !== null}
+              >
+                <Mail className="size-4" />
+                Continue with Email
+              </Button>
+            </>
+          )}
 
-        {error && (
-          <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-      </div>
+          {step === "email" && (
+            <>
+              <Input
+                type="email"
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+              <Button
+                className="w-full"
+                onClick={handleEmailContinue}
+                disabled={busy !== null || !email.trim()}
+              >
+                {busy === "email" && <Loader2 className="size-4 animate-spin" />}
+                Send code
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setStep("providers");
+                  setError(null);
+                }}
+              >
+                Back
+              </Button>
+            </>
+          )}
+
+          {step === "otp" && (
+            <>
+              <Input
+                type="text"
+                autoFocus
+                inputMode="numeric"
+                value={code}
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/\D/g, "").slice(0, 8))
+                }
+                placeholder="123456"
+                className="text-center font-mono text-lg tracking-widest"
+              />
+              <Button
+                className="w-full"
+                onClick={handleVerify}
+                disabled={busy !== null || code.trim().length < 4}
+              >
+                {busy === "verify" && <Loader2 className="size-4 animate-spin" />}
+                Verify
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setStep("email");
+                  setCode("");
+                  setError(null);
+                }}
+              >
+                Use a different email
+              </Button>
+            </>
+          )}
+
+          {error && (
+            <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-md border p-3 text-sm">
+              {error}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-full items-center justify-center text-gray-500">
+    <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
       {children}
     </div>
-  );
-}
-
-function Divider() {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="h-px flex-1 bg-gray-200" />
-      <span className="text-xs uppercase tracking-wide text-gray-400">or</span>
-      <div className="h-px flex-1 bg-gray-200" />
-    </div>
-  );
-}
-
-function ProviderButton({
-  label,
-  icon,
-  onClick,
-  disabled,
-  loading,
-  dark,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-  disabled?: boolean;
-  loading?: boolean;
-  dark?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={
-        dark
-          ? "flex w-full items-center justify-center gap-2 rounded-md bg-black px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-900"
-          : "flex w-full items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50"
-      }
-    >
-      {loading ? <Loader2 className="size-4 animate-spin" /> : icon}
-      {label}
-    </button>
   );
 }
 
@@ -269,22 +247,10 @@ function AppleGlyph() {
 function GoogleGlyph() {
   return (
     <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-      <path
-        fill="#4285F4"
-        d="M23.49 12.27c0-.79-.07-1.55-.2-2.27H12v4.3h6.43a5.5 5.5 0 0 1-2.39 3.61v3h3.86c2.26-2.08 3.59-5.15 3.59-8.64z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.86-3c-1.07.72-2.45 1.15-4.09 1.15-3.14 0-5.8-2.12-6.75-4.97H1.27v3.13A12 12 0 0 0 12 24z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.25 14.27a7.2 7.2 0 0 1 0-4.54V6.6H1.27a12 12 0 0 0 0 10.8l3.98-3.13z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 4.78c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.95 1.18 15.24 0 12 0A12 12 0 0 0 1.27 6.6l3.98 3.13C6.2 6.9 8.86 4.78 12 4.78z"
-      />
+      <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.55-.2-2.27H12v4.3h6.43a5.5 5.5 0 0 1-2.39 3.61v3h3.86c2.26-2.08 3.59-5.15 3.59-8.64z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.86-3c-1.07.72-2.45 1.15-4.09 1.15-3.14 0-5.8-2.12-6.75-4.97H1.27v3.13A12 12 0 0 0 12 24z" />
+      <path fill="#FBBC05" d="M5.25 14.27a7.2 7.2 0 0 1 0-4.54V6.6H1.27a12 12 0 0 0 0 10.8l3.98-3.13z" />
+      <path fill="#EA4335" d="M12 4.78c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.95 1.18 15.24 0 12 0A12 12 0 0 0 1.27 6.6l3.98 3.13C6.2 6.9 8.86 4.78 12 4.78z" />
     </svg>
   );
 }

@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 
 import { AdminGuard } from "@/components/admin-guard";
-import { AdminLayout } from "@/components/layout";
+import { DashboardLayout } from "@/components/dashboard-layout";
 import { AuthPage } from "@/pages/auth";
 import { CharactersPage } from "@/pages/characters";
 import { DashboardPage } from "@/pages/dashboard";
@@ -20,7 +20,7 @@ export default function App() {
       <Route
         element={
           <AdminGuard>
-            <AdminLayout />
+            <DashboardLayout />
           </AdminGuard>
         }
       >

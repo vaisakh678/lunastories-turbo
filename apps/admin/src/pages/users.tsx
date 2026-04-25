@@ -1,48 +1,27 @@
 import type { PagedResponse, UserDTO } from "@repo/dto";
 import { useQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { DataTable, type Column } from "@/components/data-table";
 import { PageHeader } from "@/components/page-header";
-import { Pagination } from "@/components/pagination";
-import { SearchInput } from "@/components/search-input";
+import { Pager } from "@/components/pager";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatRelative } from "@/lib/format";
 import { apiGet } from "@/lib/http";
-import { usePageState } from "@/lib/use-page-state";
-
-const COLUMNS: Column<UserDTO>[] = [
-  { key: "email", header: "Email", render: (u) => u.email },
-  { key: "name", header: "Name", render: (u) => u.name ?? "—" },
-  {
-    key: "role",
-    header: "Role",
-    render: (u) => (
-      <span
-        className={
-          u.role === "admin"
-            ? "inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
-            : "inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
-        }
-      >
-        {u.role}
-      </span>
-    ),
-  },
-  {
-    key: "verified",
-    header: "Verified",
-    render: (u) => (u.emailVerified ? "✓" : "—"),
-  },
-  {
-    key: "joined",
-    header: "Joined",
-    className: "text-gray-500",
-    render: (u) => formatRelative(u.createdAt),
-  },
-];
+import { serialNumber } from "@/lib/utils";
 
 export function UsersPage() {
-  const { page, perPage, search, setPage, setSearch } = usePageState();
+  const { page, perPage, search, setPage, setSearch } = usePagination();
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
@@ -56,29 +35,79 @@ export function UsersPage() {
   });
 
   return (
-    <div className="p-8">
+    <div className="space-y-4">
       <PageHeader
         title="Users"
         description="Everyone who has signed in to Milo Tales."
         actions={
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="Search email or name…"
-          />
+          <div className="relative w-72">
+            <Search className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search email or name…"
+              className="pl-9"
+            />
+          </div>
         }
       />
 
-      <DataTable
-        columns={COLUMNS}
-        rows={data?.items ?? []}
-        isLoading={isLoading}
-        rowKey={(u) => u.id}
-        onRowClick={(u) => navigate(`/users/${u.id}`)}
-      />
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">#</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Verified</TableHead>
+              <TableHead>Joined</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+                  Loading…
+                </TableCell>
+              </TableRow>
+            ) : (data?.items ?? []).length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+                  No users found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              data?.items.map((u, i) => (
+                <TableRow
+                  key={u.id}
+                  className="cursor-pointer"
+                  onClick={() => navigate(`/users/${u.id}`)}
+                >
+                  <TableCell className="text-muted-foreground text-sm">
+                    {serialNumber(page, perPage, i)}
+                  </TableCell>
+                  <TableCell className="font-medium">{u.email}</TableCell>
+                  <TableCell>{u.name ?? "—"}</TableCell>
+                  <TableCell>
+                    <Badge variant={u.role === "admin" ? "default" : "secondary"}>
+                      {u.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{u.emailVerified ? "✓" : "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {formatRelative(u.createdAt)}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       {data && (
-        <Pagination
+        <Pager
           page={page}
           perPage={perPage}
           total={data.meta.total}

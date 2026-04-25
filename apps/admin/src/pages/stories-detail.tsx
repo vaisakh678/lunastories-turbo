@@ -3,8 +3,19 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatDuration } from "@/lib/format";
 import { apiGet } from "@/lib/http";
+
+const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+  ready: "default",
+  pending: "secondary",
+  generating: "secondary",
+  failed: "destructive",
+};
 
 export function StoryDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,89 +27,111 @@ export function StoryDetailPage() {
   });
 
   return (
-    <div className="p-8">
-      <Link
-        to="/stories"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
-      >
-        <ChevronLeft className="size-4" />
-        Back to stories
-      </Link>
+    <div className="space-y-6">
+      <div>
+        <Button asChild variant="ghost" size="sm" className="-ml-2">
+          <Link to="/stories">
+            <ChevronLeft className="size-4" />
+            Back to stories
+          </Link>
+        </Button>
+      </div>
 
       {isLoading ? (
-        <div className="text-gray-500">Loading…</div>
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-2/3" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-32 w-full" />
+        </div>
       ) : isError || !data ? (
-        <div className="text-gray-500">Couldn't load this story.</div>
+        <p className="text-muted-foreground text-sm">Couldn't load this story.</p>
       ) : (
         <div className="space-y-6">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="text-2xl font-bold tracking-tight">
               {data.title ?? "Untitled"}
             </h1>
             {data.summary && (
-              <p className="mt-1 text-sm text-gray-600">{data.summary}</p>
+              <p className="text-muted-foreground mt-1 text-sm">{data.summary}</p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Field label="Mode" value={data.modeKey} />
-            <Field label="Status" value={data.status} />
-            <Field label="Duration" value={formatDuration(data.durationSeconds)} />
-            <Field label="Created" value={formatDate(data.createdAt)} />
+            <Stat label="Mode" value={data.modeKey} />
+            <Stat
+              label="Status"
+              value={
+                <Badge variant={STATUS_VARIANT[data.status] ?? "secondary"}>
+                  {data.status}
+                </Badge>
+              }
+            />
+            <Stat label="Duration" value={formatDuration(data.durationSeconds)} />
+            <Stat label="Created" value={formatDate(data.createdAt)} />
           </div>
 
           {data.audioUrl && (
-            <section>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
-                Audio
-              </h2>
-              <audio controls src={data.audioUrl} className="w-full" />
-            </section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Audio</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <audio controls src={data.audioUrl} className="w-full" />
+              </CardContent>
+            </Card>
           )}
 
           {data.errorMessage && (
-            <section>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-red-600">
-                Error
-              </h2>
-              <pre className="whitespace-pre-wrap rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-800">
-                {data.errorMessage}
-              </pre>
-            </section>
+            <Card className="border-destructive/30 bg-destructive/5">
+              <CardHeader>
+                <CardTitle className="text-destructive">Error</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-destructive whitespace-pre-wrap text-xs">
+                  {data.errorMessage}
+                </pre>
+              </CardContent>
+            </Card>
           )}
 
           {data.bodyText && (
-            <section>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
-                Story text
-              </h2>
-              <div className="whitespace-pre-wrap rounded-md border border-gray-200 bg-white p-5 text-sm leading-relaxed text-gray-800">
-                {data.bodyText}
-              </div>
-            </section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Story text</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {data.bodyText}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
-          <section>
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
-              Generation input
-            </h2>
-            <pre className="overflow-auto rounded-md border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800">
-              {JSON.stringify(data.generationInput, null, 2)}
-            </pre>
-          </section>
+          <Card>
+            <CardHeader>
+              <CardTitle>Generation input</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="bg-muted overflow-auto rounded-md p-3 text-xs">
+                {JSON.stringify(data.generationInput, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-md border border-gray-200 bg-white p-4">
-      <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
-        {label}
-      </div>
-      <div className="mt-1 text-sm text-gray-800">{value}</div>
-    </div>
+    <Card>
+      <CardContent className="pt-6">
+        <div className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+          {label}
+        </div>
+        <div className="mt-1 text-base font-semibold">{value}</div>
+      </CardContent>
+    </Card>
   );
 }

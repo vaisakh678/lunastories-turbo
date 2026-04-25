@@ -3,6 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/format";
 import { apiGet } from "@/lib/http";
 
@@ -16,66 +20,86 @@ export function UserDetailPage() {
   });
 
   return (
-    <div className="p-8">
-      <Link
-        to="/users"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
-      >
-        <ChevronLeft className="size-4" />
-        Back to users
-      </Link>
+    <div className="space-y-6">
+      <div>
+        <Button asChild variant="ghost" size="sm" className="-ml-2">
+          <Link to="/users">
+            <ChevronLeft className="size-4" />
+            Back to users
+          </Link>
+        </Button>
+      </div>
 
       {isLoading ? (
-        <div className="text-gray-500">Loading…</div>
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-48" />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full" />
+            ))}
+          </div>
+        </div>
       ) : isError || !data ? (
-        <div className="text-gray-500">Couldn't load this user.</div>
+        <p className="text-muted-foreground text-sm">Couldn't load this user.</p>
       ) : (
         <div className="space-y-6">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="text-2xl font-bold tracking-tight">
               {data.name ?? data.email}
             </h1>
-            <p className="text-sm text-gray-500">{data.email}</p>
+            <p className="text-muted-foreground text-sm">{data.email}</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Field label="Role" value={data.role} />
-            <Field label="Email verified" value={data.emailVerified ? "Yes" : "No"} />
-            <Field label="Stories" value={data.storyCount.toLocaleString()} />
-            <Field label="Characters" value={data.characterCount.toLocaleString()} />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <Stat
+              label="Role"
+              value={
+                <Badge variant={data.role === "admin" ? "default" : "secondary"}>
+                  {data.role}
+                </Badge>
+              }
+            />
+            <Stat label="Email verified" value={data.emailVerified ? "Yes" : "No"} />
+            <Stat label="Stories" value={data.storyCount.toLocaleString()} />
+            <Stat label="Characters" value={data.characterCount.toLocaleString()} />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Clerk ID" value={data.clerkId} mono />
-            <Field label="Joined" value={formatDate(data.createdAt)} />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Identity</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <KV label="Clerk ID" value={data.clerkId} mono />
+              <KV label="Joined" value={formatDate(data.createdAt)} />
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
   );
 }
 
-function Field({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-md border border-gray-200 bg-white p-4">
-      <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+    <Card>
+      <CardContent className="pt-6">
+        <div className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+          {label}
+        </div>
+        <div className="mt-1 text-base font-semibold">{value}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function KV({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <div className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
         {label}
       </div>
-      <div
-        className={
-          mono
-            ? "mt-1 break-all font-mono text-xs text-gray-800"
-            : "mt-1 text-sm text-gray-800"
-        }
-      >
+      <div className={mono ? "mt-1 break-all font-mono text-xs" : "mt-1 text-sm"}>
         {value}
       </div>
     </div>

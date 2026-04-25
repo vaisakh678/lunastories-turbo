@@ -1,52 +1,27 @@
 import type { CharacterDTO, PagedResponse } from "@repo/dto";
 import { useQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
 
-import { DataTable, type Column } from "@/components/data-table";
 import { PageHeader } from "@/components/page-header";
-import { Pagination } from "@/components/pagination";
-import { SearchInput } from "@/components/search-input";
+import { Pager } from "@/components/pager";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatRelative } from "@/lib/format";
 import { apiGet } from "@/lib/http";
-import { usePageState } from "@/lib/use-page-state";
+import { serialNumber } from "@/lib/utils";
 
 type CharacterRow = CharacterDTO & { userId: string };
 
-const COLUMNS: Column<CharacterRow>[] = [
-  {
-    key: "name",
-    header: "Name",
-    render: (c) => <span className="font-medium text-gray-900">{c.name}</span>,
-  },
-  { key: "role", header: "Role", render: (c) => c.role },
-  {
-    key: "details",
-    header: "Details",
-    className: "text-gray-500",
-    render: (c) => {
-      const parts = [
-        c.age != null ? `${c.age}y` : null,
-        c.gender && c.gender !== "na" ? c.gender : null,
-        c.hairColor,
-      ].filter(Boolean);
-      return parts.join(" · ") || "—";
-    },
-  },
-  {
-    key: "interests",
-    header: "Interests",
-    className: "text-gray-500",
-    render: (c) => c.interests.slice(0, 3).join(", ") || "—",
-  },
-  {
-    key: "created",
-    header: "Created",
-    className: "text-gray-500",
-    render: (c) => formatRelative(c.createdAt),
-  },
-];
-
 export function CharactersPage() {
-  const { page, perPage, search, setPage, setSearch } = usePageState();
+  const { page, perPage, search, setPage, setSearch } = usePagination();
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-characters", page, perPage, search],
@@ -59,28 +34,82 @@ export function CharactersPage() {
   });
 
   return (
-    <div className="p-8">
+    <div className="space-y-4">
       <PageHeader
         title="Characters"
         description="All characters across users."
         actions={
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="Search character name…"
-          />
+          <div className="relative w-72">
+            <Search className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search character name…"
+              className="pl-9"
+            />
+          </div>
         }
       />
 
-      <DataTable
-        columns={COLUMNS}
-        rows={data?.items ?? []}
-        isLoading={isLoading}
-        rowKey={(c) => c.id}
-      />
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">#</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Details</TableHead>
+              <TableHead>Interests</TableHead>
+              <TableHead>Created</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+                  Loading…
+                </TableCell>
+              </TableRow>
+            ) : (data?.items ?? []).length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+                  No characters found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              data?.items.map((c, i) => {
+                const details = [
+                  c.age != null ? `${c.age}y` : null,
+                  c.gender && c.gender !== "na" ? c.gender : null,
+                  c.hairColor,
+                ]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <TableRow key={c.id}>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {serialNumber(page, perPage, i)}
+                    </TableCell>
+                    <TableCell className="font-medium">{c.name}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{c.role}</TableCell>
+                    <TableCell className="text-muted-foreground">{details || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {c.interests.slice(0, 3).join(", ") || "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatRelative(c.createdAt)}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       {data && (
-        <Pagination
+        <Pager
           page={page}
           perPage={perPage}
           total={data.meta.total}
