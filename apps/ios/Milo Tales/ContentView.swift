@@ -76,29 +76,40 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    CharacterSection(
-                        role: .main,
-                        characters: mainCharacters,
-                        onAdd: { addingRole = .main }
-                    )
-                    CharacterSection(
-                        role: .side,
-                        characters: sideCharacters,
-                        onAdd: { addingRole = .side }
-                    )
+            ZStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 28) {
+                        CharacterSection(
+                            role: .main,
+                            characters: mainCharacters,
+                            onAdd: { addingRole = .main }
+                        )
+                        CharacterSection(
+                            role: .side,
+                            characters: sideCharacters,
+                            onAdd: { addingRole = .side }
+                        )
+                    }
+                    .padding(.top, 20)
+                    .padding(.bottom, 100)
                 }
-                .padding(.top, 20)
-                .padding(.bottom, 100)
+                .background(Color.gray.opacity(0.08))
+
+                VStack(spacing: 0) {
+                    Spacer()
+                    ZStack(alignment: .bottom) {
+                        Color.yellow
+                            .frame(height: 150)
+                            .allowsHitTesting(false)
+
+                        StartButton(action: {})
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 36)
+                    }
+                }
+                .ignoresSafeArea(edges: .bottom)
             }
-            .background(Color.gray.opacity(0.08))
             .navigationTitle("Milo Tales")
-            .overlay(alignment: .bottom) {
-                StartButton(action: {})
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 16)
-            }
             .sheet(item: $addingRole) { role in
                 AddCharacterSheet(role: role) { newCharacter in
                     switch role {
