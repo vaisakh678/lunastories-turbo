@@ -33,10 +33,7 @@ struct GrimmsTalesModeView: View {
         characterPickStep
             .navigationDestination(for: Step.self) { step in
                 switch step {
-                case .place:
-                    placeStep
-                        .toolbar(.hidden, for: .navigationBar)
-                        .navigationBarBackButtonHidden(true)
+                case .place: placeStep
                 }
             }
     }
@@ -44,12 +41,9 @@ struct GrimmsTalesModeView: View {
     private var characterPickStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ModeTopBar(onClose: onClose)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
                 ProgressDots(currentIndex: 0, total: totalSteps)
                     .padding(.horizontal, 20)
-                    .padding(.top, 16)
+                    .padding(.top, 8)
                     .padding(.bottom, 16)
                 PlainStepHeader(title: "Pick a character", subtitle: "Who joins the story?")
                     .padding(.bottom, 16)
@@ -58,17 +52,15 @@ struct GrimmsTalesModeView: View {
                     .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(onClose: onClose)
     }
 
     private var placeStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ModeTopBar(onClose: onClose)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
                 ProgressDots(currentIndex: 1, total: totalSteps)
                     .padding(.horizontal, 20)
-                    .padding(.top, 16)
+                    .padding(.top, 8)
                     .padding(.bottom, 16)
                 PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
                     .padding(.bottom, 16)
@@ -82,6 +74,7 @@ struct GrimmsTalesModeView: View {
                 .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(onClose: onClose)
     }
 
     private func handlePick(_ option: PickOption) {

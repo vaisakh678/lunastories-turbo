@@ -82,27 +82,20 @@ struct CreativeModeView: View {
         // Root = type for character 0
         typeStep(charIndex: 0)
             .navigationDestination(for: Step.self) { step in
-                Group {
-                    switch step {
-                    case .type(let i):       typeStep(charIndex: i)
-                    case .profession(let i): professionStep(charIndex: i)
-                    case .moral:             moralStep
-                    }
+                switch step {
+                case .type(let i):       typeStep(charIndex: i)
+                case .profession(let i): professionStep(charIndex: i)
+                case .moral:             moralStep
                 }
-                .toolbar(.hidden, for: .navigationBar)
-                .navigationBarBackButtonHidden(true)
             }
     }
 
     private func typeStep(charIndex: Int) -> some View {
         ScrollView {
             VStack(spacing: 0) {
-                ModeTopBar(onClose: onClose)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
                 ProgressDots(currentIndex: charIndex, total: totalSubsteps)
                     .padding(.horizontal, 20)
-                    .padding(.top, 16)
+                    .padding(.top, 8)
                     .padding(.bottom, 16)
                 if charIndex < characters.count {
                     CharacterStepHeader(
@@ -116,17 +109,15 @@ struct CreativeModeView: View {
                     .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(onClose: onClose)
     }
 
     private func professionStep(charIndex: Int) -> some View {
         ScrollView {
             VStack(spacing: 0) {
-                ModeTopBar(onClose: onClose)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
                 ProgressDots(currentIndex: characters.count + charIndex, total: totalSubsteps)
                     .padding(.horizontal, 20)
-                    .padding(.top, 16)
+                    .padding(.top, 8)
                     .padding(.bottom, 16)
                 if charIndex < characters.count {
                     CharacterStepHeader(
@@ -140,17 +131,15 @@ struct CreativeModeView: View {
                     .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(onClose: onClose)
     }
 
     private var moralStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ModeTopBar(onClose: onClose)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
                 ProgressDots(currentIndex: characters.count * 2, total: totalSubsteps)
                     .padding(.horizontal, 20)
-                    .padding(.top, 16)
+                    .padding(.top, 8)
                     .padding(.bottom, 16)
                 PlainStepHeader(title: "Choose a moral", subtitle: "Pick a lesson for your story.")
                     .padding(.bottom, 16)
@@ -159,6 +148,7 @@ struct CreativeModeView: View {
                     .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(onClose: onClose)
     }
 
     private func handleType(_ option: PickOption, charIndex: Int) {

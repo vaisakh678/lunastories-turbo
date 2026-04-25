@@ -27,11 +27,8 @@ struct ModeSheetView: View {
                     }
                 }
             )
-            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: StoryMode.self) { mode in
                 modeView(for: mode)
-                    .toolbar(.hidden, for: .navigationBar)
-                    .navigationBarBackButtonHidden(true)
             }
         }
     }

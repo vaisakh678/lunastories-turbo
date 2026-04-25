@@ -35,22 +35,18 @@ struct ChooseModeView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            ModeTopBar(onClose: onClose)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
+        ScrollView {
+            VStack(spacing: 0) {
+                VStack(spacing: 6) {
+                    Text("Choose a mode")
+                        .font(.title2.weight(.bold))
+                    Text("Pick a theme for your next story.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 8)
+                .padding(.bottom, 20)
 
-            VStack(spacing: 6) {
-                Text("Choose a mode")
-                    .font(.title2.weight(.bold))
-                Text("Pick a theme for your next story.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.bottom, 20)
-
-            ScrollView {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(modes) { mode in
                         ModeTile(mode: mode) { onSelect(mode) }
@@ -60,6 +56,7 @@ struct ChooseModeView: View {
                 .padding(.bottom, 24)
             }
         }
+        .modeStepChrome(onClose: onClose)
     }
 }
 

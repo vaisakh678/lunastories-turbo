@@ -12,20 +12,30 @@ struct PickOption: Identifiable, Hashable {
     let tint: Color
 }
 
-struct ModeTopBar: View {
+extension View {
+    func modeStepChrome(onClose: @escaping () -> Void) -> some View {
+        ModeStepChromeContainer(content: self, onClose: onClose)
+    }
+}
+
+private struct ModeStepChromeContainer<Content: View>: View {
+    let content: Content
     let onClose: () -> Void
 
     var body: some View {
-        HStack {
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
+        content
+            .navigationBarBackButtonHidden(true)
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(action: onClose) {
+                        Image(systemName: "xmark")
+                    }
+                    .accessibilityLabel("Close")
+                }
             }
-            .buttonStyle(.glass)
-            .accessibilityLabel("Close")
-
-            Spacer()
-        }
     }
 }
 
