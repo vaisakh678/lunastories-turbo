@@ -89,10 +89,16 @@ struct ContentView: View {
                         onAdd: { addingRole = .side }
                     )
                 }
-                .padding(.vertical, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 100)
             }
             .background(Color.gray.opacity(0.08))
             .navigationTitle("Milo Tales")
+            .overlay(alignment: .bottom) {
+                StartButton(action: {})
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
+            }
             .sheet(item: $addingRole) { role in
                 AddCharacterSheet(role: role) { newCharacter in
                     switch role {
@@ -102,6 +108,25 @@ struct ContentView: View {
                 }
             }
         }
+    }
+}
+
+private struct StartButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text("Start")
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    Capsule().fill(Color.accentColor)
+                )
+                .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 6)
+        }
+        .buttonStyle(.plain)
     }
 }
 
