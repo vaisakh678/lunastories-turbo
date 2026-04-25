@@ -32,6 +32,9 @@ importers:
       '@repo/dto':
         specifier: workspace:*
         version: link:../../packages/dto
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@repo/zod':
         specifier: workspace:*
         version: link:../../packages/zod
@@ -117,6 +120,8 @@ importers:
       typescript-eslint:
         specifier: ^8.50.0
         version: 8.50.0(eslint@9.39.1)(typescript@5.9.2)
+
+  packages/types: {}
 
   packages/typescript-config: {}
 
