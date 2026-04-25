@@ -110,30 +110,48 @@ private struct CharacterSection: View {
     let characters: [Character]
     let onAdd: () -> Void
 
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+    ]
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text(role.sectionTitle)
-                    .font(.title2.weight(.bold))
-                Spacer()
-                Button(action: onAdd) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.tint)
-                }
-                .accessibilityLabel("Add \(role.sectionTitle)")
-            }
-            .padding(.horizontal, 20)
+            Text(role.sectionTitle)
+                .font(.title2.weight(.bold))
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 14) {
-                    ForEach(characters) { character in
-                        CharacterCard(character: character)
-                    }
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(characters) { character in
+                    CharacterCard(character: character)
                 }
-                .padding(.horizontal, 20)
+                AddCharacterTile(action: onAdd)
+                    .accessibilityLabel("Add \(role.sectionTitle)")
             }
         }
+        .padding(.horizontal, 20)
+    }
+}
+
+private struct AddCharacterTile: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(
+                        Color.accentColor.opacity(0.5),
+                        style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
+                    )
+                Image(systemName: "plus")
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(.tint)
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -141,26 +159,28 @@ private struct CharacterCard: View {
     let character: Character
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             ZStack {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(character.tint.opacity(0.18))
                 Image(systemName: character.symbolName)
-                    .font(.system(size: 44, weight: .semibold))
+                    .font(.system(size: 30, weight: .semibold))
                     .foregroundStyle(character.tint)
             }
-            .frame(width: 140, height: 140)
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(character.name)
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
+                    .lineLimit(1)
                 Text(character.tagline)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
-            .frame(width: 140, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
