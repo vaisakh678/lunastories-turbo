@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-enum CharacterRole: String, Identifiable, Codable {
+nonisolated enum CharacterRole: String, Identifiable, Codable {
     case main
     case side
 
@@ -33,7 +33,7 @@ enum CharacterRole: String, Identifiable, Codable {
     }
 }
 
-enum Gender: String, CaseIterable, Identifiable, Codable {
+nonisolated enum Gender: String, CaseIterable, Identifiable, Codable {
     case male
     case female
     case na
@@ -72,7 +72,7 @@ enum ColorPalette {
     }
 }
 
-struct Character: Identifiable, Codable {
+nonisolated struct Character: Identifiable, Codable {
     let id: UUID
     let name: String
     let role: CharacterRole

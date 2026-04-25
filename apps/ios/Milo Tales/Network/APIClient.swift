@@ -24,7 +24,7 @@ enum APIError: Error, LocalizedError {
     }
 }
 
-private struct APIEnvelope<T: Decodable>: Decodable {
+private nonisolated struct APIEnvelope<T: Decodable>: Decodable {
     let data: T?
     let message: String?
     let error: String?

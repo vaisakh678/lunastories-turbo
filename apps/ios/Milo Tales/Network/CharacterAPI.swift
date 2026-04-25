@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct CreateCharacterRequest: Encodable {
+nonisolated struct CreateCharacterRequest: Encodable {
     let role: CharacterRole
     let name: String
     let symbolName: String
@@ -20,7 +20,7 @@ struct CreateCharacterRequest: Encodable {
     let extraInterestNote: String
 }
 
-struct CharacterResponse: Decodable {
+nonisolated struct CharacterResponse: Decodable {
     let id: String
     let role: CharacterRole
     let name: String
