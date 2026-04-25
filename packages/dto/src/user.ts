@@ -52,3 +52,8 @@ export interface PagedResponse<T> {
   items: T[];
   meta: PageMeta;
 }
+
+export interface CursorPagedResponse<T> {
+  items: T[];
+  nextCursor: string | null;
+}

@@ -5,12 +5,13 @@ import db, {
 } from "@repo/db";
 import type {
   CharacterDTO,
+  CursorPagedResponse,
   StoryContent,
   StoryDTO,
   StorySummaryDTO,
 } from "@repo/dto";
-import type { CreateStory } from "@repo/zod";
-import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
+import type { CreateStory, StoryListQuery } from "@repo/zod";
+import { and, asc, desc, eq, inArray, isNull, lt } from "drizzle-orm";
 
 import { BadRequest, InternalError, NotFound } from "../lib/api-error";
 import { generateAudio } from "../lib/audio-generator";
@@ -162,16 +163,38 @@ export async function createStory(
 
 export async function getStoriesByUser(
   userId: string,
-): Promise<StorySummaryDTO[]> {
+  query: StoryListQuery,
+): Promise<CursorPagedResponse<StorySummaryDTO>> {
+  const { cursor, limit } = query;
+
+  let cursorCreatedAt: Date | undefined;
+  if (cursor) {
+    const [pivot] = await db
+      .select({ createdAt: storySchema.createdAt })
+      .from(storySchema)
+      .where(eq(storySchema.id, cursor))
+      .limit(1);
+    if (pivot) cursorCreatedAt = pivot.createdAt;
+  }
+
+  const conditions = [
+    eq(storySchema.userId, userId),
+    isNull(storySchema.deletedAt),
+    cursorCreatedAt ? lt(storySchema.createdAt, cursorCreatedAt) : undefined,
+  ].filter((c) => c !== undefined);
+
   const rows = await db
     .select()
     .from(storySchema)
-    .where(
-      and(eq(storySchema.userId, userId), isNull(storySchema.deletedAt)),
-    )
-    .orderBy(desc(storySchema.createdAt));
+    .where(and(...conditions))
+    .orderBy(desc(storySchema.createdAt))
+    .limit(limit + 1);
 
-  return rows.map(toSummaryDTO);
+  const hasMore = rows.length > limit;
+  const items = rows.slice(0, limit).map(toSummaryDTO);
+  const nextCursor = hasMore ? items[items.length - 1]!.id : null;
+
+  return { items, nextCursor };
 }
 
 export async function getStoryById(

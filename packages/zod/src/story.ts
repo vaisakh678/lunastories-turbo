@@ -13,5 +13,11 @@ export const createStorySchema = z.object({
   input: z.record(z.unknown()).default({}),
 });
 
+export const storyListQuerySchema = z.object({
+  cursor: z.string().uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(30).default(30),
+});
+
 export type StoryStatus = z.infer<typeof storyStatusSchema>;
 export type CreateStory = z.infer<typeof createStorySchema>;
+export type StoryListQuery = z.infer<typeof storyListQuerySchema>;

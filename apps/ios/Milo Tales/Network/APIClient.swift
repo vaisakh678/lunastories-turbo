@@ -77,7 +77,9 @@ actor APIClient {
         method: String,
         body: Data?
     ) async throws -> T {
-        let url = baseURL.appendingPathComponent(path)
+        guard let url = URL(string: baseURL.absoluteString + path) else {
+            throw APIError.invalidResponse
+        }
         var req = URLRequest(url: url)
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")

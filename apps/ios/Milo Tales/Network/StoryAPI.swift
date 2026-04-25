@@ -108,13 +108,21 @@ nonisolated struct StoryResponse: Decodable, Identifiable {
     let errorMessage: String?
 }
 
+nonisolated struct StoryPage: Decodable {
+    let items: [StoryResponse]
+    let nextCursor: String?
+}
+
 enum StoryAPI {
     static func create(_ request: CreateStoryRequest) async throws -> StoryResponse {
         try await APIClient.shared.post("/api/v1/stories", body: request)
     }
 
-    static func list() async throws -> [StoryResponse] {
-        try await APIClient.shared.get("/api/v1/stories")
+    static func list(cursor: String? = nil, limit: Int = 30) async throws -> StoryPage {
+        var params = ["limit=\(limit)"]
+        if let cursor { params.append("cursor=\(cursor)") }
+        let qs = params.joined(separator: "&")
+        return try await APIClient.shared.get("/api/v1/stories?\(qs)")
     }
 
     static func get(_ id: String) async throws -> StoryResponse {

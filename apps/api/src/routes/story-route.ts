@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import type { APIResponse } from "@repo/types";
-import { createStorySchema } from "@repo/zod";
+import { createStorySchema, storyListQuerySchema } from "@repo/zod";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -23,10 +23,11 @@ const storyRoute = new Hono()
     const story = await createStory(userId, data);
     return c.json<APIResponse<typeof story>>({ data: story });
   })
-  .get("/", async (c) => {
+  .get("/", zValidator("query", storyListQuerySchema), async (c) => {
     const userId = getUserIdFromCTX(c);
+    const query = c.req.valid("query");
 
-    const stories = await getStoriesByUser(userId);
+    const stories = await getStoriesByUser(userId, query);
     return c.json<APIResponse<typeof stories>>({ data: stories });
   })
   .get("/:id", zValidator("param", storyIdParamSchema), async (c) => {
