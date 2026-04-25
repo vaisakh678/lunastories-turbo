@@ -187,26 +187,45 @@ private struct AccountView: View {
                 .padding(.top, 12)
 
                 VStack(spacing: 0) {
-                    MenuRow(icon: "book.fill", title: "My Stories", action: {})
+                    NavigationLink {
+                        MyStoriesView()
+                    } label: {
+                        MenuRowLabel(icon: "book.fill", title: "My Stories")
+                    }
+                    .buttonStyle(.plain)
                     Divider().padding(.leading, 60)
-                    MenuRow(icon: "star.circle.fill", title: "Subscribe", action: {})
+                    Button {} label: {
+                        MenuRowLabel(icon: "star.circle.fill", title: "Subscribe")
+                    }
+                    .buttonStyle(.plain)
                     Divider().padding(.leading, 60)
-                    MenuRow(icon: "gearshape.fill", title: "Settings", action: {})
+                    Button {} label: {
+                        MenuRowLabel(icon: "gearshape.fill", title: "Settings")
+                    }
+                    .buttonStyle(.plain)
                     Divider().padding(.leading, 60)
-                    MenuRow(icon: "gift.fill", title: "Share and Earn", action: {})
+                    Button {} label: {
+                        MenuRowLabel(icon: "gift.fill", title: "Share and Earn")
+                    }
+                    .buttonStyle(.plain)
                     Divider().padding(.leading, 60)
-                    MenuRow(icon: "bubble.left.fill", title: "Send Feedback", action: {})
+                    Button {} label: {
+                        MenuRowLabel(icon: "bubble.left.fill", title: "Send Feedback")
+                    }
+                    .buttonStyle(.plain)
                 }
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .padding(.horizontal, 16)
 
-                MenuRow(
-                    icon: "rectangle.portrait.and.arrow.right",
-                    title: "Logout",
-                    tint: .red,
-                    action: {}
-                )
+                Button {} label: {
+                    MenuRowLabel(
+                        icon: "rectangle.portrait.and.arrow.right",
+                        title: "Logout",
+                        tint: .red
+                    )
+                }
+                .buttonStyle(.plain)
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .padding(.horizontal, 16)
@@ -217,32 +236,129 @@ private struct AccountView: View {
     }
 }
 
-private struct MenuRow: View {
+struct Story: Identifiable {
+    let id = UUID()
+    let title: String
+    let summary: String
+    let symbolName: String
+    let tint: Color
+    let duration: String
+    let createdAt: String
+}
+
+private struct MyStoriesView: View {
+    private let stories: [Story] = [
+        Story(title: "Milo and the Moon Cookie",
+              summary: "A bedtime adventure through a cinnamon-scented sky.",
+              symbolName: "moon.stars.fill",
+              tint: .purple,
+              duration: "5 min",
+              createdAt: "Today"),
+        Story(title: "Luna's Stargazing Trip",
+              summary: "Luna discovers a constellation that hums lullabies.",
+              symbolName: "sparkles",
+              tint: .indigo,
+              duration: "7 min",
+              createdAt: "Yesterday"),
+        Story(title: "Finn Sails the Rainbow Sea",
+              summary: "A brave little sailor charts a course to Color Island.",
+              symbolName: "sailboat.fill",
+              tint: .blue,
+              duration: "6 min",
+              createdAt: "2 days ago"),
+        Story(title: "Whiskers Finds the Cozy Hat",
+              summary: "A curious cat searches the attic for the perfect winter hat.",
+              symbolName: "cat.fill",
+              tint: .orange,
+              duration: "4 min",
+              createdAt: "Last week"),
+        Story(title: "Hoot's Midnight Library",
+              summary: "An owl who reads to the stars opens a secret door.",
+              symbolName: "bird.fill",
+              tint: .brown,
+              duration: "8 min",
+              createdAt: "Last week"),
+    ]
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 12) {
+                ForEach(stories) { story in
+                    StoryCard(story: story)
+                }
+            }
+            .padding(16)
+        }
+        .background(Color.gray.opacity(0.08))
+        .navigationTitle("My Stories")
+    }
+}
+
+private struct StoryCard: View {
+    let story: Story
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(story.tint.opacity(0.18))
+                Image(systemName: story.symbolName)
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(story.tint)
+            }
+            .frame(width: 84, height: 84)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(story.title)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                Text(story.summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+
+                HStack(spacing: 6) {
+                    Image(systemName: "clock")
+                    Text(story.duration)
+                    Text("·")
+                    Text(story.createdAt)
+                }
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .padding(.top, 2)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct MenuRowLabel: View {
     let icon: String
     let title: String
     var tint: Color = .primary
-    let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.body)
-                    .foregroundStyle(tint == .primary ? Color.accentColor : tint)
-                    .frame(width: 24)
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(tint)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.footnote)
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .contentShape(Rectangle())
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(tint == .primary ? Color.accentColor : tint)
+                .frame(width: 24)
+            Text(title)
+                .font(.body)
+                .foregroundStyle(tint)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
     }
 }
 
