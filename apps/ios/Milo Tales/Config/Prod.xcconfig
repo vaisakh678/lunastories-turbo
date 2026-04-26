@@ -1,0 +1,5 @@
+// Production environment.
+// TODO: when the prod API is deployed, swap this to its host (e.g. api.milotales.com).
+
+INFOPLIST_KEY_API_BASE_URL = http:/$()/localhost:3001
+INFOPLIST_KEY_CFBundleDisplayName = Milo Tales
