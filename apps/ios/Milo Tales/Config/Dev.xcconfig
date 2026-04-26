@@ -1,5 +1,4 @@
-// Development environment.
-// TODO: when the dev API is deployed, swap this to its host (e.g. dev-api.milotales.com).
+// Development environment — Railway-hosted dev API.
 
-API_BASE_URL = http:/$()/localhost:3001
+API_BASE_URL = https:/$()/dev-api-development-13c7.up.railway.app
 APP_NAME = Milo Tales (Dev)
