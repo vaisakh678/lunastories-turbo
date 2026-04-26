@@ -1,0 +1,5 @@
+// Development environment.
+// TODO: when the dev API is deployed, swap this to its host (e.g. dev-api.milotales.com).
+
+API_BASE_URL = http:/$()/localhost:3001
+APP_NAME = Milo Tales (Dev)

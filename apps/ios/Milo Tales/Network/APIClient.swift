@@ -33,7 +33,7 @@ private nonisolated struct APIEnvelope<T: Decodable>: Decodable {
 actor APIClient {
     static let shared = APIClient()
 
-    private let baseURL = URL(string: "http://localhost:3001")!
+    private let baseURL = URL(string: Config.apiBaseURL)!
     private let session: URLSession = .shared
 
     private let decoder: JSONDecoder = {
