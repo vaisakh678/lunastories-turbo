@@ -1,5 +1,9 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { env } from "../config/env";
@@ -14,10 +18,10 @@ const client = new S3Client({
   },
 });
 
-export async function uploadAudio(
+export async function uploadObject(
   key: string,
   body: Buffer,
-  contentType = "audio/mpeg",
+  contentType: string,
 ): Promise<void> {
   await client.send(
     new PutObjectCommand({
@@ -29,10 +33,21 @@ export async function uploadAudio(
   );
 }
 
-export async function presignAudio(key: string): Promise<string> {
+export async function presignObject(key: string): Promise<string> {
   return getSignedUrl(
     client,
     new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: key }),
     { expiresIn: PRESIGN_TTL_SECONDS },
   );
 }
+
+export async function deleteObject(key: string): Promise<void> {
+  await client.send(
+    new DeleteObjectCommand({ Bucket: env.S3_BUCKET, Key: key }),
+  );
+}
+
+// Audio aliases (preserve existing call sites)
+export const uploadAudio = (key: string, body: Buffer, contentType = "audio/mpeg") =>
+  uploadObject(key, body, contentType);
+export const presignAudio = presignObject;
