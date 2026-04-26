@@ -37,22 +37,22 @@ struct CreativeModeView: View {
     ]
 
     private let professionOptions: [PickOption] = [
-        .init(title: "Astronaut",      symbolName: "globe.americas.fill",     tint: .blue),
-        .init(title: "Detective",      symbolName: "magnifyingglass",         tint: .gray),
-        .init(title: "Police Officer", symbolName: "shield.fill",             tint: .blue),
-        .init(title: "Prince",         symbolName: "crown.fill",              tint: .yellow),
-        .init(title: "Superhero",      symbolName: "bolt.fill",               tint: .red),
-        .init(title: "Wizard",         symbolName: "wand.and.stars",          tint: .purple),
-        .init(title: "Athlete",        symbolName: "figure.run",              tint: .green),
-        .init(title: "Teacher",        symbolName: "book.fill",               tint: .orange),
-        .init(title: "Cowboy",         symbolName: "lasso",                   tint: .brown),
-        .init(title: "Doctor",         symbolName: "stethoscope",             tint: .red),
-        .init(title: "Explorer",       symbolName: "binoculars.fill",         tint: .indigo),
-        .init(title: "Mechanic",       symbolName: "wrench.adjustable.fill",  tint: .gray),
-        .init(title: "Ninja",          symbolName: "figure.martial.arts",     tint: .black),
-        .init(title: "Pilot",          symbolName: "airplane",                tint: .blue),
-        .init(title: "Scientist",      symbolName: "atom",                    tint: .mint),
-        .init(title: "Spy",            symbolName: "eye.fill",                tint: .indigo),
+        .init(title: "Astronaut",      symbolName: "globe.americas.fill",     tint: .blue,   imageName: "astronaut"),
+        .init(title: "Detective",      symbolName: "magnifyingglass",         tint: .gray,   imageName: "detective"),
+        .init(title: "Police Officer", symbolName: "shield.fill",             tint: .blue,   imageName: "police_officer"),
+        .init(title: "Prince",         symbolName: "crown.fill",              tint: .yellow, imageName: "prince"),
+        .init(title: "Superhero",      symbolName: "bolt.fill",               tint: .red,    imageName: "superhero"),
+        .init(title: "Wizard",         symbolName: "wand.and.stars",          tint: .purple, imageName: "wizard"),
+        .init(title: "Athlete",        symbolName: "figure.run",              tint: .green,  imageName: "athlete"),
+        .init(title: "Teacher",        symbolName: "book.fill",               tint: .orange, imageName: "teacher"),
+        .init(title: "Cowboy",         symbolName: "lasso",                   tint: .brown,  imageName: "cowboy"),
+        .init(title: "Doctor",         symbolName: "stethoscope",             tint: .red,    imageName: "doctor"),
+        .init(title: "Explorer",       symbolName: "binoculars.fill",         tint: .indigo, imageName: "explorer"),
+        .init(title: "Mechanic",       symbolName: "wrench.adjustable.fill",  tint: .gray,   imageName: "mechanic"),
+        .init(title: "Ninja",          symbolName: "figure.martial.arts",     tint: .black,  imageName: "ninja"),
+        .init(title: "Pilot",          symbolName: "airplane",                tint: .blue,   imageName: "pilot"),
+        .init(title: "Scientist",      symbolName: "atom",                    tint: .mint,   imageName: "scientist"),
+        .init(title: "Spy",            symbolName: "eye.fill",                tint: .indigo, imageName: "spy"),
     ]
 
     private let moralOptions: [PickOption] = [
