@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,6 @@ import { apiGet, http } from "@/lib/http";
 
 export function AvatarsPage() {
   const qc = useQueryClient();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const list = useQuery({
@@ -82,7 +81,6 @@ export function AvatarsPage() {
               <AvatarTile
                 key={a.id}
                 avatar={a}
-                onOpen={() => navigate(`/avatars/${a.id}`)}
                 onDelete={() => {
                   if (confirm(`Delete "${a.name ?? "this avatar"}"?`)) {
                     del.mutate(a.id);
@@ -229,22 +227,16 @@ function UploadAvatarDialog({
 
 function AvatarTile({
   avatar,
-  onOpen,
   onDelete,
   isDeleting,
 }: {
   avatar: AvatarDTO;
-  onOpen: () => void;
   onDelete: () => void;
   isDeleting: boolean;
 }) {
   return (
     <div className="group bg-card relative overflow-hidden rounded-lg border">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="block w-full text-left"
-      >
+      <Link to={`/avatars/${avatar.id}`} className="block w-full text-left">
         <div className="bg-muted/30 relative flex aspect-square items-center justify-center">
           <img
             src={avatar.url}
@@ -265,7 +257,7 @@ function AvatarTile({
             {avatar.isEnabled ? "Enabled" : "Disabled"}
           </Badge>
         </div>
-      </button>
+      </Link>
       <Button
         variant="destructive"
         size="icon"
