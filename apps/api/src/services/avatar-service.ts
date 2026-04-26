@@ -16,6 +16,7 @@ async function rowToDTO(
   return {
     id: row.id,
     name: row.name,
+    storageKey: row.storageKey,
     url,
     isEnabled: row.isEnabled,
     position: row.position,
