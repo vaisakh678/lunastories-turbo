@@ -11,7 +11,11 @@ struct MyStoriesView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 12) {
-                if vm.stories.isEmpty && !vm.isLoading {
+                if vm.isLoading {
+                    ForEach(0..<6, id: \.self) { _ in
+                        StoryCardSkeleton()
+                    }
+                } else if vm.stories.isEmpty {
                     ContentUnavailableView(
                         "No stories yet",
                         systemImage: "book",
@@ -136,4 +140,37 @@ func formatRelative(_ iso: String) -> String {
     let rel = RelativeDateTimeFormatter()
     rel.unitsStyle = .abbreviated
     return rel.localizedString(for: date, relativeTo: Date())
+}
+
+private struct StoryCardSkeleton: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.gray.opacity(0.18))
+                .frame(width: 84, height: 84)
+
+            VStack(alignment: .leading, spacing: 8) {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(Color.gray.opacity(0.18))
+                    .frame(height: 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(Color.gray.opacity(0.18))
+                    .frame(height: 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(Color.gray.opacity(0.18))
+                    .frame(width: 100, height: 10)
+                    .padding(.top, 2)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shimmering()
+    }
 }
