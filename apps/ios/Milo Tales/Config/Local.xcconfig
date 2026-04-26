@@ -1,7 +1,6 @@
-// Local development environment — points at a dev server running on the host machine.
-// xcconfig URL escape: `//` is a comment. `$()` is an empty variable interpolation
-// that breaks the parser without changing the value. So `https:/$()/host` reads as
-// `https://host` after substitution.
+// Local development environment.
+// xcconfig URL escape: `//` is a comment. `$()` is an empty interpolation that
+// breaks the comment parser. So `http:/$()/host` reads as `http://host`.
 
-INFOPLIST_KEY_API_BASE_URL = http:/$()/localhost:3001
-INFOPLIST_KEY_CFBundleDisplayName = Milo Tales (Local)
+API_BASE_URL = http:/$()/localhost:3001
+APP_NAME = Milo Tales (Local)

@@ -1,5 +1,5 @@
 // Development environment.
 // TODO: when the dev API is deployed, swap this to its host (e.g. dev-api.milotales.com).
 
-INFOPLIST_KEY_API_BASE_URL = http:/$()/localhost:3001
-INFOPLIST_KEY_CFBundleDisplayName = Milo Tales (Dev)
+API_BASE_URL = http:/$()/localhost:3001
+APP_NAME = Milo Tales (Dev)
