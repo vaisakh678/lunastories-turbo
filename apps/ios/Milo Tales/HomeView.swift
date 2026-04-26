@@ -371,43 +371,4 @@ private struct CharacterCardSkeleton: View {
     }
 }
 
-// MARK: - Shimmer modifier
-
-private extension View {
-    func shimmering() -> some View {
-        modifier(ShimmerModifier())
-    }
-}
-
-private struct ShimmerModifier: ViewModifier {
-    @State private var phase: CGFloat = -1
-
-    func body(content: Content) -> some View {
-        content
-            .overlay(
-                GeometryReader { geo in
-                    LinearGradient(
-                        colors: [
-                            .clear,
-                            Color.white.opacity(0.55),
-                            .clear,
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                    .frame(width: geo.size.width * 0.45)
-                    .offset(x: geo.size.width * phase)
-                    .blendMode(.plusLighter)
-                }
-                .allowsHitTesting(false)
-            )
-            .mask(content)
-            .onAppear {
-                withAnimation(
-                    .linear(duration: 1.4).repeatForever(autoreverses: false)
-                ) {
-                    phase = 1.5
-                }
-            }
-    }
-}
+// (Shimmer modifier lives in Shimmer.swift so MyStoriesView can use it too.)

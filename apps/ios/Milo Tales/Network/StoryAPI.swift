@@ -33,7 +33,7 @@ nonisolated struct StoryInputPayload {
     let input: AnyJSON
 }
 
-nonisolated enum StoryStatus: String, Decodable {
+nonisolated enum StoryStatus: String, Codable {
     case pending
     case generating
     case ready
@@ -55,7 +55,7 @@ nonisolated struct CreateStoryRequest: Encodable {
     let input: AnyJSON
 }
 
-nonisolated enum StoryBlock: Decodable {
+nonisolated enum StoryBlock: Codable {
     case text(String)
     case illustration(symbolName: String, tint: String)
 
@@ -82,13 +82,26 @@ nonisolated enum StoryBlock: Decodable {
             )
         }
     }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .text(let text):
+            try c.encode("text", forKey: .kind)
+            try c.encode(text, forKey: .text)
+        case .illustration(let symbolName, let tint):
+            try c.encode("illustration", forKey: .kind)
+            try c.encode(symbolName, forKey: .symbolName)
+            try c.encode(tint, forKey: .tint)
+        }
+    }
 }
 
-nonisolated struct StoryContent: Decodable {
+nonisolated struct StoryContent: Codable {
     let blocks: [StoryBlock]
 }
 
-nonisolated struct StoryResponse: Decodable, Identifiable {
+nonisolated struct StoryResponse: Codable, Identifiable {
     let id: String
     let status: StoryStatus
     let modeKey: String
