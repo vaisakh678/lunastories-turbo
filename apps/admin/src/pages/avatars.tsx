@@ -1,9 +1,10 @@
 import type { AvatarDTO } from "@repo/dto";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Layers, Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { AvatarBulkUploadDialog } from "@/components/avatar-bulk-upload-dialog";
 import { AvatarFormDialog } from "@/components/avatar-form-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import { apiGet, http } from "@/lib/http";
 export function AvatarsPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const list = useQuery({
     queryKey: ["admin-avatars"],
@@ -34,10 +36,16 @@ export function AvatarsPage() {
         title="Avatars"
         description="Character avatars used in the iOS app's icon picker."
         actions={
-          <Button onClick={() => setOpen(true)}>
-            <Plus className="size-4" />
-            Add avatar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setBulkOpen(true)}>
+              <Layers className="size-4" />
+              Bulk upload
+            </Button>
+            <Button onClick={() => setOpen(true)}>
+              <Plus className="size-4" />
+              Add avatar
+            </Button>
+          </div>
         }
       />
 
@@ -46,6 +54,14 @@ export function AvatarsPage() {
         onOpenChange={setOpen}
         onSaved={() => {
           setOpen(false);
+          qc.invalidateQueries({ queryKey: ["admin-avatars"] });
+        }}
+      />
+
+      <AvatarBulkUploadDialog
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        onCompleted={() => {
           qc.invalidateQueries({ queryKey: ["admin-avatars"] });
         }}
       />

@@ -3,6 +3,7 @@ import type { AvatarDTO } from "@repo/dto";
 import { and, asc, eq, isNull } from "drizzle-orm";
 
 import { BadRequest, NotFound } from "../lib/api-error";
+import { processAvatarImage } from "../lib/image-processor";
 import { logger } from "../lib/logger";
 import { deleteObject, presignObject, uploadObject } from "../lib/storage";
 
@@ -52,11 +53,7 @@ export async function uploadAvatar(args: {
     throw BadRequest("File too large (max 4 MB)");
   }
 
-  const ext = args.contentType === "image/jpeg"
-    ? "jpg"
-    : args.contentType === "image/webp"
-      ? "webp"
-      : "png";
+  const processed = await processAvatarImage(args.buffer);
 
   const [created] = await db
     .insert(characterAvatarSchema)
@@ -66,10 +63,10 @@ export async function uploadAvatar(args: {
     })
     .returning();
 
-  const key = `avatars/${created.id}.${ext}`;
+  const key = `avatars/${created.id}.${processed.ext}`;
 
   try {
-    await uploadObject(key, args.buffer, args.contentType);
+    await uploadObject(key, processed.buffer, processed.contentType);
   } catch (err) {
     logger.error({ err, id: created.id }, "Avatar upload failed; rolling back row");
     await db
@@ -124,15 +121,10 @@ export async function updateAvatar(
       throw BadRequest("File too large (max 4 MB)");
     }
 
-    const ext =
-      file.contentType === "image/jpeg"
-        ? "jpg"
-        : file.contentType === "image/webp"
-          ? "webp"
-          : "png";
-    const newKey = `avatars/${avatarId}.${ext}`;
+    const processed = await processAvatarImage(file.buffer);
+    const newKey = `avatars/${avatarId}.${processed.ext}`;
 
-    await uploadObject(newKey, file.buffer, file.contentType);
+    await uploadObject(newKey, processed.buffer, processed.contentType);
 
     // If the extension changed, the old object is at a different key — clean it up.
     if (existing.storageKey !== newKey) {

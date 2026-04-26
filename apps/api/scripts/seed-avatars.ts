@@ -14,6 +14,7 @@ import db, { characterAvatarSchema } from "@repo/db";
 import { eq } from "drizzle-orm";
 
 import "../src/config/env";
+import { processAvatarImage } from "../src/lib/image-processor";
 import { uploadObject } from "../src/lib/storage";
 
 const SOURCE_DIR = resolve(
@@ -51,10 +52,11 @@ async function main() {
       continue;
     }
 
-    const buffer = await readFile(resolve(SOURCE_DIR, filename));
-    const key = `avatars/${id}.png`;
+    const original = await readFile(resolve(SOURCE_DIR, filename));
+    const processed = await processAvatarImage(original);
+    const key = `avatars/${id}.${processed.ext}`;
 
-    await uploadObject(key, buffer, "image/png");
+    await uploadObject(key, processed.buffer, processed.contentType);
     await db.insert(characterAvatarSchema).values({
       id,
       name: null,
@@ -62,7 +64,9 @@ async function main() {
     });
 
     inserted += 1;
-    console.log(`  ok   ${id} (${(buffer.byteLength / 1024).toFixed(0)} KB → ${key})`);
+    console.log(
+      `  ok   ${id} (${(original.byteLength / 1024).toFixed(0)} KB → ${(processed.buffer.byteLength / 1024).toFixed(0)} KB ${key})`,
+    );
   }
 
   console.log(`\nDone. Inserted ${inserted}, skipped ${skipped}.`);
