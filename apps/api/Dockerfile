@@ -23,15 +23,22 @@ FROM base AS production
 WORKDIR /app
 
 # Copy root workspace files for pnpm
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json ./
 
 # Copy db package (migrations + drizzle config) for the start-time migrate step
 COPY --from=build /app/packages/db ./packages/db
 
-# Install only db dependencies (drizzle-kit for migrations)
-RUN pnpm install --frozen-lockfile --filter=@repo/db
+# Copy api package.json so pnpm can resolve sharp (native module — esbuild
+# can't bundle .node binaries, so we install it here for the linux-x64 runtime).
+COPY apps/api/package.json ./apps/api/package.json
 
-# Copy built API
+# Install:
+#   - @repo/db with dev deps so drizzle-kit is available for the migrate step
+#   - api in prod-only mode so sharp's native bindings land for the runtime
+RUN pnpm install --frozen-lockfile --filter=@repo/db \
+ && pnpm install --frozen-lockfile --filter=api --prod
+
+# Copy bundled API + entrypoint
 COPY --from=build /app/apps/api/dist/index.js ./apps/api/index.js
 COPY apps/api/start.sh ./apps/api/start.sh
 RUN chmod +x ./apps/api/start.sh
