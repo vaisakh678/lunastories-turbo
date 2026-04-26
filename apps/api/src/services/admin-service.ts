@@ -29,7 +29,7 @@ import {
 } from "drizzle-orm";
 
 import { NotFound } from "../lib/api-error";
-import { presignFile } from "./file-service";
+import { fileRefFor } from "./file-service";
 
 function userRowToDTO(row: typeof userSchema.$inferSelect): UserDTO {
   return {
@@ -176,9 +176,7 @@ export async function getStoryAdmin(storyId: string): Promise<StoryDTO> {
 
   if (!row) throw NotFound("Story not found");
 
-  const audioUrl = row.audioFileId
-    ? await presignFile(row.audioFileId)
-    : null;
+  const audio = row.audioFileId ? await fileRefFor(row.audioFileId) : null;
 
   return {
     ...storyRowToSummary(row),
@@ -186,7 +184,7 @@ export async function getStoryAdmin(storyId: string): Promise<StoryDTO> {
     generationInput: (row.generationInput ?? {}) as Record<string, unknown>,
     content: row.content as StoryDTO["content"],
     bodyText: row.bodyText,
-    audioUrl,
+    audio,
     errorMessage: row.errorMessage,
     textInputTokens: row.textInputTokens,
     textOutputTokens: row.textOutputTokens,

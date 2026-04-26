@@ -1,4 +1,5 @@
 import db, { fileSchema } from "@repo/db";
+import type { FileRefDTO } from "@repo/dto";
 import { eq } from "drizzle-orm";
 
 import { NotFound } from "../lib/api-error";
@@ -41,6 +42,15 @@ export async function getFile(fileId: string) {
 export async function presignFile(fileId: string): Promise<string> {
   const file = await getFile(fileId);
   return presignObject(file.storageKey);
+}
+
+export async function fileRefFor(fileId: string): Promise<FileRefDTO> {
+  const file = await getFile(fileId);
+  return {
+    fileId: file.id,
+    key: file.storageKey,
+    url: await presignObject(file.storageKey),
+  };
 }
 
 /**

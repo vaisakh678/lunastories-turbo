@@ -15,8 +15,9 @@ func isAvatarId(_ name: String) -> Bool {
 /// fill the same square footprint clipped to the given corner radius, so
 /// callers can swap freely.
 ///
-/// Avatar images are cached by Kingfisher using the avatar's `storageKey` (the
-/// stable S3 key), not the URL — so the cache survives presigned-URL rotation.
+/// Avatar images are cached by Kingfisher using the avatar's `image.fileId` (the
+/// stable file row id), not the URL — so the cache survives presigned-URL rotation
+/// and S3 path changes.
 struct CharacterIconView: View {
     let symbolName: String
     let tint: Color
@@ -29,8 +30,8 @@ struct CharacterIconView: View {
         ZStack {
             if isAvatarId(symbolName),
                let avatar = avatars.avatar(byId: symbolName),
-               let url = URL(string: avatar.url) {
-                KFImage.url(url, cacheKey: avatar.storageKey)
+               let url = URL(string: avatar.image.url) {
+                KFImage.url(url, cacheKey: avatar.image.fileId)
                     .placeholder { _ in
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .fill(tint.opacity(0.18))

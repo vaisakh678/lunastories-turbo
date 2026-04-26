@@ -71,13 +71,13 @@ export function StoryDetailPage() {
             <Stat label="Created" value={formatDate(data.createdAt)} />
           </div>
 
-          {data.audioUrl && (
+          {data.audio && (
             <Card>
               <CardHeader>
                 <CardTitle>Audio</CardTitle>
               </CardHeader>
               <CardContent>
-                <audio controls src={data.audioUrl} className="w-full" />
+                <audio controls src={data.audio.url} className="w-full" />
               </CardContent>
             </Card>
           )}

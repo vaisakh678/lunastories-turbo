@@ -98,7 +98,7 @@ export function AvatarDetailPage() {
             <div className="flex items-center gap-4">
               <div className="bg-muted/30 size-20 overflow-hidden rounded-md border">
                 <img
-                  src={avatar.url}
+                  src={avatar.image.url}
                   alt={avatar.name ?? "avatar"}
                   className="h-full w-full object-contain"
                 />
@@ -352,7 +352,7 @@ function EventTile({
     <div className="group bg-card relative overflow-hidden rounded-lg border">
       <div className="bg-muted/30 flex aspect-square items-center justify-center">
         <img
-          src={event.url}
+          src={event.image.url}
           alt={event.name ?? "event"}
           className="h-full w-full object-contain"
           loading="lazy"

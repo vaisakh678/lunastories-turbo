@@ -19,8 +19,7 @@ async function rowToDTO(row: AvatarRow, file: FileRow): Promise<AvatarDTO> {
   return {
     id: row.id,
     name: row.name,
-    storageKey: file.storageKey,
-    url,
+    image: { fileId: file.id, key: file.storageKey, url },
     isEnabled: row.isEnabled,
     position: row.position,
     createdAt: row.createdAt.toISOString(),

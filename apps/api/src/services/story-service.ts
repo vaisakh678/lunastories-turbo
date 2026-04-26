@@ -17,7 +17,7 @@ import { BadRequest, InternalError, NotFound } from "../lib/api-error";
 import { generateAudio } from "../lib/audio-generator";
 import { logger } from "../lib/logger";
 import { generateStory } from "../lib/story-generator";
-import { presignFile, uploadFile } from "./file-service";
+import { fileRefFor, uploadFile } from "./file-service";
 
 function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
   return {
@@ -41,14 +41,14 @@ async function toDTO(
   row: typeof storySchema.$inferSelect,
   characterIds: string[],
 ): Promise<StoryDTO> {
-  const audioUrl = row.audioFileId ? await presignFile(row.audioFileId) : null;
+  const audio = row.audioFileId ? await fileRefFor(row.audioFileId) : null;
   return {
     ...toSummaryDTO(row),
     characterIds,
     generationInput: (row.generationInput ?? {}) as Record<string, unknown>,
     content: (row.content ?? null) as StoryContent | null,
     bodyText: row.bodyText,
-    audioUrl,
+    audio,
     errorMessage: row.errorMessage,
     textInputTokens: row.textInputTokens,
     textOutputTokens: row.textOutputTokens,
