@@ -30,9 +30,8 @@ struct ChooseModeView: View {
     ]
 
     private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 20),
+        GridItem(.flexible(), spacing: 20),
     ]
 
     var body: some View {
@@ -48,9 +47,22 @@ struct ChooseModeView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 20)
 
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(modes) { mode in
-                        ModeTile(mode: mode) { onSelect(mode) }
+                // Eager 2-column layout (regular VStack of HStack pairs) instead
+                // of LazyVGrid — lazy item instantiation during the sheet's
+                // slide-up causes a visible "double appear from bottom".
+                VStack(spacing: 20) {
+                    ForEach(Array(stride(from: 0, to: modes.count, by: 2)), id: \.self) { rowStart in
+                        HStack(spacing: 20) {
+                            ModeTile(mode: modes[rowStart]) { onSelect(modes[rowStart]) }
+                            if rowStart + 1 < modes.count {
+                                ModeTile(mode: modes[rowStart + 1]) { onSelect(modes[rowStart + 1]) }
+                            } else {
+                                // Empty slot keeps the lone tile left-aligned and same width.
+                                Color.clear
+                                    .aspectRatio(1, contentMode: .fit)
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
                     }
                 }
                 .padding(.horizontal, 20)
