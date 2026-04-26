@@ -133,27 +133,35 @@ struct HomeView: View {
                 }
             }
             .sheet(item: $editingCharacter) { character in
-                CharacterWizardSheet(role: character.role, editing: character) { updated in
-                    Task {
-                        await vm.update(
-                            character.id,
-                            UpdateCharacterRequest(
-                                role: updated.role,
-                                name: updated.name,
-                                symbolName: updated.symbolName,
-                                tint: updated.tintName,
-                                tagline: updated.tagline.isEmpty ? nil : updated.tagline,
-                                age: updated.age,
-                                gender: updated.gender,
-                                hairColor: updated.hairColor,
-                                eyeColor: updated.eyeColor,
-                                hairstyle: updated.hairstyle,
-                                interests: updated.interests,
-                                extraInterestNote: updated.extraInterestNote
+                CharacterWizardSheet(
+                    role: character.role,
+                    editing: character,
+                    onSave: { updated in
+                        Task {
+                            await vm.update(
+                                character.id,
+                                UpdateCharacterRequest(
+                                    role: updated.role,
+                                    name: updated.name,
+                                    symbolName: updated.symbolName,
+                                    tint: updated.tintName,
+                                    tagline: updated.tagline.isEmpty ? nil : updated.tagline,
+                                    age: updated.age,
+                                    gender: updated.gender,
+                                    hairColor: updated.hairColor,
+                                    eyeColor: updated.eyeColor,
+                                    hairstyle: updated.hairstyle,
+                                    interests: updated.interests,
+                                    extraInterestNote: updated.extraInterestNote
+                                )
                             )
-                        )
+                        }
+                    },
+                    onDelete: {
+                        selectedCharacterIds.remove(character.id)
+                        Task { _ = await vm.delete(character.id) }
                     }
-                }
+                )
             }
             .task { await vm.load() }
             .alert(

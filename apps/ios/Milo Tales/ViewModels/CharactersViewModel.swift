@@ -51,4 +51,17 @@ final class CharactersViewModel {
                 ?? error.localizedDescription
         }
     }
+
+    func delete(_ id: UUID) async -> Bool {
+        errorMessage = nil
+        do {
+            try await CharacterAPI.delete(id)
+            characters.removeAll { $0.id == id }
+            return true
+        } catch {
+            errorMessage = (error as? APIError)?.errorDescription
+                ?? error.localizedDescription
+            return false
+        }
+    }
 }
