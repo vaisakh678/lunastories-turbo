@@ -1,6 +1,7 @@
 import { useClerk, useUser } from "@clerk/clerk-react";
 import {
   BookOpen,
+  ImageIcon,
   LayoutDashboard,
   LogOut,
   MessageSquare,
@@ -34,6 +35,7 @@ const NAV: NavLeaf[] = [
   { title: "Users", href: "/users", icon: Users },
   { title: "Stories", href: "/stories", icon: BookOpen },
   { title: "Characters", href: "/characters", icon: PersonStanding },
+  { title: "Avatars", href: "/avatars", icon: ImageIcon },
   { title: "Feedback", href: "/feedback", icon: MessageSquare },
 ];
 

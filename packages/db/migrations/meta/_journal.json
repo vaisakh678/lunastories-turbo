@@ -50,6 +50,13 @@
       "when": 1777141135330,
       "tag": "0006_fair_skin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1777165466485,
+      "tag": "0007_modern_marauders",
+      "breakpoints": true
     }
   ]
 }

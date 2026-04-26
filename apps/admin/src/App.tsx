@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { AdminGuard } from "@/components/admin-guard";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { AuthPage } from "@/pages/auth";
+import { AvatarsPage } from "@/pages/avatars";
 import { CharactersPage } from "@/pages/characters";
 import { DashboardPage } from "@/pages/dashboard";
 import { FeedbackPage } from "@/pages/feedback";
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/stories/:id" element={<StoryDetailPage />} />
         <Route path="/characters" element={<CharactersPage />} />
+        <Route path="/avatars" element={<AvatarsPage />} />
         <Route path="/feedback" element={<FeedbackPage />} />
       </Route>
     </Routes>
