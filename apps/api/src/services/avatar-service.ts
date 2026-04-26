@@ -88,20 +88,82 @@ export async function uploadAvatar(args: {
 
 export async function updateAvatar(
   avatarId: string,
-  patch: { name?: string | null; isEnabled?: boolean; position?: number },
+  patch: {
+    name?: string | null;
+    isEnabled?: boolean;
+    position?: number;
+    file?: { buffer: Buffer; contentType: string };
+  },
 ): Promise<AvatarDTO> {
-  const [updated] = await db
-    .update(characterAvatarSchema)
-    .set(patch)
+  const [existing] = await db
+    .select({ storageKey: characterAvatarSchema.storageKey })
+    .from(characterAvatarSchema)
     .where(
       and(
         eq(characterAvatarSchema.id, avatarId),
         isNull(characterAvatarSchema.deletedAt),
       ),
     )
+    .limit(1);
+
+  if (!existing) throw NotFound("Avatar not found");
+
+  const {
+    file,
+    ...metaPatch
+  }: typeof patch & { file?: { buffer: Buffer; contentType: string } } = patch;
+
+  const set: Record<string, unknown> = { ...metaPatch };
+
+  if (file) {
+    if (!ALLOWED_TYPES.has(file.contentType)) {
+      throw BadRequest(`Unsupported file type: ${file.contentType}`);
+    }
+    if (file.buffer.byteLength > MAX_BYTES) {
+      throw BadRequest("File too large (max 4 MB)");
+    }
+
+    const ext =
+      file.contentType === "image/jpeg"
+        ? "jpg"
+        : file.contentType === "image/webp"
+          ? "webp"
+          : "png";
+    const newKey = `avatars/${avatarId}.${ext}`;
+
+    await uploadObject(newKey, file.buffer, file.contentType);
+
+    // If the extension changed, the old object is at a different key — clean it up.
+    if (existing.storageKey !== newKey) {
+      try {
+        await deleteObject(existing.storageKey);
+      } catch (err) {
+        logger.warn(
+          { err, key: existing.storageKey },
+          "Failed to delete superseded S3 object",
+        );
+      }
+    }
+
+    set.storageKey = newKey;
+  }
+
+  if (Object.keys(set).length === 0) {
+    return rowToDTO(
+      (await db
+        .select()
+        .from(characterAvatarSchema)
+        .where(eq(characterAvatarSchema.id, avatarId))
+        .limit(1))[0]!,
+    );
+  }
+
+  const [updated] = await db
+    .update(characterAvatarSchema)
+    .set(set)
+    .where(eq(characterAvatarSchema.id, avatarId))
     .returning();
 
-  if (!updated) throw NotFound("Avatar not found");
   return rowToDTO(updated);
 }
 

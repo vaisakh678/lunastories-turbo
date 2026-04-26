@@ -59,12 +59,41 @@ const avatarRoute = new Hono()
   })
   .patch("/:id", async (c) => {
     const { id } = idParam.parse({ id: c.req.param("id") });
-    const body = (await c.req.json()) as Record<string, unknown>;
-    const patch: { name?: string | null; isEnabled?: boolean; position?: number } = {};
-    if (typeof body.name === "string") patch.name = body.name.trim() || null;
-    if (body.name === null) patch.name = null;
-    if (typeof body.isEnabled === "boolean") patch.isEnabled = body.isEnabled;
-    if (typeof body.position === "number") patch.position = body.position;
+    const contentType = c.req.header("content-type") ?? "";
+
+    const patch: {
+      name?: string | null;
+      isEnabled?: boolean;
+      position?: number;
+      file?: { buffer: Buffer; contentType: string };
+    } = {};
+
+    if (contentType.includes("multipart/form-data")) {
+      const body = await c.req.parseBody();
+      if (typeof body.name === "string") {
+        patch.name = body.name.trim() || null;
+      }
+      if (typeof body.isEnabled === "string") {
+        patch.isEnabled = body.isEnabled === "true";
+      }
+      if (typeof body.position === "string") {
+        const n = Number(body.position);
+        if (!Number.isNaN(n)) patch.position = n;
+      }
+      if (body.file instanceof File && body.file.size > 0) {
+        patch.file = {
+          buffer: Buffer.from(await body.file.arrayBuffer()),
+          contentType: body.file.type,
+        };
+      }
+    } else {
+      const body = (await c.req.json()) as Record<string, unknown>;
+      if (typeof body.name === "string") patch.name = body.name.trim() || null;
+      if (body.name === null) patch.name = null;
+      if (typeof body.isEnabled === "boolean") patch.isEnabled = body.isEnabled;
+      if (typeof body.position === "number") patch.position = body.position;
+    }
+
     const avatar = await updateAvatar(id, patch);
     return c.json<APIResponse<typeof avatar>>({ data: avatar });
   })
