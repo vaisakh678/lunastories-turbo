@@ -104,7 +104,7 @@ nonisolated struct StoryResponse: Decodable, Identifiable {
     let characterIds: [String]?
     let bodyText: String?
     let content: StoryContent?
-    let audioUrl: String?
+    let audio: FileRefResponse?
     let errorMessage: String?
 }
 

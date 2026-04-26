@@ -1,3 +1,5 @@
+import type { FileRefDTO } from "./file";
+
 export type StoryStatus = "pending" | "generating" | "ready" | "failed";
 
 export type StoryBlock =
@@ -29,7 +31,7 @@ export interface StoryDTO extends StorySummaryDTO {
   generationInput: Record<string, unknown>;
   content: StoryContent | null;
   bodyText: string | null;
-  audioUrl: string | null;
+  audio: FileRefDTO | null;
   errorMessage: string | null;
   textInputTokens: number | null;
   textOutputTokens: number | null;

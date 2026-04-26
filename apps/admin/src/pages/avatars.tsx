@@ -116,7 +116,7 @@ function AvatarTile({
       <Link to={`/avatars/${avatar.id}`} className="block w-full text-left">
         <div className="bg-muted/30 relative flex aspect-square items-center justify-center">
           <img
-            src={avatar.url}
+            src={avatar.image.url}
             alt={avatar.name ?? "avatar"}
             className={
               avatar.isEnabled

@@ -15,8 +15,9 @@ func isAvatarId(_ name: String) -> Bool {
 /// fill the same square footprint clipped to the given corner radius, so
 /// callers can swap freely.
 ///
-/// Avatar images are cached by Kingfisher using the avatar's `storageKey` (the
-/// stable S3 key), not the URL — so the cache survives presigned-URL rotation.
+/// Avatar images are cached by Kingfisher using the avatar's `image.fileId` (the
+/// stable file row id), not the URL — so the cache survives presigned-URL rotation
+/// and S3 path changes.
 struct CharacterIconView: View {
     let symbolName: String
     let tint: Color
@@ -27,23 +28,30 @@ struct CharacterIconView: View {
 
     var body: some View {
         ZStack {
-            if isAvatarId(symbolName),
-               let avatar = avatars.avatar(byId: symbolName),
-               let url = URL(string: avatar.url) {
-                KFImage.url(url, cacheKey: avatar.storageKey)
-                    .placeholder { _ in
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(tint.opacity(0.18))
-                    }
-                    .loadDiskFileSynchronously()
-                    .fade(duration: 0.35)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+            if isAvatarId(symbolName) {
+                if let avatar = avatars.avatar(byId: symbolName),
+                   let url = URL(string: avatar.image.url) {
+                    KFImage.url(url, cacheKey: avatar.image.fileId)
+                        .placeholder { _ in tintedPlaceholder }
+                        .loadDiskFileSynchronously()
+                        .fade(duration: 0.35)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    // Avatar id we can't resolve (loading, deleted, or disabled).
+                    // Don't fall through to Image(systemName:) — SF Symbols rejects UUIDs.
+                    tintedPlaceholder
+                }
             } else {
                 fallbackSymbol(symbolName)
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
+
+    private var tintedPlaceholder: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(tint.opacity(0.18))
     }
 
     @ViewBuilder

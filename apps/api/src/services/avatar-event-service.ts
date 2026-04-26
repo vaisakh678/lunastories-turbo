@@ -27,7 +27,7 @@ async function rowToDTO(row: EventRow, file: FileRow): Promise<AvatarEventDTO> {
     setting: row.setting,
     action: row.action,
     tags: row.tags,
-    url,
+    image: { fileId: file.id, key: file.storageKey, url },
     isEnabled: row.isEnabled,
     position: row.position,
     createdAt: row.createdAt.toISOString(),

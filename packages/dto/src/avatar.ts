@@ -1,8 +1,9 @@
+import type { FileRefDTO } from "./file";
+
 export interface AvatarDTO {
   id: string;
   name: string | null;
-  storageKey: string;
-  url: string;
+  image: FileRefDTO;
   isEnabled: boolean;
   position: number;
   createdAt: string;
@@ -16,7 +17,7 @@ export interface AvatarEventDTO {
   setting: string | null;
   action: string | null;
   tags: string[];
-  url: string;
+  image: FileRefDTO;
   isEnabled: boolean;
   position: number;
   createdAt: string;

@@ -68,7 +68,7 @@ export function AvatarFormDialog({ avatar, open, onOpenChange, onSaved }: Props)
 
   const previewUrl = file
     ? URL.createObjectURL(file)
-    : avatar?.url ?? null;
+    : avatar?.image.url ?? null;
   useEffect(() => {
     return () => {
       if (file && previewUrl) URL.revokeObjectURL(previewUrl);

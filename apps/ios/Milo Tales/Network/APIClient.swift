@@ -86,17 +86,15 @@ actor APIClient {
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         req.httpBody = body
 
-        let clerkSession = await Clerk.shared.session
-        let clerkUser = await Clerk.shared.user
         do {
-            if let token = try await clerkSession?.getToken() {
+            if let token = try await Clerk.shared.auth.getToken() {
                 req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 #if DEBUG
                 print("[API] \(method) \(path) → attached token (\(token.prefix(20))…)")
                 #endif
             } else {
                 #if DEBUG
-                print("[API] \(method) \(path) → NO token (session=\(clerkSession != nil), user=\(clerkUser != nil))")
+                print("[API] \(method) \(path) → NO token (no active session)")
                 #endif
             }
         } catch {

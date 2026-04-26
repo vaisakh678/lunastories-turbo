@@ -52,7 +52,7 @@ struct StoryReaderView: View {
             }
         }
         .task { await load() }
-        .onChange(of: story?.audioUrl) { _, newURL in
+        .onChange(of: story?.audio?.url) { _, newURL in
             guard let s = newURL, let url = URL(string: s) else { return }
             audioPlayer.load(
                 url: url,
@@ -146,7 +146,7 @@ struct StoryReaderView: View {
 
     @ViewBuilder
     private func audioBar(for story: StoryResponse) -> some View {
-        if story.audioUrl != nil {
+        if story.audio != nil {
             AudioPlayerBar(player: audioPlayer)
         } else {
             GenerateAudioBar(
