@@ -9,19 +9,23 @@ struct CharacterWizardSheet: View {
     let role: CharacterRole
     var editing: Character? = nil
     let onSave: (Character) -> Void
+    var onDelete: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
     @State private var step: WizardStep = .basicInfo
     @State private var draft: CharacterDraft
+    @State private var confirmingDelete: Bool = false
 
     init(
         role: CharacterRole,
         editing: Character? = nil,
         onSave: @escaping (Character) -> Void,
+        onDelete: (() -> Void)? = nil,
     ) {
         self.role = role
         self.editing = editing
         self.onSave = onSave
+        self.onDelete = onDelete
         _draft = State(initialValue: CharacterDraft(editing: editing))
     }
 
@@ -86,6 +90,29 @@ struct CharacterWizardSheet: View {
                     }
                     .accessibilityLabel("Close")
                 }
+                if isEditing, onDelete != nil {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(role: .destructive) {
+                            confirmingDelete = true
+                        } label: {
+                            Image(systemName: "trash")
+                                .foregroundStyle(.red)
+                        }
+                        .accessibilityLabel("Delete character")
+                    }
+                }
+            }
+            .alert(
+                "Delete this character?",
+                isPresented: $confirmingDelete
+            ) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) {
+                    onDelete?()
+                    dismiss()
+                }
+            } message: {
+                Text("This will permanently delete \(editing?.name ?? "the character"). You can't undo this.")
             }
         }
     }

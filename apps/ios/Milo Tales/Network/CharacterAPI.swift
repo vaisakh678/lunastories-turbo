@@ -92,4 +92,11 @@ enum CharacterAPI {
         )
         return payload.toCharacter()
     }
+
+    static func delete(_ id: UUID) async throws {
+        struct DeletedResponse: Decodable { let id: String }
+        let _: DeletedResponse = try await APIClient.shared.delete(
+            "/api/v1/characters/\(id.uuidString.lowercased())"
+        )
+    }
 }

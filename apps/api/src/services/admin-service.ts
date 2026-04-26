@@ -29,7 +29,7 @@ import {
 } from "drizzle-orm";
 
 import { NotFound } from "../lib/api-error";
-import { presignAudio } from "../lib/storage";
+import { presignFile } from "./file-service";
 
 function userRowToDTO(row: typeof userSchema.$inferSelect): UserDTO {
   return {
@@ -176,8 +176,8 @@ export async function getStoryAdmin(storyId: string): Promise<StoryDTO> {
 
   if (!row) throw NotFound("Story not found");
 
-  const audioUrl = row.audioStorageKey
-    ? await presignAudio(row.audioStorageKey)
+  const audioUrl = row.audioFileId
+    ? await presignFile(row.audioFileId)
     : null;
 
   return {

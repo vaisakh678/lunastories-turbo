@@ -64,6 +64,27 @@
       "when": 1777166177004,
       "tag": "0008_furry_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1777200000000,
+      "tag": "0009_introduce_files",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1777200000001,
+      "tag": "0010_backfill_file_ids",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1777200000002,
+      "tag": "0011_finalize_file_columns",
+      "breakpoints": true
     }
   ]
 }

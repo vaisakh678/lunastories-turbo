@@ -1,23 +1,25 @@
-import db, { characterAvatarSchema } from "@repo/db";
+import db, { characterAvatarSchema, fileSchema } from "@repo/db";
 import type { AvatarDTO } from "@repo/dto";
 import { and, asc, eq, isNull } from "drizzle-orm";
 
 import { BadRequest, NotFound } from "../lib/api-error";
 import { processAvatarImage } from "../lib/image-processor";
 import { logger } from "../lib/logger";
-import { deleteObject, presignObject, uploadObject } from "../lib/storage";
+import { presignObject } from "../lib/storage";
+import { softDeleteFile, uploadFile } from "./file-service";
 
 const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
 
-async function rowToDTO(
-  row: typeof characterAvatarSchema.$inferSelect,
-): Promise<AvatarDTO> {
-  const url = await presignObject(row.storageKey);
+type AvatarRow = typeof characterAvatarSchema.$inferSelect;
+type FileRow = typeof fileSchema.$inferSelect;
+
+async function rowToDTO(row: AvatarRow, file: FileRow): Promise<AvatarDTO> {
+  const url = await presignObject(file.storageKey);
   return {
     id: row.id,
     name: row.name,
-    storageKey: row.storageKey,
+    storageKey: file.storageKey,
     url,
     isEnabled: row.isEnabled,
     position: row.position,
@@ -33,12 +35,32 @@ export async function listAvatars(includeDisabled = false): Promise<AvatarDTO[]>
   }
 
   const rows = await db
-    .select()
+    .select({
+      avatar: characterAvatarSchema,
+      file: fileSchema,
+    })
     .from(characterAvatarSchema)
+    .innerJoin(fileSchema, eq(characterAvatarSchema.fileId, fileSchema.id))
     .where(and(...conditions))
     .orderBy(asc(characterAvatarSchema.position), asc(characterAvatarSchema.createdAt));
 
-  return Promise.all(rows.map(rowToDTO));
+  return Promise.all(rows.map((r) => rowToDTO(r.avatar, r.file)));
+}
+
+async function loadAvatarOr404(avatarId: string) {
+  const [row] = await db
+    .select({ avatar: characterAvatarSchema, file: fileSchema })
+    .from(characterAvatarSchema)
+    .innerJoin(fileSchema, eq(characterAvatarSchema.fileId, fileSchema.id))
+    .where(
+      and(
+        eq(characterAvatarSchema.id, avatarId),
+        isNull(characterAvatarSchema.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (!row) throw NotFound("Avatar not found");
+  return row;
 }
 
 export async function uploadAvatar(args: {
@@ -55,33 +77,21 @@ export async function uploadAvatar(args: {
 
   const processed = await processAvatarImage(args.buffer);
 
+  // Upload first so we can fail before we have any rows to clean up.
+  // Storage key uses a random uuid baked into the path; collision is statistically zero.
+  const tempKey = `files/${crypto.randomUUID()}.${processed.ext}`;
+  const file = await uploadFile({
+    buffer: processed.buffer,
+    contentType: processed.contentType,
+    storageKey: tempKey,
+  });
+
   const [created] = await db
     .insert(characterAvatarSchema)
-    .values({
-      name: args.name,
-      storageKey: "pending",
-    })
+    .values({ name: args.name, fileId: file.id })
     .returning();
 
-  const key = `avatars/${created.id}.${processed.ext}`;
-
-  try {
-    await uploadObject(key, processed.buffer, processed.contentType);
-  } catch (err) {
-    logger.error({ err, id: created.id }, "Avatar upload failed; rolling back row");
-    await db
-      .delete(characterAvatarSchema)
-      .where(eq(characterAvatarSchema.id, created.id));
-    throw err;
-  }
-
-  const [updated] = await db
-    .update(characterAvatarSchema)
-    .set({ storageKey: key })
-    .where(eq(characterAvatarSchema.id, created.id))
-    .returning();
-
-  return rowToDTO(updated);
+  return rowToDTO(created, file);
 }
 
 export async function updateAvatar(
@@ -93,62 +103,42 @@ export async function updateAvatar(
     file?: { buffer: Buffer; contentType: string };
   },
 ): Promise<AvatarDTO> {
-  const [existing] = await db
-    .select({ storageKey: characterAvatarSchema.storageKey })
-    .from(characterAvatarSchema)
-    .where(
-      and(
-        eq(characterAvatarSchema.id, avatarId),
-        isNull(characterAvatarSchema.deletedAt),
-      ),
-    )
-    .limit(1);
+  const existing = await loadAvatarOr404(avatarId);
 
-  if (!existing) throw NotFound("Avatar not found");
+  const set: Record<string, unknown> = {};
+  if (patch.name !== undefined) set.name = patch.name;
+  if (patch.isEnabled !== undefined) set.isEnabled = patch.isEnabled;
+  if (patch.position !== undefined) set.position = patch.position;
 
-  const {
-    file,
-    ...metaPatch
-  }: typeof patch & { file?: { buffer: Buffer; contentType: string } } = patch;
+  let nextFile: FileRow = existing.file;
 
-  const set: Record<string, unknown> = { ...metaPatch };
-
-  if (file) {
-    if (!ALLOWED_TYPES.has(file.contentType)) {
-      throw BadRequest(`Unsupported file type: ${file.contentType}`);
+  if (patch.file) {
+    if (!ALLOWED_TYPES.has(patch.file.contentType)) {
+      throw BadRequest(`Unsupported file type: ${patch.file.contentType}`);
     }
-    if (file.buffer.byteLength > MAX_BYTES) {
+    if (patch.file.buffer.byteLength > MAX_BYTES) {
       throw BadRequest("File too large (max 4 MB)");
     }
 
-    const processed = await processAvatarImage(file.buffer);
-    const newKey = `avatars/${avatarId}.${processed.ext}`;
+    const processed = await processAvatarImage(patch.file.buffer);
+    const newKey = `files/${crypto.randomUUID()}.${processed.ext}`;
+    const created = await uploadFile({
+      buffer: processed.buffer,
+      contentType: processed.contentType,
+      storageKey: newKey,
+    });
 
-    await uploadObject(newKey, processed.buffer, processed.contentType);
+    set.fileId = created.id;
+    nextFile = created;
 
-    // If the extension changed, the old object is at a different key — clean it up.
-    if (existing.storageKey !== newKey) {
-      try {
-        await deleteObject(existing.storageKey);
-      } catch (err) {
-        logger.warn(
-          { err, key: existing.storageKey },
-          "Failed to delete superseded S3 object",
-        );
-      }
-    }
-
-    set.storageKey = newKey;
+    // Garbage-collect the previous file (best-effort, no other refs at this point).
+    softDeleteFile(existing.file.id).catch((err) =>
+      logger.warn({ err, id: existing.file.id }, "Failed to soft-delete prior file"),
+    );
   }
 
   if (Object.keys(set).length === 0) {
-    return rowToDTO(
-      (await db
-        .select()
-        .from(characterAvatarSchema)
-        .where(eq(characterAvatarSchema.id, avatarId))
-        .limit(1))[0]!,
-    );
+    return rowToDTO(existing.avatar, nextFile);
   }
 
   const [updated] = await db
@@ -157,27 +147,19 @@ export async function updateAvatar(
     .where(eq(characterAvatarSchema.id, avatarId))
     .returning();
 
-  return rowToDTO(updated);
+  return rowToDTO(updated, nextFile);
 }
 
 export async function softDeleteAvatar(avatarId: string): Promise<void> {
-  const [row] = await db
+  const existing = await loadAvatarOr404(avatarId);
+
+  await db
     .update(characterAvatarSchema)
     .set({ deletedAt: new Date() })
-    .where(
-      and(
-        eq(characterAvatarSchema.id, avatarId),
-        isNull(characterAvatarSchema.deletedAt),
-      ),
-    )
-    .returning({ id: characterAvatarSchema.id, storageKey: characterAvatarSchema.storageKey });
+    .where(eq(characterAvatarSchema.id, avatarId));
 
-  if (!row) throw NotFound("Avatar not found");
-
-  // Best-effort: nuke the S3 object too. Failure isn't fatal.
-  try {
-    await deleteObject(row.storageKey);
-  } catch (err) {
-    logger.warn({ err, id: row.id, key: row.storageKey }, "Failed to delete S3 object");
-  }
+  // Garbage-collect the file row + S3 object too, since the avatar is the sole reference.
+  softDeleteFile(existing.file.id).catch((err) =>
+    logger.warn({ err, id: existing.file.id }, "Failed to soft-delete avatar file"),
+  );
 }
