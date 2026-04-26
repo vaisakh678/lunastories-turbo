@@ -29,22 +29,27 @@ struct HomeView: View {
             ZStack {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 28) {
-                        CharacterSection(
-                            role: .main,
-                            characters: vm.mainCharacters,
-                            selectedIds: selectedCharacterIds,
-                            onAdd: { addingRole = .main },
-                            onToggle: toggle,
-                            onEdit: { editingCharacter = $0 }
-                        )
-                        CharacterSection(
-                            role: .side,
-                            characters: vm.sideCharacters,
-                            selectedIds: selectedCharacterIds,
-                            onAdd: { addingRole = .side },
-                            onToggle: toggle,
-                            onEdit: { editingCharacter = $0 }
-                        )
+                        if vm.isLoading {
+                            CharacterSectionSkeleton(role: .main)
+                            CharacterSectionSkeleton(role: .side)
+                        } else {
+                            CharacterSection(
+                                role: .main,
+                                characters: vm.mainCharacters,
+                                selectedIds: selectedCharacterIds,
+                                onAdd: { addingRole = .main },
+                                onToggle: toggle,
+                                onEdit: { editingCharacter = $0 }
+                            )
+                            CharacterSection(
+                                role: .side,
+                                characters: vm.sideCharacters,
+                                selectedIds: selectedCharacterIds,
+                                onAdd: { addingRole = .side },
+                                onToggle: toggle,
+                                onEdit: { editingCharacter = $0 }
+                            )
+                        }
                     }
                     .padding(.top, 20)
                     .padding(.bottom, 100)
@@ -320,5 +325,89 @@ private struct CharacterCard: View {
             }
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Shimmer placeholder for cold-start loading
+
+private struct CharacterSectionSkeleton: View {
+    let role: CharacterRole
+    let cardCount: Int = 5
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(role.sectionTitle)
+                .font(.title2.weight(.bold))
+
+            LazyVGrid(columns: columns, spacing: 20) {
+                ForEach(0..<cardCount, id: \.self) { _ in
+                    CharacterCardSkeleton()
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+    }
+}
+
+private struct CharacterCardSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.gray.opacity(0.18))
+                .aspectRatio(1, contentMode: .fit)
+
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(Color.gray.opacity(0.18))
+                .frame(height: 12)
+                .padding(.horizontal, 6)
+        }
+        .shimmering()
+    }
+}
+
+// MARK: - Shimmer modifier
+
+private extension View {
+    func shimmering() -> some View {
+        modifier(ShimmerModifier())
+    }
+}
+
+private struct ShimmerModifier: ViewModifier {
+    @State private var phase: CGFloat = -1
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                GeometryReader { geo in
+                    LinearGradient(
+                        colors: [
+                            .clear,
+                            Color.white.opacity(0.55),
+                            .clear,
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: geo.size.width * 0.45)
+                    .offset(x: geo.size.width * phase)
+                    .blendMode(.plusLighter)
+                }
+                .allowsHitTesting(false)
+            )
+            .mask(content)
+            .onAppear {
+                withAnimation(
+                    .linear(duration: 1.4).repeatForever(autoreverses: false)
+                ) {
+                    phase = 1.5
+                }
+            }
     }
 }
