@@ -17,6 +17,11 @@ struct ChooseModeView: View {
     let onClose: () -> Void
     let onSelect: (StoryMode) -> Void
 
+    /// True once the custom header has scrolled out of view — drives the
+    /// nav-bar title swap so the inline title only appears in the blurred
+    /// toolbar when the user has scrolled past the large header.
+    @State private var showInlineTitle = false
+
     private let modes: [StoryMode] = [
         StoryMode(title: "Creative",            symbolName: "paintpalette.fill",   imageName: "creative",            tint: .pink),
         StoryMode(title: "Inventors",           symbolName: "lightbulb.fill",      imageName: "inventors",           tint: .yellow),
@@ -40,6 +45,9 @@ struct ChooseModeView: View {
                 VStack(spacing: 6) {
                     Text("Choose a mode")
                         .font(.title2.weight(.bold))
+                        .onScrollVisibilityChange(threshold: 0.1) { isVisible in
+                            showInlineTitle = !isVisible
+                        }
                     Text("Pick a theme for your next story.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -70,6 +78,14 @@ struct ChooseModeView: View {
             }
         }
         .modeStepChrome(isRoot: true, onClose: onClose)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Choose a mode")
+                    .font(.headline)
+                    .opacity(showInlineTitle ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.2), value: showInlineTitle)
+            }
+        }
     }
 }
 
