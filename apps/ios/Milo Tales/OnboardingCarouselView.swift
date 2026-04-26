@@ -43,20 +43,6 @@ struct OnboardingCarouselView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HStack {
-                    Spacer()
-                    Button {
-                        onFinish()
-                    } label: {
-                        Text("Skip")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.trailing, 20)
-                    .padding(.top, 12)
-                }
-
                 TabView(selection: $page) {
                     ForEach(slides.indices, id: \.self) { i in
                         SlideView(slide: slides[i])
@@ -103,10 +89,12 @@ struct OnboardingCarouselView: View {
                 .padding(.bottom, 28)
             }
         }
-        .navigationBarBackButtonHidden(true)
-        #if os(iOS)
-        .toolbar(.hidden, for: .navigationBar)
-        #endif
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Skip") { onFinish() }
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 }
 
