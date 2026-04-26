@@ -35,7 +35,8 @@ struct CharacterIconView: View {
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .fill(tint.opacity(0.18))
                     }
-                    .fade(duration: 0.15)
+                    .loadDiskFileSynchronously()
+                    .fade(duration: 0.35)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
             } else {
