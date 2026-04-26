@@ -22,18 +22,18 @@ struct CreativeModeView: View {
     @State private var moral: PickOption?
 
     private let typeOptions: [PickOption] = [
-        .init(title: "Fox",      symbolName: "pawprint.fill",  tint: .orange),
-        .init(title: "Dragon",   symbolName: "flame.fill",     tint: .red),
-        .init(title: "Elf",      symbolName: "leaf.fill",      tint: .green),
-        .init(title: "Dinosaur", symbolName: "lizard.fill",    tint: .mint),
-        .init(title: "Robot",    symbolName: "gearshape.fill", tint: .gray),
-        .init(title: "Unicorn",  symbolName: "sparkles",       tint: .pink),
-        .init(title: "Dog",      symbolName: "dog.fill",       tint: .brown),
-        .init(title: "Bear",     symbolName: "teddybear.fill", tint: .yellow),
-        .init(title: "Cat",      symbolName: "cat.fill",       tint: .orange),
-        .init(title: "Rabbit",   symbolName: "hare.fill",      tint: .gray),
-        .init(title: "Dolphin",  symbolName: "fish.fill",      tint: .blue),
-        .init(title: "Fairy",    symbolName: "wand.and.stars", tint: .purple),
+        .init(title: "Fox",      symbolName: "pawprint.fill",  tint: .orange, imageName: "fox"),
+        .init(title: "Dragon",   symbolName: "flame.fill",     tint: .red,    imageName: "dragon"),
+        .init(title: "Elf",      symbolName: "leaf.fill",      tint: .green,  imageName: "elf"),
+        .init(title: "Dinosaur", symbolName: "lizard.fill",    tint: .mint,   imageName: "dinosaur"),
+        .init(title: "Robot",    symbolName: "gearshape.fill", tint: .gray,   imageName: "robot"),
+        .init(title: "Unicorn",  symbolName: "sparkles",       tint: .pink,   imageName: "unicorn"),
+        .init(title: "Dog",      symbolName: "dog.fill",       tint: .brown,  imageName: "dog"),
+        .init(title: "Bear",     symbolName: "teddybear.fill", tint: .yellow, imageName: "bear"),
+        .init(title: "Cat",      symbolName: "cat.fill",       tint: .orange, imageName: "cat"),
+        .init(title: "Rabbit",   symbolName: "hare.fill",      tint: .gray,   imageName: "rabbit"),
+        .init(title: "Dolphin",  symbolName: "fish.fill",      tint: .blue,   imageName: "dolphin"),
+        .init(title: "Fairy",    symbolName: "wand.and.stars", tint: .purple, imageName: "fairy"),
     ]
 
     private let professionOptions: [PickOption] = [

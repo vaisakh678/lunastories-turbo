@@ -10,6 +10,9 @@ struct PickOption: Identifiable, Hashable {
     let title: String
     let symbolName: String
     let tint: Color
+    /// Optional asset image name. When set, the tile renders the artwork
+    /// (cropped to a square) instead of the tinted SF symbol.
+    var imageName: String? = nil
 }
 
 extension View {
@@ -102,13 +105,12 @@ struct OptionGrid: View {
     let onSelect: (PickOption) -> Void
 
     private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 20),
+        GridItem(.flexible(), spacing: 20),
     ]
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
+        LazyVGrid(columns: columns, spacing: 20) {
             ForEach(options) { option in
                 OptionTile(option: option) { onSelect(option) }
             }
@@ -123,15 +125,26 @@ struct OptionTile: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 6) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .fill(option.tint.opacity(0.18))
-                    Image(systemName: option.symbolName)
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundStyle(option.tint)
+                if let imageName = option.imageName {
+                    Color.clear
+                        .aspectRatio(1, contentMode: .fit)
+                        .overlay(
+                            Image(imageName)
+                                .resizable()
+                                .scaledToFill()
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(option.tint.opacity(0.18))
+                        Image(systemName: option.symbolName)
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundStyle(option.tint)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(1, contentMode: .fit)
                 }
-                .frame(maxWidth: .infinity)
-                .aspectRatio(1, contentMode: .fit)
 
                 Text(option.title)
                     .font(.caption.weight(.semibold))
