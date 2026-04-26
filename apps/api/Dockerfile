@@ -38,8 +38,10 @@ COPY apps/api/package.json ./apps/api/package.json
 RUN pnpm install --frozen-lockfile --filter=@repo/db \
  && pnpm install --frozen-lockfile --filter=api --prod
 
-# Copy bundled API + entrypoint
-COPY --from=build /app/apps/api/dist/index.js ./apps/api/index.js
+# Copy bundled API + entrypoint. Use .cjs so Node treats the bundle as
+# CommonJS (esbuild's default), even though api/package.json declares
+# "type": "module" for the dev/source side.
+COPY --from=build /app/apps/api/dist/index.cjs ./apps/api/index.cjs
 COPY apps/api/start.sh ./apps/api/start.sh
 RUN chmod +x ./apps/api/start.sh
 

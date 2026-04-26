@@ -7,4 +7,4 @@ pnpm db:migrate
 
 echo "Starting API server..."
 cd /app/apps/api
-exec node index.js
+exec node index.cjs

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 --external:sharp ./src/index.ts",
+    "build": "esbuild --bundle --outfile=./dist/index.cjs --platform=node --target=node20 --external:sharp ./src/index.ts",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
