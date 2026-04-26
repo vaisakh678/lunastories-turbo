@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		E9E6ECD02F9CC0F3007B0CE5 /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */; };
 		E9E6ECD22F9CC0F3007B0CE5 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ECD12F9CC0F3007B0CE5 /* ClerkKitUI */; };
+		E9E6ED1E2F9DB494007B0CE5 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ED1D2F9DB494007B0CE5 /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9E6ED1E2F9DB494007B0CE5 /* Kingfisher in Frameworks */,
 				E9E6ECD02F9CC0F3007B0CE5 /* ClerkKit in Frameworks */,
 				E9E6ECD22F9CC0F3007B0CE5 /* ClerkKitUI in Frameworks */,
 			);
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */,
 				E9E6ECD12F9CC0F3007B0CE5 /* ClerkKitUI */,
+				E9E6ED1D2F9DB494007B0CE5 /* Kingfisher */,
 			);
 			productName = "Milo Tales";
 			productReference = E98199932F9CAAE10045FE32 /* Milo Tales.app */;
@@ -105,6 +108,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */,
+				E9E6ED1C2F9DB494007B0CE5 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E98199942F9CAAE10045FE32 /* Products */;
@@ -354,6 +358,14 @@
 				minimumVersion = 1.1.0;
 			};
 		};
+		E9E6ED1C2F9DB494007B0CE5 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.8.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -366,6 +378,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */;
 			productName = ClerkKitUI;
+		};
+		E9E6ED1D2F9DB494007B0CE5 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9E6ED1C2F9DB494007B0CE5 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

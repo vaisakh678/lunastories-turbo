@@ -258,6 +258,7 @@ private struct AddCharacterTile: View {
                 }
                 .frame(maxWidth: .infinity)
                 .aspectRatio(1, contentMode: .fit)
+                .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
 
                 Text(" ")
                     .font(.subheadline.weight(.semibold))

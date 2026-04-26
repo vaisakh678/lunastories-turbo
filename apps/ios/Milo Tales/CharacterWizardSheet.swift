@@ -296,7 +296,10 @@ private struct IconStep: View {
     @Binding var draft: CharacterDraft
     @Environment(AvatarsViewModel.self) private var avatars
 
-    private let columns = [GridItem(.adaptive(minimum: 84), spacing: 12)]
+    private let columns = Array(
+        repeating: GridItem(.flexible(), spacing: 12),
+        count: 3
+    )
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -322,7 +325,8 @@ private struct IconStep: View {
                                 cornerRadius: 22,
                                 glyphPointSize: 28
                             )
-                            .frame(width: 84, height: 84)
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(1, contentMode: .fit)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                                     .strokeBorder(

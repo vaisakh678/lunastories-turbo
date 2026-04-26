@@ -3,6 +3,7 @@
 //  Milo Tales
 //
 
+import Kingfisher
 import SwiftUI
 
 func isAvatarId(_ name: String) -> Bool {
@@ -13,6 +14,9 @@ func isAvatarId(_ name: String) -> Bool {
 /// is a UUID, otherwise the SF Symbol on a tinted background. Both variants
 /// fill the same square footprint clipped to the given corner radius, so
 /// callers can swap freely.
+///
+/// Avatar images are cached by Kingfisher using the avatar's `storageKey` (the
+/// stable S3 key), not the URL — so the cache survives presigned-URL rotation.
 struct CharacterIconView: View {
     let symbolName: String
     let tint: Color
@@ -23,22 +27,17 @@ struct CharacterIconView: View {
 
     var body: some View {
         ZStack {
-            if isAvatarId(symbolName), let url = avatars.url(forCharacterIcon: symbolName) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
+            if isAvatarId(symbolName),
+               let avatar = avatars.avatar(byId: symbolName),
+               let url = URL(string: avatar.url) {
+                KFImage.url(url, cacheKey: avatar.storageKey)
+                    .placeholder { _ in
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .fill(tint.opacity(0.18))
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        fallbackSymbol("person.fill")
-                    @unknown default:
-                        fallbackSymbol("person.fill")
                     }
-                }
+                    .fade(duration: 0.15)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
             } else {
                 fallbackSymbol(symbolName)
             }

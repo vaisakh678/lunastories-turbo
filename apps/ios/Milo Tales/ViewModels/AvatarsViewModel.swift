@@ -28,9 +28,4 @@ final class AvatarsViewModel {
     func avatar(byId id: String) -> AvatarResponse? {
         avatars.first { $0.id == id }
     }
-
-    func url(forCharacterIcon symbolName: String) -> URL? {
-        guard let avatar = avatar(byId: symbolName) else { return nil }
-        return URL(string: avatar.url)
-    }
 }
