@@ -12,6 +12,7 @@ import {
 
 import { characterSchema } from "./characters";
 import { storyStatusEnum } from "./enums";
+import { fileSchema } from "./files";
 import { userSchema } from "./users";
 
 export const storySchema = pgTable("stories", {
@@ -33,7 +34,9 @@ export const storySchema = pgTable("stories", {
   content: jsonb("content"),
   bodyText: text("body_text"),
 
-  audioStorageKey: text("audio_storage_key"),
+  audioFileId: uuid("audio_file_id").references(() => fileSchema.id, {
+    onDelete: "set null",
+  }),
   durationSeconds: integer("duration_seconds"),
 
   textInputTokens: integer("text_input_tokens"),

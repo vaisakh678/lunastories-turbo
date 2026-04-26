@@ -16,8 +16,8 @@ import { and, asc, desc, eq, inArray, isNull, lt } from "drizzle-orm";
 import { BadRequest, InternalError, NotFound } from "../lib/api-error";
 import { generateAudio } from "../lib/audio-generator";
 import { logger } from "../lib/logger";
-import { presignAudio, uploadAudio } from "../lib/storage";
 import { generateStory } from "../lib/story-generator";
+import { presignFile, uploadFile } from "./file-service";
 
 function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
   return {
@@ -41,9 +41,7 @@ async function toDTO(
   row: typeof storySchema.$inferSelect,
   characterIds: string[],
 ): Promise<StoryDTO> {
-  const audioUrl = row.audioStorageKey
-    ? await presignAudio(row.audioStorageKey)
-    : null;
+  const audioUrl = row.audioFileId ? await presignFile(row.audioFileId) : null;
   return {
     ...toSummaryDTO(row),
     characterIds,
@@ -249,13 +247,17 @@ export async function generateStoryAudio(
   }
 
   const audio = await generateAudio(row.bodyText);
-  const key = `stories/${storyId}.mp3`;
-  await uploadAudio(key, audio.buffer, audio.contentType);
+  const key = `files/${crypto.randomUUID()}.mp3`;
+  const file = await uploadFile({
+    buffer: audio.buffer,
+    contentType: audio.contentType,
+    storageKey: key,
+  });
 
   const [updated] = await db
     .update(storySchema)
     .set({
-      audioStorageKey: key,
+      audioFileId: file.id,
       durationSeconds: audio.durationSeconds,
       audioInputChars: audio.inputChars,
     })

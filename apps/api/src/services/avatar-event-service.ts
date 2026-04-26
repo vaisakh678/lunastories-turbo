@@ -1,19 +1,25 @@
-import db, { avatarEventSchema, characterAvatarSchema } from "@repo/db";
+import db, {
+  avatarEventSchema,
+  characterAvatarSchema,
+  fileSchema,
+} from "@repo/db";
 import type { AvatarEventDTO } from "@repo/dto";
 import { and, asc, eq, isNull } from "drizzle-orm";
 
 import { BadRequest, NotFound } from "../lib/api-error";
 import { processAvatarImage } from "../lib/image-processor";
 import { logger } from "../lib/logger";
-import { deleteObject, presignObject, uploadObject } from "../lib/storage";
+import { presignObject } from "../lib/storage";
+import { softDeleteFile, uploadFile } from "./file-service";
 
 const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
 
-async function rowToDTO(
-  row: typeof avatarEventSchema.$inferSelect,
-): Promise<AvatarEventDTO> {
-  const url = await presignObject(row.storageKey);
+type EventRow = typeof avatarEventSchema.$inferSelect;
+type FileRow = typeof fileSchema.$inferSelect;
+
+async function rowToDTO(row: EventRow, file: FileRow): Promise<AvatarEventDTO> {
+  const url = await presignObject(file.storageKey);
   return {
     id: row.id,
     avatarId: row.avatarId,
@@ -59,12 +65,13 @@ export async function listEventsForAvatar(
   }
 
   const rows = await db
-    .select()
+    .select({ event: avatarEventSchema, file: fileSchema })
     .from(avatarEventSchema)
+    .innerJoin(fileSchema, eq(avatarEventSchema.fileId, fileSchema.id))
     .where(and(...conditions))
     .orderBy(asc(avatarEventSchema.position), asc(avatarEventSchema.createdAt));
 
-  return Promise.all(rows.map(rowToDTO));
+  return Promise.all(rows.map((r) => rowToDTO(r.event, r.file)));
 }
 
 export async function uploadAvatarEvent(args: {
@@ -86,6 +93,12 @@ export async function uploadAvatarEvent(args: {
   }
 
   const processed = await processAvatarImage(args.buffer);
+  const key = `files/${crypto.randomUUID()}.${processed.ext}`;
+  const file = await uploadFile({
+    buffer: processed.buffer,
+    contentType: processed.contentType,
+    storageKey: key,
+  });
 
   const [created] = await db
     .insert(avatarEventSchema)
@@ -95,27 +108,11 @@ export async function uploadAvatarEvent(args: {
       setting: args.setting,
       action: args.action,
       tags: args.tags,
-      storageKey: "pending",
+      fileId: file.id,
     })
     .returning();
 
-  const key = `avatars/${args.avatarId}/events/${created.id}.${processed.ext}`;
-
-  try {
-    await uploadObject(key, processed.buffer, processed.contentType);
-  } catch (err) {
-    logger.error({ err, id: created.id }, "Event upload failed; rolling back row");
-    await db.delete(avatarEventSchema).where(eq(avatarEventSchema.id, created.id));
-    throw err;
-  }
-
-  const [updated] = await db
-    .update(avatarEventSchema)
-    .set({ storageKey: key })
-    .where(eq(avatarEventSchema.id, created.id))
-    .returning();
-
-  return rowToDTO(updated);
+  return rowToDTO(created, file);
 }
 
 export async function softDeleteAvatarEvent(
@@ -134,17 +131,12 @@ export async function softDeleteAvatarEvent(
     )
     .returning({
       id: avatarEventSchema.id,
-      storageKey: avatarEventSchema.storageKey,
+      fileId: avatarEventSchema.fileId,
     });
 
   if (!row) throw NotFound("Event not found");
 
-  try {
-    await deleteObject(row.storageKey);
-  } catch (err) {
-    logger.warn(
-      { err, id: row.id, key: row.storageKey },
-      "Failed to delete S3 object",
-    );
-  }
+  softDeleteFile(row.fileId).catch((err) =>
+    logger.warn({ err, id: row.fileId }, "Failed to soft-delete event file"),
+  );
 }

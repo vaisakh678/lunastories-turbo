@@ -46,8 +46,3 @@ export async function deleteObject(key: string): Promise<void> {
     new DeleteObjectCommand({ Bucket: env.S3_BUCKET, Key: key }),
   );
 }
-
-// Audio aliases (preserve existing call sites)
-export const uploadAudio = (key: string, body: Buffer, contentType = "audio/mpeg") =>
-  uploadObject(key, body, contentType);
-export const presignAudio = presignObject;

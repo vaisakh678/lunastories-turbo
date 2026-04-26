@@ -8,10 +8,14 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+import { fileSchema } from "./files";
+
 export const characterAvatarSchema = pgTable("character_avatars", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 64 }),
-  storageKey: text("storage_key").notNull(),
+  fileId: uuid("file_id")
+    .notNull()
+    .references(() => fileSchema.id, { onDelete: "restrict" }),
   isEnabled: boolean("is_enabled").notNull().default(true),
   position: smallint("position").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -33,7 +37,9 @@ export const avatarEventSchema = pgTable("avatar_events", {
   setting: varchar("setting", { length: 32 }),
   action: varchar("action", { length: 32 }),
   tags: text("tags").array().notNull().default([]),
-  storageKey: text("storage_key").notNull(),
+  fileId: uuid("file_id")
+    .notNull()
+    .references(() => fileSchema.id, { onDelete: "restrict" }),
   isEnabled: boolean("is_enabled").notNull().default(true),
   position: smallint("position").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true })

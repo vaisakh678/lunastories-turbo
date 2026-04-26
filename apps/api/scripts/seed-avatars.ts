@@ -15,7 +15,7 @@ import { eq } from "drizzle-orm";
 
 import "../src/config/env";
 import { processAvatarImage } from "../src/lib/image-processor";
-import { uploadObject } from "../src/lib/storage";
+import { uploadFile } from "../src/services/file-service";
 
 const SOURCE_DIR = resolve(
   import.meta.dirname,
@@ -54,13 +54,17 @@ async function main() {
 
     const original = await readFile(resolve(SOURCE_DIR, filename));
     const processed = await processAvatarImage(original);
-    const key = `avatars/${id}.${processed.ext}`;
+    const key = `files/${crypto.randomUUID()}.${processed.ext}`;
 
-    await uploadObject(key, processed.buffer, processed.contentType);
+    const file = await uploadFile({
+      buffer: processed.buffer,
+      contentType: processed.contentType,
+      storageKey: key,
+    });
     await db.insert(characterAvatarSchema).values({
       id,
       name: null,
-      storageKey: key,
+      fileId: file.id,
     });
 
     inserted += 1;
