@@ -20,7 +20,6 @@ struct AccountView: View {
     }
 
     var body: some View {
-        ZStack {
         ScrollView {
             VStack(spacing: 24) {
                 VStack(spacing: 12) {
@@ -84,7 +83,8 @@ struct AccountView: View {
                     MenuRowLabel(
                         icon: "rectangle.portrait.and.arrow.right",
                         title: "Logout",
-                        tint: .red
+                        tint: .red,
+                        isLoading: isLoggingOut
                     )
                 }
                 .buttonStyle(.plain)
@@ -114,27 +114,6 @@ struct AccountView: View {
             actions: { Button("OK") { errorMessage = nil } },
             message: { Text(errorMessage ?? "") }
         )
-
-        if isLoggingOut {
-            Color.black.opacity(0.35)
-                .ignoresSafeArea()
-                .transition(.opacity)
-            VStack(spacing: 14) {
-                ProgressView()
-                    .controlSize(.large)
-                    .tint(.white)
-                Text("Signing out…")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white)
-            }
-            .padding(28)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color.black.opacity(0.7))
-            )
-            .transition(.opacity)
-        }
-        }
         .animation(.easeInOut(duration: 0.2), value: isLoggingOut)
     }
 
@@ -153,6 +132,7 @@ private struct MenuRowLabel: View {
     let icon: String
     let title: String
     var tint: Color = .primary
+    var isLoading: Bool = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -164,9 +144,16 @@ private struct MenuRowLabel: View {
                 .font(.body)
                 .foregroundStyle(tint)
             Spacer()
-            Image(systemName: "chevron.right")
-                .font(.footnote)
-                .foregroundStyle(.tertiary)
+            if isLoading {
+                ProgressView()
+                    .controlSize(.small)
+                    .foregroundStyle(tint)
+                    .tint(tint)
+            } else {
+                Image(systemName: "chevron.right")
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
