@@ -16,6 +16,20 @@ struct PickOption: Identifiable, Hashable {
 }
 
 extension View {
+    /// Renders an inline toolbar title that fades in based on a binding.
+    /// Pair with `.onScrollVisibilityChange` on the in-content header so the
+    /// title only appears once the large header has scrolled out of view.
+    func scrollAwareToolbarTitle(_ title: String, isShowing: Bool) -> some View {
+        toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(title)
+                    .font(.headline)
+                    .opacity(isShowing ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.2), value: isShowing)
+            }
+        }
+    }
+
     func modeStepChrome(isRoot: Bool, onClose: @escaping () -> Void) -> some View {
         modifier(ModeStepChromeModifier(isRoot: isRoot, onClose: onClose))
     }

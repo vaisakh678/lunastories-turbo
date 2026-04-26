@@ -78,14 +78,7 @@ struct ChooseModeView: View {
             }
         }
         .modeStepChrome(isRoot: true, onClose: onClose)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("Choose a mode")
-                    .font(.headline)
-                    .opacity(showInlineTitle ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.2), value: showInlineTitle)
-            }
-        }
+        .scrollAwareToolbarTitle("Choose a mode", isShowing: showInlineTitle)
     }
 }
 

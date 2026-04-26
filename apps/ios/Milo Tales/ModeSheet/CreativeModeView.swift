@@ -21,6 +21,10 @@ struct CreativeModeView: View {
     @State private var professionByChar: [UUID: PickOption] = [:]
     @State private var moral: PickOption?
 
+    @State private var showInlineTypeTitle = false
+    @State private var showInlineProfessionTitle = false
+    @State private var showInlineMoralTitle = false
+
     private let typeOptions: [PickOption] = [
         .init(title: "Fox",      symbolName: "pawprint.fill",  tint: .orange, imageName: "fox"),
         .init(title: "Dragon",   symbolName: "flame.fill",     tint: .red,    imageName: "dragon"),
@@ -97,6 +101,9 @@ struct CreativeModeView: View {
                         title: "Choose a type"
                     )
                     .padding(.bottom, 16)
+                    .onScrollVisibilityChange(threshold: 0.1) { isVisible in
+                        showInlineTypeTitle = !isVisible
+                    }
                 }
                 OptionGrid(options: typeOptions) { handleType($0, charIndex: charIndex) }
                     .padding(.horizontal, 20)
@@ -104,6 +111,7 @@ struct CreativeModeView: View {
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
+        .scrollAwareToolbarTitle("Choose a type", isShowing: showInlineTypeTitle)
     }
 
     private func professionStep(charIndex: Int) -> some View {
@@ -115,6 +123,9 @@ struct CreativeModeView: View {
                         title: "Choose a profession"
                     )
                     .padding(.bottom, 16)
+                    .onScrollVisibilityChange(threshold: 0.1) { isVisible in
+                        showInlineProfessionTitle = !isVisible
+                    }
                 }
                 OptionGrid(options: professionOptions) { handleProfession($0, charIndex: charIndex) }
                     .padding(.horizontal, 20)
@@ -122,6 +133,7 @@ struct CreativeModeView: View {
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
+        .scrollAwareToolbarTitle("Choose a profession", isShowing: showInlineProfessionTitle)
     }
 
     private var moralStep: some View {
@@ -129,12 +141,16 @@ struct CreativeModeView: View {
             VStack(spacing: 0) {
                 PlainStepHeader(title: "Choose a moral", subtitle: "Pick a lesson for your story.")
                     .padding(.bottom, 16)
+                    .onScrollVisibilityChange(threshold: 0.1) { isVisible in
+                        showInlineMoralTitle = !isVisible
+                    }
                 OptionList(options: moralOptions) { handleMoral($0) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
+        .scrollAwareToolbarTitle("Choose a moral", isShowing: showInlineMoralTitle)
     }
 
     private func handleType(_ option: PickOption, charIndex: Int) {
