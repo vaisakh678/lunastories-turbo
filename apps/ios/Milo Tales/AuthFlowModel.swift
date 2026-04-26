@@ -41,9 +41,10 @@ final class AuthFlowModel {
         sheetStep = nil
     }
 
-    /// Sheet's `onDismiss` handles two model-internal cases:
-    /// 1. Multi-step transition queued by `transition(to:)` — reopen the next sheet.
-    /// 2. User-initiated dismiss while onboarding is pushed — pop back.
+    /// Sheet's `onDismiss`. Only handles the multi-step transition case
+    /// (`transition(to:)` queues the next step, `sheetStep = nil` triggers
+    /// dismiss, this reopens with the queued step). User-initiated dismiss
+    /// stays where the user was — onboarding push is preserved.
     /// (Successful-auth gating is handled by ContentView, not the model.)
     func handleSheetDismiss() {
         if let next = pendingStep {
@@ -51,10 +52,6 @@ final class AuthFlowModel {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 self.sheetStep = next
             }
-            return
-        }
-        if showOnboarding {
-            showOnboarding = false
         }
     }
 
