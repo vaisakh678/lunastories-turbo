@@ -330,6 +330,6 @@ private struct AudioPlayerBar: View {
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
-        .padding(.bottom, 36)
+        // .padding(.bottom, 36)
     }
 }
