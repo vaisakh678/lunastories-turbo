@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { apiGet, http } from "@/lib/http";
 
 export function AvatarsPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const list = useQuery({
@@ -79,6 +81,7 @@ export function AvatarsPage() {
               <AvatarTile
                 key={a.id}
                 avatar={a}
+                onOpen={() => navigate(`/avatars/${a.id}`)}
                 onDelete={() => {
                   if (confirm(`Delete "${a.name ?? "this avatar"}"?`)) {
                     del.mutate(a.id);
@@ -225,33 +228,44 @@ function UploadAvatarDialog({
 
 function AvatarTile({
   avatar,
+  onOpen,
   onDelete,
   isDeleting,
 }: {
   avatar: AvatarDTO;
+  onOpen: () => void;
   onDelete: () => void;
   isDeleting: boolean;
 }) {
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-white">
-      <div className="bg-muted/30 flex aspect-square items-center justify-center">
-        <img
-          src={avatar.url}
-          alt={avatar.name ?? "avatar"}
-          className="h-full w-full object-contain"
-          loading="lazy"
-        />
-      </div>
-      <div className="border-t p-2">
-        <div className="truncate text-xs font-medium" title={avatar.name ?? avatar.id}>
-          {avatar.name ?? "—"}
+      <button
+        type="button"
+        onClick={onOpen}
+        className="block w-full text-left"
+      >
+        <div className="bg-muted/30 flex aspect-square items-center justify-center">
+          <img
+            src={avatar.url}
+            alt={avatar.name ?? "avatar"}
+            className="h-full w-full object-contain"
+            loading="lazy"
+          />
         </div>
-      </div>
+        <div className="border-t p-2">
+          <div className="truncate text-xs font-medium" title={avatar.name ?? avatar.id}>
+            {avatar.name ?? "—"}
+          </div>
+        </div>
+      </button>
       <Button
         variant="destructive"
         size="icon"
         className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
-        onClick={onDelete}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
         disabled={isDeleting}
       >
         {isDeleting ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
