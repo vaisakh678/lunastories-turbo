@@ -258,6 +258,7 @@ private struct AddCharacterTile: View {
                 }
                 .frame(maxWidth: .infinity)
                 .aspectRatio(1, contentMode: .fit)
+                .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
 
                 Text(" ")
                     .font(.subheadline.weight(.semibold))
@@ -278,13 +279,13 @@ private struct CharacterCard: View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 6) {
                 ZStack(alignment: .topTrailing) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(character.tint.opacity(0.18))
-                        Image(systemName: character.symbolName)
-                            .font(.system(size: 30, weight: .semibold))
-                            .foregroundStyle(character.tint)
-                    }
+                    CharacterIconView(
+                        symbolName: character.symbolName,
+                        tint: character.tint,
+                        cornerRadius: 22,
+                        glyphPointSize: 30
+                    )
+                    .aspectRatio(1, contentMode: .fit)
                     .overlay(
                         RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .strokeBorder(

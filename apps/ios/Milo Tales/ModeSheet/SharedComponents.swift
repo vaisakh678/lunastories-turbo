@@ -61,14 +61,13 @@ struct CharacterStepHeader: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(character.tint.opacity(0.18))
-                    .frame(width: 64, height: 64)
-                Image(systemName: character.symbolName)
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundStyle(character.tint)
-            }
+            CharacterIconView(
+                symbolName: character.symbolName,
+                tint: character.tint,
+                cornerRadius: 32,
+                glyphPointSize: 28
+            )
+            .frame(width: 64, height: 64)
             Text(character.name)
                 .font(.title3.weight(.semibold))
             Text(title)

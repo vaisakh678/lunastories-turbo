@@ -1,10 +1,11 @@
 import type { AvatarDTO, AvatarEventDTO } from "@repo/dto";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { ChevronLeft, Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, Loader2, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { AvatarFormDialog } from "@/components/avatar-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,7 @@ export function AvatarDetailPage() {
   const { id } = useParams<{ id: string }>();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const avatars = useQuery({
     queryKey: ["admin-avatars"],
@@ -80,8 +82,14 @@ export function AvatarDetailPage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Avatar</CardTitle>
+          {avatar && (
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+              <Pencil className="size-4" />
+              Edit
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {avatars.isLoading || !avatar ? (
@@ -139,6 +147,18 @@ export function AvatarDetailPage() {
           onUploaded={() => {
             setOpen(false);
             qc.invalidateQueries({ queryKey: ["admin-avatar-events", id] });
+          }}
+        />
+      )}
+
+      {avatar && (
+        <AvatarFormDialog
+          avatar={avatar}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onSaved={() => {
+            setEditOpen(false);
+            qc.invalidateQueries({ queryKey: ["admin-avatars"] });
           }}
         />
       )}

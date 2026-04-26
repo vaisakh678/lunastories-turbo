@@ -294,27 +294,49 @@ private struct BasicInfoStep: View {
 
 private struct IconStep: View {
     @Binding var draft: CharacterDraft
-    private let columns = [GridItem(.adaptive(minimum: 64), spacing: 12)]
+    @Environment(AvatarsViewModel.self) private var avatars
+
+    private let columns = Array(
+        repeating: GridItem(.flexible(), spacing: 12),
+        count: 3
+    )
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             FieldLabel("Pick an icon")
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(iconOptions, id: \.self) { symbol in
-                    let isSelected = draft.iconName == symbol
-                    Button {
-                        draft.iconName = symbol
-                    } label: {
-                        Image(systemName: symbol)
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(isSelected ? Color.white : Color.accentColor)
-                            .frame(width: 64, height: 64)
-                            .background(
-                                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                    .fill(isSelected ? Color.accentColor : Color.accentColor.opacity(0.12))
+            if avatars.avatars.isEmpty {
+                if avatars.isLoading {
+                    ProgressView().padding(.vertical, 16)
+                } else {
+                    Text("No avatars available yet.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(avatars.avatars) { avatar in
+                        let isSelected = draft.iconName == avatar.id
+                        Button {
+                            draft.iconName = avatar.id
+                        } label: {
+                            CharacterIconView(
+                                symbolName: avatar.id,
+                                tint: .accentColor,
+                                cornerRadius: 22,
+                                glyphPointSize: 28
                             )
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(1, contentMode: .fit)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                    .strokeBorder(
+                                        isSelected ? Color.accentColor : Color.clear,
+                                        lineWidth: 3
+                                    )
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }

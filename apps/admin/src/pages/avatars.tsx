@@ -1,23 +1,13 @@
 import type { AvatarDTO } from "@repo/dto";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { Loader2, Plus, Trash2, Upload } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { AvatarFormDialog } from "@/components/avatar-form-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiGet, http } from "@/lib/http";
 
@@ -46,15 +36,15 @@ export function AvatarsPage() {
         actions={
           <Button onClick={() => setOpen(true)}>
             <Plus className="size-4" />
-            Upload
+            Add avatar
           </Button>
         }
       />
 
-      <UploadAvatarDialog
+      <AvatarFormDialog
         open={open}
         onOpenChange={setOpen}
-        onUploaded={() => {
+        onSaved={() => {
           setOpen(false);
           qc.invalidateQueries({ queryKey: ["admin-avatars"] });
         }}
@@ -93,135 +83,6 @@ export function AvatarsPage() {
         )}
       </div>
     </div>
-  );
-}
-
-function UploadAvatarDialog({
-  open,
-  onOpenChange,
-  onUploaded,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onUploaded: () => void;
-}) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  // Reset whenever the dialog re-opens
-  useEffect(() => {
-    if (open) {
-      setName("");
-      setFile(null);
-      setError(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }, [open]);
-
-  const upload = useMutation({
-    mutationFn: async (args: { file: File; name: string }) => {
-      const form = new FormData();
-      form.append("file", args.file);
-      if (args.name.trim()) form.append("name", args.name.trim());
-      const res = await http.post<{ data: AvatarDTO }>(
-        "/api/v1/admin/avatars",
-        form,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      );
-      return res.data.data;
-    },
-    onSuccess: () => onUploaded(),
-    onError: (err) => setError(extractMessage(err)),
-  });
-
-  const previewUrl = file ? URL.createObjectURL(file) : null;
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Upload avatar</DialogTitle>
-          <DialogDescription>
-            PNG, JPG, or WebP up to 4 MB. Square images look best.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="avatar-name">Name (optional)</Label>
-            <Input
-              id="avatar-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Sleepy Fox"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="avatar-file">Image</Label>
-            <Input
-              id="avatar-file"
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              onChange={(e) => {
-                setFile(e.target.files?.[0] ?? null);
-                setError(null);
-              }}
-            />
-          </div>
-
-          {previewUrl && (
-            <div className="flex justify-center">
-              <div className="bg-muted/30 flex size-32 items-center justify-center overflow-hidden rounded-md border">
-                <img
-                  src={previewUrl}
-                  alt="preview"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-md border p-3 text-sm">
-              {error}
-            </div>
-          )}
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={upload.isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            disabled={!file || upload.isPending}
-            onClick={() => {
-              if (!file) return;
-              upload.mutate({ file, name });
-            }}
-          >
-            {upload.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Upload className="size-4" />
-            )}
-            Upload
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -272,12 +133,4 @@ function AvatarTile({
       </Button>
     </div>
   );
-}
-
-function extractMessage(err: unknown): string {
-  if (axios.isAxiosError(err)) {
-    return err.response?.data?.error ?? err.message;
-  }
-  if (err instanceof Error) return err.message;
-  return "Upload failed";
 }

@@ -10,6 +10,8 @@ import ClerkKit
 
 @main
 struct Milo_TalesApp: App {
+    @State private var avatars = AvatarsViewModel()
+
     init() {
         Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
     }
@@ -18,7 +20,9 @@ struct Milo_TalesApp: App {
         WindowGroup {
             ContentView()
                 .environment(Clerk.shared)
+                .environment(avatars)
                 .preferredColorScheme(.light)
+                .task { await avatars.load() }
         }
     }
 }

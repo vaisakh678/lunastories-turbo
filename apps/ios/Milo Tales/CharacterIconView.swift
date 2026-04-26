@@ -1,0 +1,58 @@
+//
+//  CharacterIconView.swift
+//  Milo Tales
+//
+
+import Kingfisher
+import SwiftUI
+
+func isAvatarId(_ name: String) -> Bool {
+    UUID(uuidString: name) != nil
+}
+
+/// Renders a character icon — a server-managed avatar image when `symbolName`
+/// is a UUID, otherwise the SF Symbol on a tinted background. Both variants
+/// fill the same square footprint clipped to the given corner radius, so
+/// callers can swap freely.
+///
+/// Avatar images are cached by Kingfisher using the avatar's `storageKey` (the
+/// stable S3 key), not the URL — so the cache survives presigned-URL rotation.
+struct CharacterIconView: View {
+    let symbolName: String
+    let tint: Color
+    let cornerRadius: CGFloat
+    let glyphPointSize: CGFloat
+
+    @Environment(AvatarsViewModel.self) private var avatars
+
+    var body: some View {
+        ZStack {
+            if isAvatarId(symbolName),
+               let avatar = avatars.avatar(byId: symbolName),
+               let url = URL(string: avatar.url) {
+                KFImage.url(url, cacheKey: avatar.storageKey)
+                    .placeholder { _ in
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(tint.opacity(0.18))
+                    }
+                    .fade(duration: 0.15)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                fallbackSymbol(symbolName)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func fallbackSymbol(_ name: String) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(tint.opacity(0.18))
+            Image(systemName: name)
+                .font(.system(size: glyphPointSize, weight: .semibold))
+                .foregroundStyle(tint)
+        }
+    }
+}

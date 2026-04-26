@@ -1,6 +1,7 @@
 export interface AvatarDTO {
   id: string;
   name: string | null;
+  storageKey: string;
   url: string;
   isEnabled: boolean;
   position: number;
