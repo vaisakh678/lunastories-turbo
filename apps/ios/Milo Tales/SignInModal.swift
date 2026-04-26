@@ -48,8 +48,14 @@ struct ProviderSheet: View {
         }
     }
 
+    enum LoadingProvider {
+        case apple
+        case google
+    }
+
     var mode: Mode = .signIn
     let isLoading: Bool
+    var loadingProvider: LoadingProvider? = nil
     let onApple: () -> Void
     let onGoogle: () -> Void
     let onEmail: () -> Void
@@ -94,7 +100,10 @@ struct ProviderSheet: View {
                         .font(.system(size: 18))
                         .foregroundStyle(.white)
                 ),
-                label: "Continue with Apple"
+                label: "Continue with Apple",
+                showsSpinner: loadingProvider == .apple,
+                spinnerTint: .white,
+                isDisabled: loadingProvider != nil
             )
             .padding(.bottom, 12)
             #endif
@@ -104,7 +113,10 @@ struct ProviderSheet: View {
                 background: lightButtonBg,
                 foreground: textDark,
                 icon: AnyView(googleLogo),
-                label: "Continue with Google"
+                label: "Continue with Google",
+                showsSpinner: loadingProvider == .google,
+                spinnerTint: textDark,
+                isDisabled: loadingProvider != nil
             )
 
             HStack(spacing: 14) {
@@ -125,7 +137,8 @@ struct ProviderSheet: View {
                         .font(.system(size: 16))
                         .foregroundStyle(textDark)
                 ),
-                label: "Continue with Email"
+                label: "Continue with Email",
+                isDisabled: loadingProvider != nil
             )
 
             Spacer(minLength: 24)
@@ -147,11 +160,20 @@ struct ProviderSheet: View {
         background: Color,
         foreground: Color,
         icon: AnyView,
-        label: String
+        label: String,
+        showsSpinner: Bool = false,
+        spinnerTint: Color = .secondary,
+        isDisabled: Bool = false
     ) -> some View {
         Button(action: action) {
             HStack(spacing: 10) {
-                icon
+                if showsSpinner {
+                    ProgressView()
+                        .tint(spinnerTint)
+                        .frame(width: 20, height: 20)
+                } else {
+                    icon
+                }
                 Text(label)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(foreground)
@@ -161,6 +183,7 @@ struct ProviderSheet: View {
             .background(Capsule().fill(background))
         }
         .buttonStyle(.plain)
+        .disabled(isDisabled)
     }
 
     private var googleLogo: some View {

@@ -66,6 +66,7 @@ struct ContentView: View {
             ProviderSheet(
                 mode: auth.providerMode,
                 isLoading: auth.isLoading,
+                loadingProvider: auth.loadingProvider,
                 onApple: { Task { await auth.handleApple() } },
                 onGoogle: { Task { await auth.handleGoogle() } },
                 onEmail: { auth.transition(to: .email) }

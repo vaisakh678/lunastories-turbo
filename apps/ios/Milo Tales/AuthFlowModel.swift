@@ -22,6 +22,9 @@ final class AuthFlowModel {
     var providerMode: ProviderSheet.Mode = .signIn
     var email: String = ""
     var isLoading: Bool = false
+    /// Which provider button is currently in flight on the providers sheet
+    /// (so the button can swap its icon for a spinner).
+    var loadingProvider: ProviderSheet.LoadingProvider?
     var errorMessage: String?
     var showOnboarding: Bool = false
 
@@ -114,7 +117,11 @@ final class AuthFlowModel {
 
     func handleApple() async {
         isLoading = true
-        defer { isLoading = false }
+        loadingProvider = .apple
+        defer {
+            isLoading = false
+            loadingProvider = nil
+        }
         do {
             let result = try await Clerk.shared.auth.signInWithApple()
             if let id = sessionId(from: result) {
@@ -127,7 +134,11 @@ final class AuthFlowModel {
 
     func handleGoogle() async {
         isLoading = true
-        defer { isLoading = false }
+        loadingProvider = .google
+        defer {
+            isLoading = false
+            loadingProvider = nil
+        }
         do {
             let result = try await Clerk.shared.auth.signInWithOAuth(provider: .google)
             if let id = sessionId(from: result) {
