@@ -35,7 +35,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
 function Centered({ label }: { label: string }) {
   return (
-    <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+    <div className="text-muted-foreground flex min-h-screen items-center justify-center text-sm">
       {label}
     </div>
   );
@@ -44,7 +44,7 @@ function Centered({ label }: { label: string }) {
 function NoAccess() {
   const { signOut } = useClerk();
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
       <ShieldOff className="text-muted-foreground size-12" />
       <div>
         <h1 className="text-2xl font-bold">No admin access</h1>
