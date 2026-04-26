@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { PageHeader } from "@/components/page-header";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,7 +23,6 @@ import { apiGet, http } from "@/lib/http";
 
 export function AvatarsPage() {
   const qc = useQueryClient();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const list = useQuery({
@@ -61,7 +61,7 @@ export function AvatarsPage() {
       />
 
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+        <h2 className="text-muted-foreground mb-3 text-sm font-semibold uppercase tracking-wide">
           {list.data ? `${list.data.length} avatars` : "Avatars"}
         </h2>
 
@@ -81,7 +81,6 @@ export function AvatarsPage() {
               <AvatarTile
                 key={a.id}
                 avatar={a}
-                onOpen={() => navigate(`/avatars/${a.id}`)}
                 onDelete={() => {
                   if (confirm(`Delete "${a.name ?? "this avatar"}"?`)) {
                     del.mutate(a.id);
@@ -228,36 +227,37 @@ function UploadAvatarDialog({
 
 function AvatarTile({
   avatar,
-  onOpen,
   onDelete,
   isDeleting,
 }: {
   avatar: AvatarDTO;
-  onOpen: () => void;
   onDelete: () => void;
   isDeleting: boolean;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-lg border bg-white">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="block w-full text-left"
-      >
-        <div className="bg-muted/30 flex aspect-square items-center justify-center">
+    <div className="group bg-card relative overflow-hidden rounded-lg border">
+      <Link to={`/avatars/${avatar.id}`} className="block w-full text-left">
+        <div className="bg-muted/30 relative flex aspect-square items-center justify-center">
           <img
             src={avatar.url}
             alt={avatar.name ?? "avatar"}
-            className="h-full w-full object-contain"
+            className={
+              avatar.isEnabled
+                ? "h-full w-full object-contain"
+                : "h-full w-full object-contain opacity-40"
+            }
             loading="lazy"
           />
         </div>
-        <div className="border-t p-2">
+        <div className="flex items-center justify-between gap-2 border-t p-2">
           <div className="truncate text-xs font-medium" title={avatar.name ?? avatar.id}>
             {avatar.name ?? "—"}
           </div>
+          <Badge variant={avatar.isEnabled ? "default" : "secondary"} className="text-[10px]">
+            {avatar.isEnabled ? "Enabled" : "Disabled"}
+          </Badge>
         </div>
-      </button>
+      </Link>
       <Button
         variant="destructive"
         size="icon"

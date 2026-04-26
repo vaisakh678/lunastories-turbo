@@ -12,6 +12,7 @@ import {
 import {
   listAvatars,
   softDeleteAvatar,
+  updateAvatar,
   uploadAvatar,
 } from "../services/avatar-service";
 
@@ -54,6 +55,17 @@ const avatarRoute = new Hono()
       buffer,
       contentType: file.type,
     });
+    return c.json<APIResponse<typeof avatar>>({ data: avatar });
+  })
+  .patch("/:id", async (c) => {
+    const { id } = idParam.parse({ id: c.req.param("id") });
+    const body = (await c.req.json()) as Record<string, unknown>;
+    const patch: { name?: string | null; isEnabled?: boolean; position?: number } = {};
+    if (typeof body.name === "string") patch.name = body.name.trim() || null;
+    if (body.name === null) patch.name = null;
+    if (typeof body.isEnabled === "boolean") patch.isEnabled = body.isEnabled;
+    if (typeof body.position === "number") patch.position = body.position;
+    const avatar = await updateAvatar(id, patch);
     return c.json<APIResponse<typeof avatar>>({ data: avatar });
   })
   .delete("/:id", async (c) => {

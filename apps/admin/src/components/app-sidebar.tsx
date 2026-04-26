@@ -9,7 +9,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import {
   Sidebar,
@@ -40,15 +40,8 @@ const NAV: NavLeaf[] = [
 ];
 
 export function AppSidebar() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useUser();
   const { signOut } = useClerk();
-
-  function isActive(href: string) {
-    if (href === "/") return location.pathname === "/";
-    return location.pathname === href || location.pathname.startsWith(href + "/");
-  }
 
   return (
     <Sidebar>
@@ -75,14 +68,16 @@ export function AppSidebar() {
             <SidebarMenu>
               {NAV.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    isActive={isActive(item.href)}
-                    onClick={() => navigate(item.href)}
-                  >
-                    <item.icon className="size-4" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
+                  <NavLink to={item.href} end={item.href === "/"}>
+                    {({ isActive }) => (
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <span>
+                          <item.icon className="size-4" />
+                          <span>{item.title}</span>
+                        </span>
+                      </SidebarMenuButton>
+                    )}
+                  </NavLink>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

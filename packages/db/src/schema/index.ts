@@ -4,4 +4,3 @@ export * from "./characters";
 export * from "./stories";
 export * from "./feedback";
 export * from "./avatars";
-export * from "./avatar-events";
