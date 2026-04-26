@@ -24,6 +24,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { EVENT_PRESETS, presetByKey } from "@/lib/event-presets";
 import { apiGet, http } from "@/lib/http";
 
 export function AvatarDetailPage() {
@@ -55,6 +57,17 @@ export function AvatarDetailPage() {
       qc.invalidateQueries({ queryKey: ["admin-avatar-events", id] }),
   });
 
+  const toggleEnabled = useMutation({
+    mutationFn: async (isEnabled: boolean) => {
+      const res = await http.patch<{ data: AvatarDTO }>(
+        `/api/v1/admin/avatars/${id}`,
+        { isEnabled },
+      );
+      return res.data.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-avatars"] }),
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -82,11 +95,22 @@ export function AvatarDetailPage() {
                   className="h-full w-full object-contain"
                 />
               </div>
-              <div>
+              <div className="flex-1">
                 <div className="text-lg font-semibold">{avatar.name ?? "—"}</div>
                 <div className="text-muted-foreground font-mono text-xs">
                   {avatar.id}
                 </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Label htmlFor="avatar-enabled" className="text-sm">
+                  {avatar.isEnabled ? "Enabled" : "Disabled"}
+                </Label>
+                <Switch
+                  id="avatar-enabled"
+                  checked={avatar.isEnabled}
+                  disabled={toggleEnabled.isPending}
+                  onCheckedChange={(v) => toggleEnabled.mutate(v)}
+                />
               </div>
             </div>
           )}
@@ -161,34 +185,31 @@ function UploadEventDialog({
   onUploaded: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState("");
-  const [setting, setSetting] = useState("");
-  const [action, setAction] = useState("");
-  const [tags, setTags] = useState("");
+  const [presetKey, setPresetKey] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
-      setName("");
-      setSetting("");
-      setAction("");
-      setTags("");
+      setPresetKey("");
       setFile(null);
       setError(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }, [open]);
 
+  const preset = presetByKey(presetKey);
+
   const upload = useMutation({
     mutationFn: async () => {
       if (!file) throw new Error("Pick a file first");
+      if (!preset) throw new Error("Pick an event type");
       const form = new FormData();
       form.append("file", file);
-      if (name.trim()) form.append("name", name.trim());
-      if (setting.trim()) form.append("setting", setting.trim());
-      if (action.trim()) form.append("action", action.trim());
-      if (tags.trim()) form.append("tags", tags.trim());
+      form.append("name", preset.label);
+      form.append("setting", preset.setting);
+      form.append("action", preset.action);
+      form.append("tags", preset.tags.join(","));
       const res = await http.post<{ data: AvatarEventDTO }>(
         `/api/v1/admin/avatars/${avatarId}/events`,
         form,
@@ -213,52 +234,31 @@ function UploadEventDialog({
         <DialogHeader>
           <DialogTitle>Upload event</DialogTitle>
           <DialogDescription>
-            A scene of this avatar in a specific setting. Used as a story
-            illustration.
+            Pick an event type, then upload the matching scene image.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="event-name">Name</Label>
-              <Input
-                id="event-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Running in jungle"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-setting">Setting</Label>
-              <Input
-                id="event-setting"
-                value={setting}
-                onChange={(e) => setSetting(e.target.value)}
-                placeholder="jungle, city, office…"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="event-action">Action</Label>
-              <Input
-                id="event-action"
-                value={action}
-                onChange={(e) => setAction(e.target.value)}
-                placeholder="running, sleeping…"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-tags">Tags</Label>
-              <Input
-                id="event-tags"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="outdoor, daytime"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="event-preset">Event type</Label>
+            <select
+              id="event-preset"
+              value={presetKey}
+              onChange={(e) => setPresetKey(e.target.value)}
+              className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:outline-none"
+            >
+              <option value="">Select an event type…</option>
+              {EVENT_PRESETS.map((p) => (
+                <option key={p.key} value={p.key}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            {preset && (
+              <div className="text-muted-foreground text-xs">
+                Tags: {preset.tags.join(", ")}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -303,7 +303,7 @@ function UploadEventDialog({
             Cancel
           </Button>
           <Button
-            disabled={!file || upload.isPending}
+            disabled={!file || !preset || upload.isPending}
             onClick={() => upload.mutate()}
           >
             {upload.isPending ? (
@@ -329,7 +329,7 @@ function EventTile({
   isDeleting: boolean;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-lg border bg-white">
+    <div className="group bg-card relative overflow-hidden rounded-lg border">
       <div className="bg-muted/30 flex aspect-square items-center justify-center">
         <img
           src={event.url}

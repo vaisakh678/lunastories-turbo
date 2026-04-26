@@ -86,6 +86,25 @@ export async function uploadAvatar(args: {
   return rowToDTO(updated);
 }
 
+export async function updateAvatar(
+  avatarId: string,
+  patch: { name?: string | null; isEnabled?: boolean; position?: number },
+): Promise<AvatarDTO> {
+  const [updated] = await db
+    .update(characterAvatarSchema)
+    .set(patch)
+    .where(
+      and(
+        eq(characterAvatarSchema.id, avatarId),
+        isNull(characterAvatarSchema.deletedAt),
+      ),
+    )
+    .returning();
+
+  if (!updated) throw NotFound("Avatar not found");
+  return rowToDTO(updated);
+}
+
 export async function softDeleteAvatar(avatarId: string): Promise<void> {
   const [row] = await db
     .update(characterAvatarSchema)
