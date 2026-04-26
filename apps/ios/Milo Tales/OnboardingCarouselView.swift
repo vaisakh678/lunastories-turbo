@@ -12,22 +12,24 @@ struct OnboardingCarouselView: View {
 
     private let slides: [OnboardingSlide] = [
         OnboardingSlide(
-            symbol: "person.2.fill",
-            tint: .purple,
-            title: "Characters that look like your kid",
-            subtitle: "Pick their hair, eyes, and hobbies. Every story stars someone they recognize."
+            imageName: "onboarding_1",
+            title: "Create your own story",
+            subtitle: "Never get bored of the same old tales — create your own unique story with your child."
         ),
         OnboardingSlide(
-            symbol: "books.vertical.fill",
-            tint: .orange,
-            title: "Choose a theme, spark a tale",
-            subtitle: "Inventors, jungle adventures, vegetables, classics — nine modes to mix and match."
+            imageName: "onboarding_2",
+            title: "Choose different characters and professions",
+            subtitle: "Your kid can be dragons, unicorns, superheroes, pirates, astronauts — endless options!"
         ),
         OnboardingSlide(
-            symbol: "moon.stars.fill",
-            tint: .blue,
-            title: "Listen together at bedtime",
-            subtitle: "Each story comes with gentle narration to wind your little one down for sleep."
+            imageName: "onboarding_3",
+            title: "Include family, friends, and pets",
+            subtitle: "Make every story personal and special."
+        ),
+        OnboardingSlide(
+            imageName: "onboarding_4",
+            title: "Set up your kid's profile",
+            subtitle: "To start generating stories, set up your kid's profile first."
         ),
     ]
 
@@ -109,8 +111,7 @@ struct OnboardingCarouselView: View {
 }
 
 private struct OnboardingSlide: Hashable {
-    let symbol: String
-    let tint: Color
+    let imageName: String
     let title: String
     let subtitle: String
 }
@@ -122,14 +123,11 @@ private struct SlideView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            ZStack {
-                Circle()
-                    .fill(slide.tint.opacity(0.18))
-                    .frame(width: 200, height: 200)
-                Image(systemName: slide.symbol)
-                    .font(.system(size: 84, weight: .semibold))
-                    .foregroundStyle(slide.tint)
-            }
+            Image(slide.imageName)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 240, height: 240)
+                .clipShape(Circle())
 
             VStack(spacing: 12) {
                 Text(slide.title)

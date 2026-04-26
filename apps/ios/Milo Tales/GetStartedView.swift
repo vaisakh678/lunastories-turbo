@@ -22,28 +22,18 @@ struct GetStartedView: View {
                 VStack(spacing: 0) {
                     Spacer()
 
-                    ZStack {
-                        Circle()
-                            .fill(Color.purple.opacity(0.18))
-                            .frame(width: 220, height: 220)
-                        Image(systemName: "moon.stars.fill")
-                            .font(.system(size: 100, weight: .semibold))
-                            .foregroundStyle(.purple)
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(.yellow)
-                            .offset(x: 90, y: -70)
-                        Image(systemName: "sparkle")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(.orange)
-                            .offset(x: -85, y: 60)
-                    }
+                    Image("onboarding_0")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 220, height: 300)
+                        .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
 
                     VStack(spacing: 12) {
-                        Text("Milo Tales")
-                            .font(.system(size: 40, weight: .bold))
+                        Text("Welcome to Milo Tales")
+                            .font(.system(size: 34, weight: .bold))
                             .foregroundStyle(.primary)
-                        Text("Magical bedtime stories,\nmade just for your little one.")
+                            .multilineTextAlignment(.center)
+                        Text("Your story begins here.\nLet's explore together.")
                             .font(.body)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
