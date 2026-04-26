@@ -5,13 +5,13 @@
 
 import Foundation
 
-nonisolated struct FileRefResponse: Decodable, Hashable {
+nonisolated struct FileRefResponse: Codable, Hashable {
     let fileId: String
     let key: String
     let url: String
 }
 
-nonisolated struct AvatarResponse: Decodable, Identifiable {
+nonisolated struct AvatarResponse: Codable, Identifiable {
     let id: String
     let name: String?
     let image: FileRefResponse
