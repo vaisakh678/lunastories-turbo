@@ -19,12 +19,12 @@ struct WizardOfOzModeView: View {
     @State private var customPlaceText: String = ""
 
     private let placeOptions: [PickOption] = [
-        .init(title: "Yellow Brick Road",     symbolName: "road.lanes",        tint: .yellow),
-        .init(title: "Emerald City",          symbolName: "building.2.fill",   tint: .green),
-        .init(title: "Munchkin Land",         symbolName: "figure.child",      tint: .pink),
-        .init(title: "Poppy Field",           symbolName: "flame.fill",        tint: .red),
-        .init(title: "Wicked Witch's Castle", symbolName: "moon.fill",         tint: .purple),
-        .init(title: "Glinda's Bubble",       symbolName: "circle.fill",       tint: .cyan),
+        .init(title: "Yellow Brick Road",     symbolName: "road.lanes",      tint: .yellow, imageName: "yellow_brick_road"),
+        .init(title: "Emerald City",          symbolName: "building.2.fill", tint: .green,  imageName: "emerald_city"),
+        .init(title: "Munchkin Land",         symbolName: "figure.child",    tint: .pink,   imageName: "munchkin_land"),
+        .init(title: "Poppy Field",           symbolName: "flame.fill",      tint: .red,    imageName: "poppy_field"),
+        .init(title: "Wicked Witch's Castle", symbolName: "moon.fill",       tint: .purple, imageName: "wicked_witchs_castle"),
+        .init(title: "Glinda's Bubble",       symbolName: "circle.fill",     tint: .cyan,   imageName: "glindas_bubble"),
     ]
 
     private let characterOptions: [PickOption] = [

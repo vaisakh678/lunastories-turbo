@@ -19,12 +19,12 @@ struct AliceInWonderlandModeView: View {
     @State private var customPlaceText: String = ""
 
     private let placeOptions: [PickOption] = [
-        .init(title: "Tea Party Garden",      symbolName: "cup.and.saucer.fill",     tint: .pink),
-        .init(title: "Croquet Field",         symbolName: "heart.fill",              tint: .red),
-        .init(title: "Caterpillar's Mushroom", symbolName: "leaf.fill",              tint: .green),
-        .init(title: "Down the Rabbit Hole",  symbolName: "arrow.down.circle.fill",  tint: .gray),
-        .init(title: "Cheshire's Tree",       symbolName: "tree.fill",               tint: .purple),
-        .init(title: "Mad Hatter's House",    symbolName: "house.fill",              tint: .indigo),
+        .init(title: "Tea Party Garden",       symbolName: "cup.and.saucer.fill",    tint: .pink,   imageName: "tea_party_garden"),
+        .init(title: "Croquet Field",          symbolName: "heart.fill",             tint: .red,    imageName: "croquet_field"),
+        .init(title: "Caterpillar's Mushroom", symbolName: "leaf.fill",              tint: .green,  imageName: "caterpillars_mushroom"),
+        .init(title: "Down the Rabbit Hole",   symbolName: "arrow.down.circle.fill", tint: .gray,   imageName: "down_the_rabbit_hole"),
+        .init(title: "Cheshire's Tree",        symbolName: "tree.fill",              tint: .purple, imageName: "cheshires_tree"),
+        .init(title: "Mad Hatter's House",     symbolName: "house.fill",             tint: .indigo, imageName: "mad_hatters_house"),
     ]
 
     private let characterOptions: [PickOption] = [

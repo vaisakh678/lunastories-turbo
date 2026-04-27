@@ -19,12 +19,12 @@ struct JungleBookModeView: View {
     @State private var customPlaceText: String = ""
 
     private let placeOptions: [PickOption] = [
-        .init(title: "Bamboo Grove",     symbolName: "leaf.fill",              tint: .green),
-        .init(title: "Rainforest",       symbolName: "tree.fill",              tint: .mint),
-        .init(title: "Crocodile River",  symbolName: "water.waves",            tint: .blue),
-        .init(title: "Wolf Cave",        symbolName: "mountain.2.fill",        tint: .gray),
-        .init(title: "Ancient Ruins",    symbolName: "building.columns.fill",  tint: .brown),
-        .init(title: "King's Throne",    symbolName: "crown.fill",             tint: .yellow),
+        .init(title: "Bamboo Grove",    symbolName: "leaf.fill",             tint: .green,  imageName: "bamboo_grove"),
+        .init(title: "Rainforest",      symbolName: "tree.fill",             tint: .mint,   imageName: "rainforest"),
+        .init(title: "Crocodile River", symbolName: "water.waves",           tint: .blue,   imageName: "crocodile_river"),
+        .init(title: "Wolf Cave",       symbolName: "mountain.2.fill",       tint: .gray,   imageName: "wolf_cave"),
+        .init(title: "Ancient Ruins",   symbolName: "building.columns.fill", tint: .brown,  imageName: "ancient_ruins"),
+        .init(title: "King's Throne",   symbolName: "crown.fill",            tint: .yellow, imageName: "kings_throne"),
     ]
 
     private let characterOptions: [PickOption] = [

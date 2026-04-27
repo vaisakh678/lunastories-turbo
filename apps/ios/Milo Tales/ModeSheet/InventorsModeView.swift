@@ -19,12 +19,12 @@ struct InventorsModeView: View {
     @State private var customPlaceText: String = ""
 
     private let placeOptions: [PickOption] = [
-        .init(title: "Laboratory",   symbolName: "atom",                tint: .mint),
-        .init(title: "Observatory",  symbolName: "moon.stars.fill",     tint: .indigo),
-        .init(title: "Workshop",     symbolName: "wrench.adjustable.fill", tint: .gray),
-        .init(title: "Library",      symbolName: "books.vertical.fill", tint: .brown),
-        .init(title: "Garden",       symbolName: "leaf.fill",           tint: .green),
-        .init(title: "Classroom",    symbolName: "book.fill",           tint: .orange),
+        .init(title: "Laboratory",  symbolName: "atom",                   tint: .mint,   imageName: "laboratory"),
+        .init(title: "Observatory", symbolName: "moon.stars.fill",        tint: .indigo, imageName: "observatory"),
+        .init(title: "Workshop",    symbolName: "wrench.adjustable.fill", tint: .gray,   imageName: "workshop"),
+        .init(title: "Library",     symbolName: "books.vertical.fill",    tint: .brown,  imageName: "library"),
+        .init(title: "Garden",      symbolName: "leaf.fill",              tint: .green,  imageName: "garden"),
+        .init(title: "Classroom",   symbolName: "book.fill",              tint: .orange, imageName: "classroom"),
     ]
 
 private let inventorOptions: [PickOption] = [
