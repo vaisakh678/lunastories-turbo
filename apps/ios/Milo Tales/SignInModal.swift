@@ -5,14 +5,17 @@
 
 import SwiftUI
 
-private let primaryBlue = Color(red: 39 / 255, green: 82 / 255, blue: 231 / 255)
-private let textDark = Color(red: 17 / 255, green: 17 / 255, blue: 17 / 255)
-private let textMedium = Color(red: 102 / 255, green: 102 / 255, blue: 102 / 255)
-private let textLight = Color(red: 156 / 255, green: 163 / 255, blue: 175 / 255)
-private let borderGray = Color(red: 229 / 255, green: 231 / 255, blue: 235 / 255)
-private let inputBg = Color(red: 249 / 255, green: 250 / 255, blue: 251 / 255)
-private let lightButtonBg = Color(red: 242 / 255, green: 242 / 255, blue: 247 / 255)
-private let otpIconBg = Color(red: 238 / 255, green: 241 / 255, blue: 253 / 255)
+// Re-themed for the moody twilight palette. The names still read as their
+// original light-mode roles so the rest of the file doesn't have to change.
+private let cream = Color(red: 1.0, green: 0.97, blue: 0.93)
+private let primaryBlue = Color.accentColor          // coral, via AccentColor asset
+private let textDark = cream                         // headings + button text on dark glass
+private let textMedium = cream.opacity(0.7)          // body / subtitle
+private let textLight = cream.opacity(0.45)          // placeholders / footer hints
+private let borderGray = cream.opacity(0.15)         // dividers + input borders
+private let inputBg = cream.opacity(0.08)            // input field fill
+private let lightButtonBg = cream.opacity(0.10)      // Google + Email pill background
+private let otpIconBg = Color.accentColor.opacity(0.18) // OTP envelope circle fill
 
 enum SignInSheet: Identifiable {
     case providers

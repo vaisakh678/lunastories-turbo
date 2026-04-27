@@ -40,7 +40,7 @@ struct ContentView: View {
             sheetContent(for: step)
                 .presentationDetents(detents(for: step))
                 .presentationDragIndicator(.visible)
-                .presentationBackground(Color(red: 0.10, green: 0.07, blue: 0.25))
+                .presentationBackground(.clear)
         }
         .alert(
             "Sign in failed",
