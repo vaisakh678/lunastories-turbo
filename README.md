@@ -214,7 +214,7 @@ Step `kind` values:
             { "title": "Bagheera",   "icon": "cat.fill",       "tint": "indigo" },
             { "title": "Shere Khan", "icon": "cat.fill",       "tint": "orange" },
             { "title": "Kaa",        "icon": "lizard.fill",    "tint": "green" },
-            { "title": "King Louie", "icon": "pawprint.fill",  "tint": "yellow" }
+            { "title": "King Bandar", "icon": "pawprint.fill",  "tint": "yellow" }
           ]
         },
         {

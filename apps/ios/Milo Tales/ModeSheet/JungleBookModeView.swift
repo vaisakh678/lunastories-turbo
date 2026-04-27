@@ -32,8 +32,8 @@ struct JungleBookModeView: View {
         .init(title: "Baloo",       symbolName: "teddybear.fill", tint: .brown,  imageName: "baloo"),
         .init(title: "Bagheera",    symbolName: "cat.fill",       tint: .indigo, imageName: "bagheera"),
         .init(title: "Shere Khan",  symbolName: "cat.fill",       tint: .orange, imageName: "shere_khan"),
-        .init(title: "Koo",         symbolName: "lizard.fill",    tint: .green,  imageName: "koo"),
-        .init(title: "King Louie",  symbolName: "pawprint.fill",  tint: .yellow, imageName: "king_louie"),
+        .init(title: "Kaa",         symbolName: "lizard.fill",    tint: .green,  imageName: "kaa"),
+        .init(title: "King Bandar", symbolName: "pawprint.fill",  tint: .yellow, imageName: "king_bandar"),
     ]
 
     var body: some View {
