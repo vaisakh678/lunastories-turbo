@@ -28,6 +28,10 @@ struct CreativeModeView: View {
     @State private var showingCustomMoral: Bool = false
     @State private var customMoralText: String = ""
 
+    /// Total steps for the current run: type-per-char + profession-per-char + 1 moral.
+    private var totalSteps: Int { characters.count * 2 + 1 }
+    private func stepLabel(_ current: Int) -> String { "Step \(current) of \(totalSteps)" }
+
     private let typeOptions: [PickOption] = [
         .init(title: "Fox",      symbolName: "pawprint.fill",  tint: .orange, imageName: "fox"),
         .init(title: "Dragon",   symbolName: "flame.fill",     tint: .red,    imageName: "dragon"),
@@ -90,7 +94,8 @@ struct CreativeModeView: View {
                 if charIndex < characters.count {
                     CharacterStepHeader(
                         character: characters[charIndex],
-                        title: "Choose a type"
+                        title: "Choose a type",
+                        stepLabel: stepLabel(charIndex + 1)
                     )
                     .padding(.bottom, 16)
                     .onScrollVisibilityChange(threshold: 0.1) { isVisible in
@@ -112,7 +117,8 @@ struct CreativeModeView: View {
                 if charIndex < characters.count {
                     CharacterStepHeader(
                         character: characters[charIndex],
-                        title: "Choose a profession"
+                        title: "Choose a profession",
+                        stepLabel: stepLabel(characters.count + charIndex + 1)
                     )
                     .padding(.bottom, 16)
                     .onScrollVisibilityChange(threshold: 0.1) { isVisible in
@@ -131,11 +137,15 @@ struct CreativeModeView: View {
     private var moralStep: some View {
         ScrollView {
             VStack(spacing: 0) {
-                PlainStepHeader(title: "Choose a moral", subtitle: "Pick a lesson for your story.")
-                    .padding(.bottom, 16)
-                    .onScrollVisibilityChange(threshold: 0.1) { isVisible in
-                        showInlineMoralTitle = !isVisible
-                    }
+                PlainStepHeader(
+                    title: "Choose a moral",
+                    subtitle: "Pick a lesson for your story.",
+                    stepLabel: stepLabel(totalSteps)
+                )
+                .padding(.bottom, 16)
+                .onScrollVisibilityChange(threshold: 0.1) { isVisible in
+                    showInlineMoralTitle = !isVisible
+                }
                 OptionList(options: moralOptions, onOther: { showingCustomMoral = true }) { handleMoral($0) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)

@@ -75,9 +75,13 @@ private struct ModeStepChromeModifier: ViewModifier {
 struct CharacterStepHeader: View {
     let character: Character
     let title: String
+    var stepLabel: String? = nil
 
     var body: some View {
         VStack(spacing: 10) {
+            if let stepLabel {
+                StepBadge(text: stepLabel)
+            }
             CharacterIconView(
                 symbolName: character.symbolName,
                 tint: character.tint,
@@ -94,12 +98,33 @@ struct CharacterStepHeader: View {
     }
 }
 
+/// Tiny pill that announces "Step X of Y" so users know where they are in
+/// multi-step mode flows (mainly for Creative which can run up to 7 steps
+/// with multiple characters).
+struct StepBadge: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(Color.accentColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(Color.accentColor.opacity(0.12)))
+    }
+}
+
 struct PlainStepHeader: View {
     let title: String
     var subtitle: String? = nil
+    var stepLabel: String? = nil
 
     var body: some View {
         VStack(spacing: 6) {
+            if let stepLabel {
+                StepBadge(text: stepLabel)
+                    .padding(.bottom, 6)
+            }
             Text(title)
                 .font(.title2.weight(.bold))
                 .multilineTextAlignment(.center)
