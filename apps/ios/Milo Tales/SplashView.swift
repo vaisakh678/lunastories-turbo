@@ -12,34 +12,30 @@ import SwiftUI
 struct SplashView: View {
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.purple.opacity(0.15), Color.blue.opacity(0.08)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            MoodyTwilightBackground()
+                .ignoresSafeArea()
 
             VStack(spacing: 20) {
                 ZStack {
                     Circle()
-                        .fill(Color.purple.opacity(0.18))
+                        .fill(Color.miloCream.opacity(0.10))
                         .frame(width: 220, height: 220)
                     Image(systemName: "moon.stars.fill")
                         .font(.system(size: 100, weight: .semibold))
-                        .foregroundStyle(.purple)
+                        .foregroundStyle(Color.miloCream)
                     Image(systemName: "sparkles")
                         .font(.system(size: 28, weight: .semibold))
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(Color(red: 0.96, green: 0.73, blue: 0.26))
                         .offset(x: 90, y: -70)
                     Image(systemName: "sparkle")
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color(red: 0.91, green: 0.45, blue: 0.30))
                         .offset(x: -85, y: 60)
                 }
 
                 Text("Milo Tales")
                     .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.miloCream)
             }
         }
     }

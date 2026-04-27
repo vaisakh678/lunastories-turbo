@@ -12,12 +12,8 @@ struct GetStartedView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [Color.purple.opacity(0.15), Color.blue.opacity(0.08)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                MoodyTwilightBackground()
+                    .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     Spacer()
