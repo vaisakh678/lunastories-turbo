@@ -11,6 +11,7 @@ struct AccountView: View {
     @State private var confirmingLogout: Bool = false
     @State private var isLoggingOut: Bool = false
     @State private var errorMessage: String?
+    @State private var showPaywall: Bool = false
 
     private var greeting: String {
         if let name = clerk.user?.firstName, !name.isEmpty {
@@ -60,7 +61,9 @@ struct AccountView: View {
                     }
                     .buttonStyle(.plain)
                     SoftDivider()
-                    Button {} label: {
+                    Button {
+                        showPaywall = true
+                    } label: {
                         MenuRowLabel(icon: "star.circle.fill", title: "Subscribe")
                     }
                     .buttonStyle(.plain)
@@ -121,6 +124,23 @@ struct AccountView: View {
             .padding(.vertical, 20)
         }
         .background(MoodyTwilightBackground().ignoresSafeArea())
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showPaywall = true
+                } label: {
+                    ProBadge()
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Upgrade to Pro")
+            }
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(.clear)
+        }
         .alert(
             "Are you sure you want to logout?",
             isPresented: $confirmingLogout
@@ -150,6 +170,35 @@ struct AccountView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+}
+
+private struct ProBadge: View {
+    var body: some View {
+        Text("PRO")
+            .font(.system(size: 12, weight: .heavy))
+            .tracking(0.6)
+            .foregroundStyle(Color.miloCream)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                Capsule().fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.96, green: 0.73, blue: 0.26),
+                            Color(red: 0.91, green: 0.35, blue: 0.24),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            )
+            .overlay(
+                Capsule()
+                    .strokeBorder(Color.miloCream.opacity(0.20), lineWidth: 0.75)
+            )
+            .shadow(color: Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.4),
+                    radius: 6, x: 0, y: 3)
     }
 }
 
