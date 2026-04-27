@@ -337,6 +337,7 @@ struct OptionTile: View {
 struct OptionList: View {
     let options: [PickOption]
     var allowSurprise: Bool = true
+    var onOther: (() -> Void)? = nil
     let onSelect: (PickOption) -> Void
 
     var body: some View {
@@ -349,7 +350,46 @@ struct OptionList: View {
             ForEach(options) { option in
                 OptionRow(option: option) { onSelect(option) }
             }
+            if let onOther {
+                OtherRow(action: onOther)
+            }
         }
+    }
+}
+
+private struct OtherRow: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(
+                            Color.secondary.opacity(0.4),
+                            style: StrokeStyle(lineWidth: 2, dash: [6])
+                        )
+                        .frame(width: 44, height: 44)
+                    Image(systemName: "pencil")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+                Text("Other…")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.gray.opacity(0.06))
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 

@@ -25,6 +25,9 @@ struct CreativeModeView: View {
     @State private var showInlineProfessionTitle = false
     @State private var showInlineMoralTitle = false
 
+    @State private var showingCustomMoral: Bool = false
+    @State private var customMoralText: String = ""
+
     private let typeOptions: [PickOption] = [
         .init(title: "Fox",      symbolName: "pawprint.fill",  tint: .orange, imageName: "fox"),
         .init(title: "Dragon",   symbolName: "flame.fill",     tint: .red,    imageName: "dragon"),
@@ -60,24 +63,13 @@ struct CreativeModeView: View {
     ]
 
     private let moralOptions: [PickOption] = [
-        .init(title: "No specific moral", symbolName: "minus.circle", tint: .gray),
-        .init(title: "Always be kind", symbolName: "heart.fill", tint: .pink),
-        .init(title: "Be honest", symbolName: "checkmark.seal.fill", tint: .blue),
-        .init(title: "Be the change you want to see in the world", symbolName: "globe", tint: .green),
-        .init(title: "Always tell the truth because a liar won't be trusted", symbolName: "checkmark.shield.fill", tint: .indigo),
-        .init(title: "Think before you act", symbolName: "brain", tint: .purple),
-        .init(title: "Never give up", symbolName: "flame.fill", tint: .red),
-        .init(title: "Respect others", symbolName: "hand.raised.fill", tint: .orange),
-        .init(title: "The importance of being a good friend", symbolName: "person.2.fill", tint: .teal),
-        .init(title: "Learning to forgive", symbolName: "arrow.uturn.backward.circle.fill", tint: .pink),
-        .init(title: "You can't always get what you want", symbolName: "hourglass", tint: .gray),
-        .init(title: "Good things come to those who wait", symbolName: "clock.fill", tint: .yellow),
-        .init(title: "Keeping promises and respecting boundaries", symbolName: "lock.fill", tint: .blue),
-        .init(title: "Actions speak louder than words", symbolName: "bolt.fill", tint: .green),
-        .init(title: "Don't be greedy, be content with what you have", symbolName: "leaf.fill", tint: .mint),
+        .init(title: "No specific moral",                       symbolName: "minus.circle",            tint: .gray),
+        .init(title: "Always be kind",                          symbolName: "heart.fill",              tint: .pink),
+        .init(title: "Be honest",                               symbolName: "checkmark.seal.fill",     tint: .blue),
+        .init(title: "Never give up",                           symbolName: "flame.fill",              tint: .red),
+        .init(title: "Be a good friend",                        symbolName: "person.2.fill",           tint: .teal),
         .init(title: "Treat others the way you want to be treated", symbolName: "arrow.left.arrow.right", tint: .purple),
-        .init(title: "Always be fair to others", symbolName: "scalemass", tint: .indigo),
-        .init(title: "Learning to respect others", symbolName: "person.fill.checkmark", tint: .orange),
+        .init(title: "Think before you act",                    symbolName: "brain",                   tint: .indigo),
     ]
 
     var body: some View {
@@ -144,13 +136,25 @@ struct CreativeModeView: View {
                     .onScrollVisibilityChange(threshold: 0.1) { isVisible in
                         showInlineMoralTitle = !isVisible
                     }
-                OptionList(options: moralOptions) { handleMoral($0) }
+                OptionList(options: moralOptions, onOther: { showingCustomMoral = true }) { handleMoral($0) }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
         .scrollAwareToolbarTitle("Choose a moral", isShowing: showInlineMoralTitle)
+        .sheet(isPresented: $showingCustomMoral) {
+            CustomTextSheet(
+                title: "Custom moral",
+                prompt: "What lesson should the story teach?",
+                placeholder: "e.g. Sharing makes everyone happier",
+                continueLabel: "Continue",
+                text: $customMoralText
+            ) { trimmed in
+                showingCustomMoral = false
+                handleMoral(.init(title: trimmed, symbolName: "pencil", tint: .secondary))
+            }
+        }
     }
 
     private func handleType(_ option: PickOption, charIndex: Int) {
