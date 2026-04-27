@@ -25,23 +25,26 @@ struct AccountView: View {
             VStack(spacing: 24) {
                 VStack(spacing: 14) {
                     ZStack {
-                        // Soft warm halo behind the avatar, echoing the splash.
+                        // Soft warm halo behind the icon, echoing the splash.
                         Circle()
-                            .fill(Color.accentColor.opacity(0.32))
+                            .fill(Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.32))
                             .frame(width: 140, height: 140)
                             .blur(radius: 28)
                         Circle()
-                            .fill(Color.accentColor.opacity(0.18))
+                            .fill(Color(red: 0.96, green: 0.73, blue: 0.26).opacity(0.25))
+                            .frame(width: 110, height: 110)
+                            .blur(radius: 22)
+
+                        Image("SplashIcon")
+                            .resizable()
+                            .scaledToFit()
                             .frame(width: 96, height: 96)
+                            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                             .overlay(
-                                Image(systemName: "person.fill")
-                                    .font(.system(size: 40, weight: .semibold))
-                                    .foregroundStyle(.tint)
-                            )
-                            .overlay(
-                                Circle()
+                                RoundedRectangle(cornerRadius: 22, style: .continuous)
                                     .strokeBorder(Color.miloCream.opacity(0.12), lineWidth: 1)
                             )
+                            .shadow(color: Color.black.opacity(0.4), radius: 16, x: 0, y: 8)
                     }
                     VStack(spacing: 4) {
                         Text(greeting)
@@ -129,9 +132,10 @@ struct AccountView: View {
                 Button {
                     showPaywall = true
                 } label: {
-                    ProBadge()
+                    Text("PRO")
+                        .font(.system(size: 13, weight: .heavy))
+                        .tracking(0.8)
                 }
-                .buttonStyle(.plain)
                 .accessibilityLabel("Upgrade to Pro")
             }
         }
@@ -170,35 +174,6 @@ struct AccountView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-}
-
-private struct ProBadge: View {
-    var body: some View {
-        Text("PRO")
-            .font(.system(size: 12, weight: .heavy))
-            .tracking(0.6)
-            .foregroundStyle(Color.miloCream)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                Capsule().fill(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.96, green: 0.73, blue: 0.26),
-                            Color(red: 0.91, green: 0.35, blue: 0.24),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            )
-            .overlay(
-                Capsule()
-                    .strokeBorder(Color.miloCream.opacity(0.20), lineWidth: 0.75)
-            )
-            .shadow(color: Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.4),
-                    radius: 6, x: 0, y: 3)
     }
 }
 
