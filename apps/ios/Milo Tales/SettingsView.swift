@@ -100,6 +100,8 @@ struct SettingsView: View {
                 Text("This permanently deletes your account, characters, and stories. This cannot be undone.")
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(MoodyTwilightBackground().ignoresSafeArea())
         .navigationTitle("Settings")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)

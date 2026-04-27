@@ -51,7 +51,7 @@ struct MyStoriesView: View {
             }
             .padding(16)
         }
-        .background(Color.gray.opacity(0.08))
+        .background(MoodyTwilightBackground().ignoresSafeArea())
         .navigationTitle("My Stories")
         .task { await vm.load() }
         .refreshable { await vm.load() }
@@ -126,7 +126,14 @@ private struct StoryCard: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(Color.white)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.miloCream.opacity(0.06))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color.miloCream.opacity(0.08), lineWidth: 1)
+                )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .opacity(story.status == .ready ? 1 : 0.7)
     }
@@ -169,7 +176,14 @@ private struct StoryCardSkeleton: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(Color.white)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.miloCream.opacity(0.06))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color.miloCream.opacity(0.08), lineWidth: 1)
+                )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shimmering()
     }

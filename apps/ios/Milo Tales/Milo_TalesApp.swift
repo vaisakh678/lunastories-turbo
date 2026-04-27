@@ -21,7 +21,7 @@ struct Milo_TalesApp: App {
             RootView()
                 .environment(Clerk.shared)
                 .environment(avatars)
-                .preferredColorScheme(.light)
+                .preferredColorScheme(.dark)
                 .task { await avatars.load() }
         }
     }

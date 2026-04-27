@@ -54,7 +54,7 @@ struct HomeView: View {
                     .padding(.top, 20)
                     .padding(.bottom, 100)
                 }
-                .background(Color.gray.opacity(0.08))
+                .background(MoodyTwilightBackground().ignoresSafeArea())
 
                 VStack(spacing: 0) {
                     Spacer()
@@ -184,7 +184,7 @@ struct HomeView: View {
                 }
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
-                .presentationBackground(.white)
+                .presentationBackground(.clear)
             }
         }
     }

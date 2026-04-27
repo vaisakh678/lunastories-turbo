@@ -43,9 +43,12 @@ private struct ModeStepChromeModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .background(MoodyTwilightBackground().ignoresSafeArea())
             .navigationBarBackButtonHidden(true)
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -72,6 +75,49 @@ private struct ModeStepChromeModifier: ViewModifier {
     }
 }
 
+/// Twilight aurora background — deep violet base with warm coral and gold
+/// glows in the corners, echoing the lantern-lit dusk of the story icons.
+struct MoodyTwilightBackground: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(red: 0.10, green: 0.07, blue: 0.25),
+                    Color(red: 0.16, green: 0.10, blue: 0.36),
+                    Color(red: 0.06, green: 0.04, blue: 0.16),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            RadialGradient(
+                colors: [Color(red: 0.96, green: 0.73, blue: 0.26).opacity(0.32), .clear],
+                center: UnitPoint(x: 0.85, y: 0.05),
+                startRadius: 0,
+                endRadius: 380
+            )
+
+            RadialGradient(
+                colors: [Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.30), .clear],
+                center: UnitPoint(x: 0.05, y: 0.32),
+                startRadius: 0,
+                endRadius: 360
+            )
+
+            RadialGradient(
+                colors: [Color(red: 0.42, green: 0.29, blue: 0.64).opacity(0.35), .clear],
+                center: UnitPoint(x: 0.5, y: 1.05),
+                startRadius: 0,
+                endRadius: 460
+            )
+        }
+    }
+}
+
+extension Color {
+    static let miloCream = Color(red: 1.0, green: 0.97, blue: 0.93)
+}
+
 struct CharacterStepHeader: View {
     let character: Character
     let title: String
@@ -91,9 +137,10 @@ struct CharacterStepHeader: View {
             .frame(width: 64, height: 64)
             Text(character.name)
                 .font(.title3.weight(.semibold))
+                .foregroundStyle(Color.miloCream)
             Text(title)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.miloCream.opacity(0.65))
         }
     }
 }
@@ -127,11 +174,12 @@ struct PlainStepHeader: View {
             }
             Text(title)
                 .font(.title2.weight(.bold))
+                .foregroundStyle(Color.miloCream)
                 .multilineTextAlignment(.center)
             if let subtitle {
                 Text(subtitle)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.miloCream.opacity(0.65))
                     .multilineTextAlignment(.center)
             }
         }
@@ -182,19 +230,19 @@ private struct OtherTile: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .strokeBorder(
-                            Color.secondary.opacity(0.4),
+                            Color.miloCream.opacity(0.35),
                             style: StrokeStyle(lineWidth: 2, dash: [6])
                         )
                     Image(systemName: "pencil")
                         .font(.system(size: 32, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.miloCream.opacity(0.7))
                 }
                 .frame(maxWidth: .infinity)
                 .aspectRatio(1, contentMode: .fit)
 
                 Text("Other…")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.miloCream)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity)
@@ -309,7 +357,7 @@ private struct SurpriseTile: View {
 
                 Text("Surprise me")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.miloCream)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity)
@@ -338,10 +386,14 @@ struct OptionTile: View {
                 } else {
                     ZStack {
                         RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(option.tint.opacity(0.18))
+                            .fill(option.tint.opacity(0.32))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                    .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                            )
                         Image(systemName: option.symbolName)
                             .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(option.tint)
+                            .foregroundStyle(Color.miloCream)
                     }
                     .frame(maxWidth: .infinity)
                     .aspectRatio(1, contentMode: .fit)
@@ -349,7 +401,7 @@ struct OptionTile: View {
 
                 Text(option.title)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.miloCream)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity)

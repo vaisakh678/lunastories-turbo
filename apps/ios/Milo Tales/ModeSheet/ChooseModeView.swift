@@ -45,12 +45,13 @@ struct ChooseModeView: View {
                 VStack(spacing: 6) {
                     Text("Choose a mode")
                         .font(.title2.weight(.bold))
+                        .foregroundStyle(Color.miloCream)
                         .onScrollVisibilityChange(threshold: 0.1) { isVisible in
                             showInlineTitle = !isVisible
                         }
                     Text("Pick a theme for your next story.")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.miloCream.opacity(0.65))
                 }
                 .padding(.top, 8)
                 .padding(.bottom, 20)
@@ -88,7 +89,7 @@ private struct ModeTile: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: 8) {
                 Color.clear
                     .aspectRatio(1, contentMode: .fit)
                     .overlay(
@@ -97,10 +98,15 @@ private struct ModeTile: View {
                             .scaledToFill()
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                    )
+                    .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 8)
 
                 Text(mode.title)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.miloCream)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity)
@@ -109,3 +115,4 @@ private struct ModeTile: View {
         .buttonStyle(.plain)
     }
 }
+

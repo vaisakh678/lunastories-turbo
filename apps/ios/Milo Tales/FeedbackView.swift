@@ -32,7 +32,7 @@ struct FeedbackView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.gray.opacity(0.08))
+        .background(MoodyTwilightBackground().ignoresSafeArea())
         .navigationTitle("Send Feedback")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -78,11 +78,11 @@ struct FeedbackView: View {
                     .lineLimit(6...12)
                     .background(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color.white)
+                            .fill(Color.miloCream.opacity(0.08))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .strokeBorder(Color.gray.opacity(0.2), lineWidth: 1)
+                            .strokeBorder(Color.miloCream.opacity(0.18), lineWidth: 1)
                     )
                 }
 

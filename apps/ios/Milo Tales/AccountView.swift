@@ -73,7 +73,14 @@ struct AccountView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .background(Color.white)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.miloCream.opacity(0.06))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .strokeBorder(Color.miloCream.opacity(0.08), lineWidth: 1)
+                        )
+                )
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .padding(.horizontal, 16)
 
@@ -89,13 +96,20 @@ struct AccountView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(isLoggingOut)
-                .background(Color.white)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.miloCream.opacity(0.06))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .strokeBorder(Color.miloCream.opacity(0.08), lineWidth: 1)
+                        )
+                )
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .padding(.horizontal, 16)
             }
             .padding(.vertical, 20)
         }
-        .background(Color.gray.opacity(0.08))
+        .background(MoodyTwilightBackground().ignoresSafeArea())
         .alert(
             "Are you sure you want to logout?",
             isPresented: $confirmingLogout
