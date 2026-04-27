@@ -17,12 +17,12 @@ struct JungleBookModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Mowgli",      symbolName: "figure.child",   tint: .orange),
-        .init(title: "Baloo",       symbolName: "teddybear.fill", tint: .brown),
-        .init(title: "Bagheera",    symbolName: "cat.fill",       tint: .indigo),
-        .init(title: "Shere Khan",  symbolName: "cat.fill",       tint: .orange),
-        .init(title: "Koo",         symbolName: "lizard.fill",    tint: .green),
-        .init(title: "King Louie",  symbolName: "pawprint.fill",  tint: .yellow),
+        .init(title: "Mowgli",      symbolName: "figure.child",   tint: .orange, imageName: "mowgli"),
+        .init(title: "Baloo",       symbolName: "teddybear.fill", tint: .brown,  imageName: "baloo"),
+        .init(title: "Bagheera",    symbolName: "cat.fill",       tint: .indigo, imageName: "bagheera"),
+        .init(title: "Shere Khan",  symbolName: "cat.fill",       tint: .orange, imageName: "shere_khan"),
+        .init(title: "Koo",         symbolName: "lizard.fill",    tint: .green,  imageName: "koo"),
+        .init(title: "King Louie",  symbolName: "pawprint.fill",  tint: .yellow, imageName: "king_louie"),
     ]
 
     var body: some View {

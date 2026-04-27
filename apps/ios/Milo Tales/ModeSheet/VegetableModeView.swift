@@ -17,12 +17,12 @@ struct VegetableModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Bella the Broccoli", symbolName: "leaf.fill",   tint: .green),
-        .init(title: "Carla the Carrot",   symbolName: "carrot.fill", tint: .orange),
-        .init(title: "Olivia the Onion",   symbolName: "circle.fill", tint: .purple),
-        .init(title: "Peppy the Pepper",   symbolName: "flame.fill",  tint: .red),
-        .init(title: "Peter the Potato",   symbolName: "circle.fill", tint: .brown),
-        .init(title: "Tommy the Tomato",   symbolName: "circle.fill", tint: .red),
+        .init(title: "Bella the Broccoli", symbolName: "leaf.fill",   tint: .green,  imageName: "bella_the_broccoli"),
+        .init(title: "Carla the Carrot",   symbolName: "carrot.fill", tint: .orange, imageName: "carla_the_carrot"),
+        .init(title: "Olivia the Onion",   symbolName: "circle.fill", tint: .purple, imageName: "olivia_the_onion"),
+        .init(title: "Peppy the Pepper",   symbolName: "flame.fill",  tint: .red,    imageName: "peppy_the_pepper"),
+        .init(title: "Peter the Potato",   symbolName: "circle.fill", tint: .brown,  imageName: "peter_the_potato"),
+        .init(title: "Tommy the Tomato",   symbolName: "circle.fill", tint: .red,    imageName: "tommy_the_tomato"),
     ]
 
     var body: some View {

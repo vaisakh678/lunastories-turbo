@@ -17,12 +17,12 @@ struct EnvironmentModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Greeny the Tree",        symbolName: "tree.fill",         tint: .green),
-        .init(title: "Polly the Pollinator",   symbolName: "ant.fill",          tint: .yellow),
-        .init(title: "Recyclo the Bin",        symbolName: "arrow.3.trianglepath", tint: .mint),
-        .init(title: "Sunny the Solar Panel",  symbolName: "sun.max.fill",      tint: .orange),
-        .init(title: "Wally the Water Drop",   symbolName: "drop.fill",         tint: .blue),
-        .init(title: "Windy the Wind Turbine", symbolName: "wind",              tint: .teal),
+        .init(title: "Greeny the Tree",        symbolName: "tree.fill",            tint: .green,  imageName: "greeny_the_tree"),
+        .init(title: "Polly the Pollinator",   symbolName: "ant.fill",             tint: .yellow, imageName: "polly_the_pollinator"),
+        .init(title: "Recyclo the Bin",        symbolName: "arrow.3.trianglepath", tint: .mint,   imageName: "recyclo_the_bin"),
+        .init(title: "Sunny the Solar Panel",  symbolName: "sun.max.fill",         tint: .orange, imageName: "sunny_the_solar_panel"),
+        .init(title: "Wally the Water Drop",   symbolName: "drop.fill",            tint: .blue,   imageName: "wally_the_water_drop"),
+        .init(title: "Windy the Wind Turbine", symbolName: "wind",                 tint: .teal,   imageName: "windy_the_wind_turbine"),
     ]
 
     var body: some View {
