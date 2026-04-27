@@ -15,6 +15,7 @@ struct StoryReaderView: View {
     @State private var isGeneratingAudio = false
     @State private var audioErrorMessage: String?
     @State private var audioPlayer = StoryAudioPlayer()
+    @State private var isMakingAnother: Bool = false
 
     var body: some View {
         Group {
@@ -134,6 +135,13 @@ struct StoryReaderView: View {
                                 .padding(.horizontal, 24)
                         }
                     }
+
+                    MakeAnotherCard(
+                        isLoading: isMakingAnother,
+                        action: { Task { await makeAnother(from: story) } }
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
                 }
                 .padding(.bottom, 220)
             }
@@ -224,6 +232,72 @@ struct StoryReaderView: View {
             audioErrorMessage = (error as? APIError)?.errorDescription
                 ?? error.localizedDescription
         }
+    }
+
+    /// Re-runs story generation with the same characters, mode, and inputs as
+    /// the current story. Replaces the in-memory story with the new one;
+    /// the original is preserved on the backend so it still appears in My Stories.
+    private func makeAnother(from existing: StoryResponse) async {
+        guard let charIds = existing.characterIds, !charIds.isEmpty else { return }
+        isMakingAnother = true
+        defer { isMakingAnother = false }
+        do {
+            let request = CreateStoryRequest(
+                modeKey: existing.modeKey,
+                characterIds: charIds,
+                input: existing.generationInput ?? .object([:])
+            )
+            let created = try await StoryAPI.create(request)
+            // Tear down current audio (new story has no audio yet) and swap.
+            audioPlayer.teardown()
+            story = created
+        } catch {
+            errorMessage = (error as? APIError)?.errorDescription
+                ?? error.localizedDescription
+        }
+    }
+}
+
+private struct MakeAnotherCard: View {
+    let isLoading: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.15))
+                        .frame(width: 44, height: 44)
+                    if isLoading {
+                        ProgressView().tint(.accentColor)
+                    } else {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.tint)
+                    }
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(isLoading ? "Crafting another…" : "Make another with these heroes")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text("Same characters & mode, brand-new tale")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.08))
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(isLoading)
     }
 }
 
