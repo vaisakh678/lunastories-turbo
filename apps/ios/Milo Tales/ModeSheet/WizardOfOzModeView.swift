@@ -17,12 +17,12 @@ struct WizardOfOzModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Dorothy",        symbolName: "figure.child",   tint: .blue),
-        .init(title: "Toto",           symbolName: "dog.fill",       tint: .gray),
-        .init(title: "Scarecrow",      symbolName: "leaf.fill",      tint: .yellow),
-        .init(title: "Tin Man",        symbolName: "gearshape.fill", tint: .gray),
-        .init(title: "Cowardly Lion",  symbolName: "pawprint.fill",  tint: .yellow),
-        .init(title: "Glinda",         symbolName: "wand.and.stars", tint: .pink),
+        .init(title: "Dorothy",        symbolName: "figure.child",   tint: .blue,   imageName: "dorothy"),
+        .init(title: "Toto",           symbolName: "dog.fill",       tint: .gray,   imageName: "toto"),
+        .init(title: "Scarecrow",      symbolName: "leaf.fill",      tint: .yellow, imageName: "scarecrow"),
+        .init(title: "Tin Man",        symbolName: "gearshape.fill", tint: .gray,   imageName: "tin_man"),
+        .init(title: "Cowardly Lion",  symbolName: "pawprint.fill",  tint: .yellow, imageName: "cowardly_lion"),
+        .init(title: "Glinda",         symbolName: "wand.and.stars", tint: .pink,   imageName: "glinda"),
     ]
 
     var body: some View {

@@ -17,12 +17,12 @@ struct AliceInWonderlandModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Alice",            symbolName: "figure.child",       tint: .blue),
-        .init(title: "Mad Hatter",       symbolName: "cup.and.saucer.fill", tint: .green),
-        .init(title: "Queen of Hearts",  symbolName: "heart.fill",          tint: .red),
-        .init(title: "Cheshire Cat",     symbolName: "cat.fill",            tint: .purple),
-        .init(title: "The White Rabbit", symbolName: "hare.fill",           tint: .gray),
-        .init(title: "Caterpillar",      symbolName: "ant.fill",            tint: .green),
+        .init(title: "Alice",            symbolName: "figure.child",        tint: .blue,   imageName: "alice"),
+        .init(title: "Mad Hatter",       symbolName: "cup.and.saucer.fill", tint: .green,  imageName: "mad_hatter"),
+        .init(title: "Queen of Hearts",  symbolName: "heart.fill",          tint: .red,    imageName: "queen_of_hearts"),
+        .init(title: "Cheshire Cat",     symbolName: "cat.fill",            tint: .purple, imageName: "cheshire_cat"),
+        .init(title: "The White Rabbit", symbolName: "hare.fill",           tint: .gray,   imageName: "the_white_rabbit"),
+        .init(title: "Caterpillar",      symbolName: "ant.fill",            tint: .green,  imageName: "caterpillar"),
     ]
 
     var body: some View {

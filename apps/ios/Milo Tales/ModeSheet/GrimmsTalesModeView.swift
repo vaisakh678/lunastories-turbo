@@ -17,14 +17,14 @@ struct GrimmsTalesModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Cinderella",        symbolName: "sparkles",       tint: .yellow),
-        .init(title: "Red Riding Hood",   symbolName: "figure.child",   tint: .red),
-        .init(title: "Hansel and Gretel", symbolName: "house.fill",     tint: .brown),
-        .init(title: "Snow White",        symbolName: "heart.fill",     tint: .pink),
-        .init(title: "Rapunzel",          symbolName: "scissors",       tint: .yellow),
-        .init(title: "Rumpelstiltskin",   symbolName: "wand.and.rays",  tint: .orange),
-        .init(title: "Sleeping Beauty",   symbolName: "moon.zzz.fill",  tint: .indigo),
-        .init(title: "The Frog Prince",   symbolName: "crown.fill",     tint: .green),
+        .init(title: "Cinderella",        symbolName: "sparkles",      tint: .yellow, imageName: "cinderella"),
+        .init(title: "Red Riding Hood",   symbolName: "figure.child",  tint: .red,    imageName: "red_riding_hood"),
+        .init(title: "Hansel and Gretel", symbolName: "house.fill",    tint: .brown,  imageName: "hansel_and_gretel"),
+        .init(title: "Snow White",        symbolName: "heart.fill",    tint: .pink,   imageName: "snow_white"),
+        .init(title: "Rapunzel",          symbolName: "scissors",      tint: .yellow, imageName: "rapunzel"),
+        .init(title: "Rumpelstiltskin",   symbolName: "wand.and.rays", tint: .orange, imageName: "rumpelstiltskin"),
+        .init(title: "Sleeping Beauty",   symbolName: "moon.zzz.fill", tint: .indigo, imageName: "sleeping_beauty"),
+        .init(title: "The Frog Prince",   symbolName: "crown.fill",    tint: .green,  imageName: "the_frog_prince"),
     ]
 
     var body: some View {
