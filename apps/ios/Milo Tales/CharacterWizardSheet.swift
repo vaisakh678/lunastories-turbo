@@ -77,6 +77,9 @@ struct CharacterWizardSheet: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
             }
+            .background(MoodyTwilightBackground().ignoresSafeArea())
+            .scrollContentBackground(.hidden)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .navigationTitle(navTitle)
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -290,11 +293,11 @@ private struct BasicInfoStep: View {
                 .padding(.vertical, 14)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(Color.gray.opacity(0.08))
+                        .fill(Color.miloCream.opacity(0.08))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color.gray.opacity(0.2), lineWidth: 1)
+                        .strokeBorder(Color.miloCream.opacity(0.18), lineWidth: 1)
                 )
 
             FieldLabel("Age")
@@ -474,11 +477,11 @@ private struct InterestsStep: View {
                 .lineLimit(6...10)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(Color.gray.opacity(0.08))
+                        .fill(Color.miloCream.opacity(0.08))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color.gray.opacity(0.2), lineWidth: 1)
+                        .strokeBorder(Color.miloCream.opacity(0.18), lineWidth: 1)
                 )
         }
     }

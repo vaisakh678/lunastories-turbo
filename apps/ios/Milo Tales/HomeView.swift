@@ -184,7 +184,7 @@ struct HomeView: View {
                 }
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
-                .presentationBackground(.white)
+                .presentationBackground(.clear)
             }
         }
     }
