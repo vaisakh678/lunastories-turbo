@@ -9,7 +9,7 @@ struct GrimmsTalesModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onComplete: (StoryInputPayload) -> Void
+    let onComplete: (StoryInputPayload, [GenerationCue]) -> Void
 
     enum Step: Hashable { case place }
 
@@ -91,6 +91,12 @@ struct GrimmsTalesModeView: View {
     }
 
     private func handlePickPlace(_ option: PickOption) {
+        var cues: [GenerationCue] = [
+            GenerationCue(label: "Grimm's Tales", imageName: "grimms_tales"),
+        ]
+        if let picked { cues.append(picked.asCue()) }
+        cues.append(option.asCue())
+
         onComplete(
             StoryInputPayload(
                 modeKey: "grimms_tales",
@@ -98,7 +104,8 @@ struct GrimmsTalesModeView: View {
                     "picked": picked.map { .string($0.title) } ?? .null,
                     "place": .string(option.title),
                 ])
-            )
+            ),
+            cues
         )
     }
 }

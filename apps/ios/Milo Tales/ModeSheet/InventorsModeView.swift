@@ -9,7 +9,7 @@ struct InventorsModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onComplete: (StoryInputPayload) -> Void
+    let onComplete: (StoryInputPayload, [GenerationCue]) -> Void
 
     enum Step: Hashable { case place }
 
@@ -95,6 +95,12 @@ private let inventorOptions: [PickOption] = [
     }
 
     private func handlePickPlace(_ option: PickOption) {
+        var cues: [GenerationCue] = [
+            GenerationCue(label: "Inventors", imageName: "inventors"),
+        ]
+        if let inventor { cues.append(inventor.asCue()) }
+        cues.append(option.asCue())
+
         onComplete(
             StoryInputPayload(
                 modeKey: "inventors",
@@ -102,7 +108,8 @@ private let inventorOptions: [PickOption] = [
                     "inventor": inventor.map { .string($0.title) } ?? .null,
                     "place": .string(option.title),
                 ])
-            )
+            ),
+            cues
         )
     }
 }

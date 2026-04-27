@@ -9,7 +9,7 @@ struct WizardOfOzModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onComplete: (StoryInputPayload) -> Void
+    let onComplete: (StoryInputPayload, [GenerationCue]) -> Void
 
     enum Step: Hashable { case place }
 
@@ -89,6 +89,12 @@ struct WizardOfOzModeView: View {
     }
 
     private func handlePickPlace(_ option: PickOption) {
+        var cues: [GenerationCue] = [
+            GenerationCue(label: "Wizard of Oz", imageName: "wizard_of_oz"),
+        ]
+        if let picked { cues.append(picked.asCue()) }
+        cues.append(option.asCue())
+
         onComplete(
             StoryInputPayload(
                 modeKey: "wizard_of_oz",
@@ -96,7 +102,8 @@ struct WizardOfOzModeView: View {
                     "picked": picked.map { .string($0.title) } ?? .null,
                     "place": .string(option.title),
                 ])
-            )
+            ),
+            cues
         )
     }
 }

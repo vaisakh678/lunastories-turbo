@@ -9,7 +9,7 @@ struct CreativeModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onComplete: (StoryInputPayload) -> Void
+    let onComplete: (StoryInputPayload, [GenerationCue]) -> Void
 
     enum Step: Hashable {
         case type(charIndex: Int)
@@ -199,6 +199,33 @@ struct CreativeModeView: View {
                 ($0.key.uuidString.lowercased(), .string($0.value.title))
             }
         )
+        // Build a personalized carousel: mode cover → each character's chosen
+        // type → each character's chosen profession → the picked moral.
+        var cues: [GenerationCue] = [
+            GenerationCue(label: "Creative Mode", imageName: "creative"),
+        ]
+        for character in characters {
+            if let t = typeByChar[character.id] {
+                cues.append(GenerationCue(
+                    id: "type-\(character.id.uuidString)",
+                    label: "\(character.name) the \(t.title)",
+                    imageName: t.imageName,
+                    symbolName: t.symbolName,
+                    tint: t.tint
+                ))
+            }
+            if let p = professionByChar[character.id] {
+                cues.append(GenerationCue(
+                    id: "prof-\(character.id.uuidString)",
+                    label: "\(character.name) the \(p.title)",
+                    imageName: p.imageName,
+                    symbolName: p.symbolName,
+                    tint: p.tint
+                ))
+            }
+        }
+        cues.append(option.asCue())
+
         onComplete(
             StoryInputPayload(
                 modeKey: "creative",
@@ -207,7 +234,8 @@ struct CreativeModeView: View {
                     "professionByChar": .object(professionMap),
                     "moral": .string(option.title),
                 ])
-            )
+            ),
+            cues
         )
     }
 }

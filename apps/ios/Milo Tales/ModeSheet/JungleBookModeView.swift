@@ -9,7 +9,7 @@ struct JungleBookModeView: View {
     let characters: [Character]
     @Binding var path: NavigationPath
     let onClose: () -> Void
-    let onComplete: (StoryInputPayload) -> Void
+    let onComplete: (StoryInputPayload, [GenerationCue]) -> Void
 
     enum Step: Hashable { case place }
 
@@ -89,6 +89,12 @@ struct JungleBookModeView: View {
     }
 
     private func handlePickPlace(_ option: PickOption) {
+        var cues: [GenerationCue] = [
+            GenerationCue(label: "Jungle Book", imageName: "jungle_book"),
+        ]
+        if let picked { cues.append(picked.asCue()) }
+        cues.append(option.asCue())
+
         onComplete(
             StoryInputPayload(
                 modeKey: "jungle_book",
@@ -96,7 +102,8 @@ struct JungleBookModeView: View {
                     "picked": picked.map { .string($0.title) } ?? .null,
                     "place": .string(option.title),
                 ])
-            )
+            ),
+            cues
         )
     }
 }

@@ -13,6 +13,18 @@ struct PickOption: Identifiable, Hashable {
     /// Optional asset image name. When set, the tile renders the artwork
     /// (cropped to a square) instead of the tinted SF symbol.
     var imageName: String? = nil
+
+    /// Convert a picked option into a generation-loading cue, preserving the
+    /// artwork (when present) or falling back to the symbol+tint combo.
+    func asCue() -> GenerationCue {
+        GenerationCue(
+            id: "pick-\(id.uuidString)",
+            label: title,
+            imageName: imageName,
+            symbolName: symbolName,
+            tint: tint
+        )
+    }
 }
 
 extension View {
