@@ -261,8 +261,10 @@ private struct AddCharacterTile: View {
             VStack(alignment: .leading, spacing: 6) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(Color.miloCream.opacity(0.06))
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .strokeBorder(
-                            Color.accentColor.opacity(0.5),
+                            Color.accentColor.opacity(0.55),
                             style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
                         )
                     Image(systemName: "plus")
