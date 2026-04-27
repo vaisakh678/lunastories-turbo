@@ -14,15 +14,26 @@ struct EnvironmentModeView: View {
     enum Step: Hashable { case place }
 
     @State private var picked: PickOption?
-    @State private var place: String = ""
+
+    @State private var showingCustomPlace: Bool = false
+    @State private var customPlaceText: String = ""
+
+    private let placeOptions: [PickOption] = [
+        .init(title: "City Park",         symbolName: "tree.fill",            tint: .green),
+        .init(title: "Schoolyard",        symbolName: "graduationcap.fill",   tint: .blue),
+        .init(title: "Beach",             symbolName: "water.waves",          tint: .cyan),
+        .init(title: "Forest",            symbolName: "tree.fill",            tint: .brown),
+        .init(title: "Solar Farm",        symbolName: "sun.max.fill",         tint: .orange),
+        .init(title: "Recycling Center",  symbolName: "arrow.3.trianglepath", tint: .mint),
+    ]
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Greeny the Tree",        symbolName: "tree.fill",         tint: .green),
-        .init(title: "Polly the Pollinator",   symbolName: "ant.fill",          tint: .yellow),
-        .init(title: "Recycle the Bin",        symbolName: "arrow.3.trianglepath", tint: .mint),
-        .init(title: "Sunny the Solar Panel",  symbolName: "sun.max.fill",      tint: .orange),
-        .init(title: "Wally the Water Drop",   symbolName: "drop.fill",         tint: .blue),
-        .init(title: "Windy the Wind Turbine", symbolName: "wind",              tint: .teal),
+        .init(title: "Greeny the Tree",        symbolName: "tree.fill",            tint: .green,  imageName: "greeny_the_tree"),
+        .init(title: "Polly the Pollinator",   symbolName: "ant.fill",             tint: .yellow, imageName: "polly_the_pollinator"),
+        .init(title: "Recyclo the Bin",        symbolName: "arrow.3.trianglepath", tint: .mint,   imageName: "recyclo_the_bin"),
+        .init(title: "Sunny the Solar Panel",  symbolName: "sun.max.fill",         tint: .orange, imageName: "sunny_the_solar_panel"),
+        .init(title: "Wally the Water Drop",   symbolName: "drop.fill",            tint: .blue,   imageName: "wally_the_water_drop"),
+        .init(title: "Windy the Wind Turbine", symbolName: "wind",                 tint: .teal,   imageName: "windy_the_wind_turbine"),
     ]
 
     var body: some View {
@@ -52,17 +63,24 @@ struct EnvironmentModeView: View {
             VStack(spacing: 0) {
                 PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
                     .padding(.bottom, 16)
-                PlaceTextInput(
-                    text: $place,
-                    placeholder: "e.g. a meadow at sunrise",
-                    isLastStep: true,
-                    onSubmit: handleSubmitPlace
-                )
+                OptionGrid(options: placeOptions, onOther: { showingCustomPlace = true }) { handlePickPlace($0) }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
+        .sheet(isPresented: $showingCustomPlace) {
+            CustomTextSheet(
+                title: "Custom place",
+                prompt: "Type any place — real or imagined.",
+                placeholder: "e.g. Grandma's house",
+                continueLabel: "Continue",
+                text: $customPlaceText
+            ) { trimmed in
+                showingCustomPlace = false
+                handlePickPlace(.init(title: trimmed, symbolName: "pencil", tint: .secondary))
+            }
+        }
     }
 
     private func handlePick(_ option: PickOption) {
@@ -70,14 +88,13 @@ struct EnvironmentModeView: View {
         path.append(Step.place)
     }
 
-    private func handleSubmitPlace() {
-        guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+    private func handlePickPlace(_ option: PickOption) {
         onComplete(
             StoryInputPayload(
                 modeKey: "environment",
                 input: .object([
                     "picked": picked.map { .string($0.title) } ?? .null,
-                    "place": .string(place.trimmingCharacters(in: .whitespaces)),
+                    "place": .string(option.title),
                 ])
             )
         )

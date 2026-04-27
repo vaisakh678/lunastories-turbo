@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fff8ee;
+  --foreground: #1f1235;
+  --brand: #e85a3c;
+  --brand-deep: #c14127;
+  --violet: #3b1f6b;
+  --violet-soft: #6b4ba3;
+  --gold: #f4b942;
+  --cream: #fff1dc;
+  --ink-soft: #5a4a73;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --color-gold: var(--gold);
+  --color-cream: var(--cream);
+  --color-ink-soft: var(--ink-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-fraunces);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.02em;
+}
+
+.bg-aurora {
+  background:
+    radial-gradient(60% 60% at 80% 0%, rgba(244, 185, 66, 0.35) 0%, transparent 60%),
+    radial-gradient(50% 50% at 0% 30%, rgba(232, 90, 60, 0.25) 0%, transparent 60%),
+    radial-gradient(70% 70% at 50% 100%, rgba(107, 75, 163, 0.25) 0%, transparent 60%),
+    var(--background);
+}
+
+.bg-night {
+  background:
+    radial-gradient(40% 60% at 20% 20%, rgba(244, 185, 66, 0.25) 0%, transparent 60%),
+    radial-gradient(50% 50% at 80% 80%, rgba(232, 90, 60, 0.25) 0%, transparent 60%),
+    var(--violet);
+}

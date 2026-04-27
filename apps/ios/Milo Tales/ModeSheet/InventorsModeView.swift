@@ -14,19 +14,30 @@ struct InventorsModeView: View {
     enum Step: Hashable { case place }
 
     @State private var inventor: PickOption?
-    @State private var place: String = ""
+
+    @State private var showingCustomPlace: Bool = false
+    @State private var customPlaceText: String = ""
+
+    private let placeOptions: [PickOption] = [
+        .init(title: "Laboratory",   symbolName: "atom",                tint: .mint),
+        .init(title: "Observatory",  symbolName: "moon.stars.fill",     tint: .indigo),
+        .init(title: "Workshop",     symbolName: "wrench.adjustable.fill", tint: .gray),
+        .init(title: "Library",      symbolName: "books.vertical.fill", tint: .brown),
+        .init(title: "Garden",       symbolName: "leaf.fill",           tint: .green),
+        .init(title: "Classroom",    symbolName: "book.fill",           tint: .orange),
+    ]
 
 private let inventorOptions: [PickOption] = [
-        .init(title: "Ada Lovelace",         symbolName: "laptopcomputer",     tint: .pink),
-        .init(title: "Albert Einstein",      symbolName: "function",           tint: .gray),
-        .init(title: "Charles Darwin",       symbolName: "leaf.fill",          tint: .green),
-        .init(title: "Florence Nightingale", symbolName: "cross.case.fill",    tint: .red),
-        .init(title: "Galileo Galilei",      symbolName: "moon.stars.fill",    tint: .indigo),
-        .init(title: "Isaac Newton",         symbolName: "atom",               tint: .orange),
-        .init(title: "Leonardo da Vinci",    symbolName: "paintpalette.fill",  tint: .yellow),
-        .init(title: "Marie Curie",          symbolName: "atom",               tint: .mint),
-        .init(title: "Nikola Tesla",         symbolName: "bolt.fill",          tint: .blue),
-        .init(title: "Rosalind Franklin",    symbolName: "waveform.path",      tint: .purple),
+        .init(title: "Ada Lovelace",         symbolName: "laptopcomputer",    tint: .pink,   imageName: "ada_lovelace"),
+        .init(title: "Albert Einstein",      symbolName: "function",          tint: .gray,   imageName: "albert_einstein"),
+        .init(title: "Charles Darwin",       symbolName: "leaf.fill",         tint: .green,  imageName: "charles_darwin"),
+        .init(title: "Florence Nightingale", symbolName: "cross.case.fill",   tint: .red,    imageName: "florence_nightingale"),
+        .init(title: "Galileo Galilei",      symbolName: "moon.stars.fill",   tint: .indigo, imageName: "galileo_galilei"),
+        .init(title: "Isaac Newton",         symbolName: "atom",              tint: .orange, imageName: "isaac_newton"),
+        .init(title: "Leonardo da Vinci",    symbolName: "paintpalette.fill", tint: .yellow, imageName: "leonardo_da_vinci"),
+        .init(title: "Marie Curie",          symbolName: "atom",              tint: .mint,   imageName: "marie_curie"),
+        .init(title: "Nikola Tesla",         symbolName: "bolt.fill",         tint: .blue,   imageName: "nikola_tesla"),
+        .init(title: "Rosalind Franklin",    symbolName: "waveform.path",     tint: .purple, imageName: "rosalind_franklin"),
     ]
 
     var body: some View {
@@ -58,17 +69,24 @@ private let inventorOptions: [PickOption] = [
                 PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
                     .padding(.top, 16)
                     .padding(.bottom, 16)
-                PlaceTextInput(
-                    text: $place,
-                    placeholder: "e.g. a moonlit observatory",
-                    isLastStep: true,
-                    onSubmit: handleSubmitPlace
-                )
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
+                OptionGrid(options: placeOptions, onOther: { showingCustomPlace = true }) { handlePickPlace($0) }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
+        .sheet(isPresented: $showingCustomPlace) {
+            CustomTextSheet(
+                title: "Custom place",
+                prompt: "Type any place — real or imagined.",
+                placeholder: "e.g. Grandma's house",
+                continueLabel: "Continue",
+                text: $customPlaceText
+            ) { trimmed in
+                showingCustomPlace = false
+                handlePickPlace(.init(title: trimmed, symbolName: "pencil", tint: .secondary))
+            }
+        }
     }
 
     private func handlePickInventor(_ option: PickOption) {
@@ -76,14 +94,13 @@ private let inventorOptions: [PickOption] = [
         path.append(Step.place)
     }
 
-    private func handleSubmitPlace() {
-        guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+    private func handlePickPlace(_ option: PickOption) {
         onComplete(
             StoryInputPayload(
                 modeKey: "inventors",
                 input: .object([
                     "inventor": inventor.map { .string($0.title) } ?? .null,
-                    "place": .string(place.trimmingCharacters(in: .whitespaces)),
+                    "place": .string(option.title),
                 ])
             )
         )

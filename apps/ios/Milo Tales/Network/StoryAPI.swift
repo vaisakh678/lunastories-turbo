@@ -5,7 +5,7 @@
 
 import Foundation
 
-nonisolated indirect enum AnyJSON: Encodable {
+nonisolated indirect enum AnyJSON: Codable {
     case string(String)
     case int(Int)
     case double(Double)
@@ -24,6 +24,30 @@ nonisolated indirect enum AnyJSON: Encodable {
         case .null: try c.encodeNil()
         case .array(let a): try c.encode(a)
         case .object(let o): try c.encode(o)
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.singleValueContainer()
+        if c.decodeNil() {
+            self = .null
+        } else if let b = try? c.decode(Bool.self) {
+            self = .bool(b)
+        } else if let i = try? c.decode(Int.self) {
+            self = .int(i)
+        } else if let d = try? c.decode(Double.self) {
+            self = .double(d)
+        } else if let s = try? c.decode(String.self) {
+            self = .string(s)
+        } else if let a = try? c.decode([AnyJSON].self) {
+            self = .array(a)
+        } else if let o = try? c.decode([String: AnyJSON].self) {
+            self = .object(o)
+        } else {
+            throw DecodingError.dataCorruptedError(
+                in: c,
+                debugDescription: "Unsupported JSON value"
+            )
         }
     }
 }
@@ -119,6 +143,7 @@ nonisolated struct StoryResponse: Codable, Identifiable {
     let content: StoryContent?
     let audio: FileRefResponse?
     let errorMessage: String?
+    let generationInput: AnyJSON?
 }
 
 nonisolated struct StoryPage: Decodable {

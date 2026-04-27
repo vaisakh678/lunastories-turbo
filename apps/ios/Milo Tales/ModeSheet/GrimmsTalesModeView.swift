@@ -14,17 +14,28 @@ struct GrimmsTalesModeView: View {
     enum Step: Hashable { case place }
 
     @State private var picked: PickOption?
-    @State private var place: String = ""
+
+    @State private var showingCustomPlace: Bool = false
+    @State private var customPlaceText: String = ""
+
+    private let placeOptions: [PickOption] = [
+        .init(title: "Enchanted Forest", symbolName: "tree.fill",             tint: .green),
+        .init(title: "Castle Tower",     symbolName: "building.columns.fill", tint: .gray),
+        .init(title: "Witch's Cottage",  symbolName: "house.fill",            tint: .brown),
+        .init(title: "Royal Garden",     symbolName: "leaf.fill",             tint: .pink),
+        .init(title: "Magic Lake",       symbolName: "water.waves",           tint: .blue),
+        .init(title: "Faraway Kingdom",  symbolName: "crown.fill",            tint: .yellow),
+    ]
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Cinderella",        symbolName: "sparkles",       tint: .yellow),
-        .init(title: "Red Riding Hood",   symbolName: "figure.child",   tint: .red),
-        .init(title: "Hansel and Gretel", symbolName: "house.fill",     tint: .brown),
-        .init(title: "Snow White",        symbolName: "heart.fill",     tint: .pink),
-        .init(title: "Rapunzel",          symbolName: "scissors",       tint: .yellow),
-        .init(title: "Rumpelstiltskin",   symbolName: "wand.and.rays",  tint: .orange),
-        .init(title: "Sleeping Beauty",   symbolName: "moon.zzz.fill",  tint: .indigo),
-        .init(title: "The Frog Prince",   symbolName: "crown.fill",     tint: .green),
+        .init(title: "Cinderella",        symbolName: "sparkles",      tint: .yellow, imageName: "cinderella"),
+        .init(title: "Red Riding Hood",   symbolName: "figure.child",  tint: .red,    imageName: "red_riding_hood"),
+        .init(title: "Hansel and Gretel", symbolName: "house.fill",    tint: .brown,  imageName: "hansel_and_gretel"),
+        .init(title: "Snow White",        symbolName: "heart.fill",    tint: .pink,   imageName: "snow_white"),
+        .init(title: "Rapunzel",          symbolName: "scissors",      tint: .yellow, imageName: "rapunzel"),
+        .init(title: "Rumpelstiltskin",   symbolName: "wand.and.rays", tint: .orange, imageName: "rumpelstiltskin"),
+        .init(title: "Sleeping Beauty",   symbolName: "moon.zzz.fill", tint: .indigo, imageName: "sleeping_beauty"),
+        .init(title: "The Frog Prince",   symbolName: "crown.fill",    tint: .green,  imageName: "the_frog_prince"),
     ]
 
     var body: some View {
@@ -54,17 +65,24 @@ struct GrimmsTalesModeView: View {
             VStack(spacing: 0) {
                 PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
                     .padding(.bottom, 16)
-                PlaceTextInput(
-                    text: $place,
-                    placeholder: "e.g. an enchanted forest",
-                    isLastStep: true,
-                    onSubmit: handleSubmitPlace
-                )
+                OptionGrid(options: placeOptions, onOther: { showingCustomPlace = true }) { handlePickPlace($0) }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
+        .sheet(isPresented: $showingCustomPlace) {
+            CustomTextSheet(
+                title: "Custom place",
+                prompt: "Type any place — real or imagined.",
+                placeholder: "e.g. Grandma's house",
+                continueLabel: "Continue",
+                text: $customPlaceText
+            ) { trimmed in
+                showingCustomPlace = false
+                handlePickPlace(.init(title: trimmed, symbolName: "pencil", tint: .secondary))
+            }
+        }
     }
 
     private func handlePick(_ option: PickOption) {
@@ -72,14 +90,13 @@ struct GrimmsTalesModeView: View {
         path.append(Step.place)
     }
 
-    private func handleSubmitPlace() {
-        guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+    private func handlePickPlace(_ option: PickOption) {
         onComplete(
             StoryInputPayload(
                 modeKey: "grimms_tales",
                 input: .object([
                     "picked": picked.map { .string($0.title) } ?? .null,
-                    "place": .string(place.trimmingCharacters(in: .whitespaces)),
+                    "place": .string(option.title),
                 ])
             )
         )
