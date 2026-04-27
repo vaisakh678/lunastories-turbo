@@ -19,7 +19,7 @@ struct EnvironmentModeView: View {
     private let characterOptions: [PickOption] = [
         .init(title: "Greeny the Tree",        symbolName: "tree.fill",         tint: .green),
         .init(title: "Polly the Pollinator",   symbolName: "ant.fill",          tint: .yellow),
-        .init(title: "Recycle the Bin",        symbolName: "arrow.3.trianglepath", tint: .mint),
+        .init(title: "Recyclo the Bin",        symbolName: "arrow.3.trianglepath", tint: .mint),
         .init(title: "Sunny the Solar Panel",  symbolName: "sun.max.fill",      tint: .orange),
         .init(title: "Wally the Water Drop",   symbolName: "drop.fill",         tint: .blue),
         .init(title: "Windy the Wind Turbine", symbolName: "wind",              tint: .teal),

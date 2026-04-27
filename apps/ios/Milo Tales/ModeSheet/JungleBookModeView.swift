@@ -21,7 +21,7 @@ struct JungleBookModeView: View {
         .init(title: "Baloo",       symbolName: "teddybear.fill", tint: .brown),
         .init(title: "Bagheera",    symbolName: "cat.fill",       tint: .indigo),
         .init(title: "Shere Khan",  symbolName: "cat.fill",       tint: .orange),
-        .init(title: "Kaa",         symbolName: "lizard.fill",    tint: .green),
+        .init(title: "Koo",         symbolName: "lizard.fill",    tint: .green),
         .init(title: "King Louie",  symbolName: "pawprint.fill",  tint: .yellow),
     ]
 
