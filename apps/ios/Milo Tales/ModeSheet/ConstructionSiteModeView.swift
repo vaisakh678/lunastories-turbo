@@ -14,7 +14,18 @@ struct ConstructionSiteModeView: View {
     enum Step: Hashable { case place }
 
     @State private var picked: PickOption?
-    @State private var place: String = ""
+
+    @State private var showingCustomPlace: Bool = false
+    @State private var customPlaceText: String = ""
+
+    private let placeOptions: [PickOption] = [
+        .init(title: "New Building Site", symbolName: "hammer.fill",          tint: .orange),
+        .init(title: "Road Project",      symbolName: "road.lanes",           tint: .gray),
+        .init(title: "Bridge",            symbolName: "rectangle.split.3x1.fill", tint: .brown),
+        .init(title: "Tall Tower",        symbolName: "building.2.fill",      tint: .blue),
+        .init(title: "Park Renovation",   symbolName: "tree.fill",            tint: .green),
+        .init(title: "Tunnel",            symbolName: "arrow.left.and.right.circle.fill", tint: .indigo),
+    ]
 
     private let characterOptions: [PickOption] = [
         .init(title: "Benny the Bulldozer",             symbolName: "car.fill",       tint: .yellow, imageName: "benny_the_bulldozer"),
@@ -52,17 +63,24 @@ struct ConstructionSiteModeView: View {
             VStack(spacing: 0) {
                 PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
                     .padding(.bottom, 16)
-                PlaceTextInput(
-                    text: $place,
-                    placeholder: "e.g. a busy downtown site",
-                    isLastStep: true,
-                    onSubmit: handleSubmitPlace
-                )
+                OptionGrid(options: placeOptions, onOther: { showingCustomPlace = true }) { handlePickPlace($0) }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
+        .sheet(isPresented: $showingCustomPlace) {
+            CustomTextSheet(
+                title: "Custom place",
+                prompt: "Type any place — real or imagined.",
+                placeholder: "e.g. Grandma's house",
+                continueLabel: "Continue",
+                text: $customPlaceText
+            ) { trimmed in
+                showingCustomPlace = false
+                handlePickPlace(.init(title: trimmed, symbolName: "pencil", tint: .secondary))
+            }
+        }
     }
 
     private func handlePick(_ option: PickOption) {
@@ -70,14 +88,13 @@ struct ConstructionSiteModeView: View {
         path.append(Step.place)
     }
 
-    private func handleSubmitPlace() {
-        guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+    private func handlePickPlace(_ option: PickOption) {
         onComplete(
             StoryInputPayload(
                 modeKey: "construction_site",
                 input: .object([
                     "picked": picked.map { .string($0.title) } ?? .null,
-                    "place": .string(place.trimmingCharacters(in: .whitespaces)),
+                    "place": .string(option.title),
                 ])
             )
         )

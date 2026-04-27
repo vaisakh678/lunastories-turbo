@@ -116,6 +116,11 @@ struct PlainStepHeader: View {
 
 struct OptionGrid: View {
     let options: [PickOption]
+    var allowSurprise: Bool = true
+    /// When set, an "Other…" tile is appended that calls this closure (typically
+    /// to open a custom text-input sheet). Lets users go off-script without
+    /// losing the speed of tile selection for the common case.
+    var onOther: (() -> Void)? = nil
     let onSelect: (PickOption) -> Void
 
     private let columns = [
@@ -125,10 +130,167 @@ struct OptionGrid: View {
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 20) {
+            if allowSurprise, !options.isEmpty {
+                SurpriseTile {
+                    if let pick = options.randomElement() { onSelect(pick) }
+                }
+            }
             ForEach(options) { option in
                 OptionTile(option: option) { onSelect(option) }
             }
+            if let onOther {
+                OtherTile(action: onOther)
+            }
         }
+    }
+}
+
+/// "Other…" tile. Opens a custom text-entry sheet so users aren't locked
+/// into the predefined options. Styled as an outlined dashed tile so it
+/// reads as "the escape hatch" rather than another regular pick.
+private struct OtherTile: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(
+                            Color.secondary.opacity(0.4),
+                            style: StrokeStyle(lineWidth: 2, dash: [6])
+                        )
+                    Image(systemName: "pencil")
+                        .font(.system(size: 32, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1, contentMode: .fit)
+
+                Text("Other…")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// Compact sheet that captures a free-text "place" (or any custom string)
+/// from the user. Designed to be presented from the placeStep's `onOther`
+/// hook so the standard tile flow stays one-tap fast.
+struct CustomTextSheet: View {
+    let title: String
+    let prompt: String
+    let placeholder: String
+    let continueLabel: String
+    @Binding var text: String
+    let onContinue: (String) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                VStack(spacing: 8) {
+                    Text(title)
+                        .font(.title3.weight(.bold))
+                    Text(prompt)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.top, 12)
+
+                TextField(placeholder, text: $text, axis: .vertical)
+                    .lineLimit(1...3)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.gray.opacity(0.12))
+                    )
+                    .focused($focused)
+                    .submitLabel(.go)
+                    .onSubmit { submit() }
+
+                Button(action: submit) {
+                    Text(continueLabel)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            Capsule().fill(canSubmit ? Color.accentColor : Color.gray.opacity(0.4))
+                        )
+                }
+                .buttonStyle(.plain)
+                .disabled(!canSubmit)
+
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .onAppear { focused = true }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private var canSubmit: Bool {
+        !text.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    private func submit() {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        onContinue(trimmed)
+    }
+}
+
+/// Square tile that picks a random option for the user. Same shape as the
+/// regular grid tiles so it slots in naturally as the first item.
+private struct SurpriseTile: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                    Image(systemName: "dice.fill")
+                        .font(.system(size: 36, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1, contentMode: .fit)
+
+                Text("Surprise me")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -174,14 +336,59 @@ struct OptionTile: View {
 
 struct OptionList: View {
     let options: [PickOption]
+    var allowSurprise: Bool = true
     let onSelect: (PickOption) -> Void
 
     var body: some View {
         LazyVStack(spacing: 8) {
+            if allowSurprise, !options.isEmpty {
+                SurpriseRow {
+                    if let pick = options.randomElement() { onSelect(pick) }
+                }
+            }
             ForEach(options) { option in
                 OptionRow(option: option) { onSelect(option) }
             }
         }
+    }
+}
+
+private struct SurpriseRow: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 44, height: 44)
+                    Image(systemName: "dice.fill")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+                Text("Surprise me")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.10))
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 

@@ -14,7 +14,18 @@ struct WizardOfOzModeView: View {
     enum Step: Hashable { case place }
 
     @State private var picked: PickOption?
-    @State private var place: String = ""
+
+    @State private var showingCustomPlace: Bool = false
+    @State private var customPlaceText: String = ""
+
+    private let placeOptions: [PickOption] = [
+        .init(title: "Yellow Brick Road",     symbolName: "road.lanes",        tint: .yellow),
+        .init(title: "Emerald City",          symbolName: "building.2.fill",   tint: .green),
+        .init(title: "Munchkin Land",         symbolName: "figure.child",      tint: .pink),
+        .init(title: "Poppy Field",           symbolName: "flame.fill",        tint: .red),
+        .init(title: "Wicked Witch's Castle", symbolName: "moon.fill",         tint: .purple),
+        .init(title: "Glinda's Bubble",       symbolName: "circle.fill",       tint: .cyan),
+    ]
 
     private let characterOptions: [PickOption] = [
         .init(title: "Dorothy",        symbolName: "figure.child",   tint: .blue,   imageName: "dorothy"),
@@ -52,17 +63,24 @@ struct WizardOfOzModeView: View {
             VStack(spacing: 0) {
                 PlainStepHeader(title: "Choose a place", subtitle: "Where does the story happen?")
                     .padding(.bottom, 16)
-                PlaceTextInput(
-                    text: $place,
-                    placeholder: "e.g. the Yellow Brick Road",
-                    isLastStep: true,
-                    onSubmit: handleSubmitPlace
-                )
+                OptionGrid(options: placeOptions, onOther: { showingCustomPlace = true }) { handlePickPlace($0) }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
         }
         .modeStepChrome(isRoot: false, onClose: onClose)
+        .sheet(isPresented: $showingCustomPlace) {
+            CustomTextSheet(
+                title: "Custom place",
+                prompt: "Type any place — real or imagined.",
+                placeholder: "e.g. Grandma's house",
+                continueLabel: "Continue",
+                text: $customPlaceText
+            ) { trimmed in
+                showingCustomPlace = false
+                handlePickPlace(.init(title: trimmed, symbolName: "pencil", tint: .secondary))
+            }
+        }
     }
 
     private func handlePick(_ option: PickOption) {
@@ -70,14 +88,13 @@ struct WizardOfOzModeView: View {
         path.append(Step.place)
     }
 
-    private func handleSubmitPlace() {
-        guard !place.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+    private func handlePickPlace(_ option: PickOption) {
         onComplete(
             StoryInputPayload(
                 modeKey: "wizard_of_oz",
                 input: .object([
                     "picked": picked.map { .string($0.title) } ?? .null,
-                    "place": .string(place.trimmingCharacters(in: .whitespaces)),
+                    "place": .string(option.title),
                 ])
             )
         )
