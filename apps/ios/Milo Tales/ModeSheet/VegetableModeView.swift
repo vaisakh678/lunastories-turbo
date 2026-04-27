@@ -19,12 +19,12 @@ struct VegetableModeView: View {
     @State private var customPlaceText: String = ""
 
     private let placeOptions: [PickOption] = [
-        .init(title: "The Garden",      symbolName: "leaf.fill",       tint: .green),
-        .init(title: "Farmer's Market", symbolName: "basket.fill",     tint: .orange),
-        .init(title: "Soup Pot",        symbolName: "frying.pan.fill", tint: .red),
-        .init(title: "Greenhouse",      symbolName: "sun.max.fill",    tint: .mint),
-        .init(title: "Veggie Patch",    symbolName: "carrot.fill",     tint: .brown),
-        .init(title: "Kitchen",         symbolName: "fork.knife",      tint: .yellow),
+        .init(title: "The Garden",      symbolName: "leaf.fill",       tint: .green,  imageName: "the_garden"),
+        .init(title: "Farmer's Market", symbolName: "basket.fill",     tint: .orange, imageName: "farmers_market"),
+        .init(title: "Soup Pot",        symbolName: "frying.pan.fill", tint: .red,    imageName: "soup_pot"),
+        .init(title: "Greenhouse",      symbolName: "sun.max.fill",    tint: .mint,   imageName: "greenhouse"),
+        .init(title: "Veggie Patch",    symbolName: "carrot.fill",     tint: .brown,  imageName: "veggie_patch"),
+        .init(title: "Kitchen",         symbolName: "fork.knife",      tint: .yellow, imageName: "kitchen"),
     ]
 
     private let characterOptions: [PickOption] = [

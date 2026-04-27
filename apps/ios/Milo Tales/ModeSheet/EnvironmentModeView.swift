@@ -19,12 +19,12 @@ struct EnvironmentModeView: View {
     @State private var customPlaceText: String = ""
 
     private let placeOptions: [PickOption] = [
-        .init(title: "City Park",         symbolName: "tree.fill",            tint: .green),
-        .init(title: "Schoolyard",        symbolName: "graduationcap.fill",   tint: .blue),
-        .init(title: "Beach",             symbolName: "water.waves",          tint: .cyan),
-        .init(title: "Forest",            symbolName: "tree.fill",            tint: .brown),
-        .init(title: "Solar Farm",        symbolName: "sun.max.fill",         tint: .orange),
-        .init(title: "Recycling Center",  symbolName: "arrow.3.trianglepath", tint: .mint),
+        .init(title: "City Park",        symbolName: "tree.fill",            tint: .green,  imageName: "city_park"),
+        .init(title: "Schoolyard",       symbolName: "graduationcap.fill",   tint: .blue,   imageName: "schoolyard"),
+        .init(title: "Beach",            symbolName: "water.waves",          tint: .cyan,   imageName: "beach"),
+        .init(title: "Forest",           symbolName: "tree.fill",            tint: .brown,  imageName: "forest"),
+        .init(title: "Solar Farm",       symbolName: "sun.max.fill",         tint: .orange, imageName: "solar_farm"),
+        .init(title: "Recycling Center", symbolName: "arrow.3.trianglepath", tint: .mint,   imageName: "recycling_center"),
     ]
 
     private let characterOptions: [PickOption] = [

@@ -19,12 +19,12 @@ struct ConstructionSiteModeView: View {
     @State private var customPlaceText: String = ""
 
     private let placeOptions: [PickOption] = [
-        .init(title: "New Building Site", symbolName: "hammer.fill",          tint: .orange),
-        .init(title: "Road Project",      symbolName: "road.lanes",           tint: .gray),
-        .init(title: "Bridge",            symbolName: "rectangle.split.3x1.fill", tint: .brown),
-        .init(title: "Tall Tower",        symbolName: "building.2.fill",      tint: .blue),
-        .init(title: "Park Renovation",   symbolName: "tree.fill",            tint: .green),
-        .init(title: "Tunnel",            symbolName: "arrow.left.and.right.circle.fill", tint: .indigo),
+        .init(title: "New Building Site", symbolName: "hammer.fill",                      tint: .orange, imageName: "new_building_site"),
+        .init(title: "Road Project",      symbolName: "road.lanes",                       tint: .gray,   imageName: "road_project"),
+        .init(title: "Bridge",            symbolName: "rectangle.split.3x1.fill",         tint: .brown,  imageName: "bridge"),
+        .init(title: "Tall Tower",        symbolName: "building.2.fill",                  tint: .blue,   imageName: "tall_tower"),
+        .init(title: "Park Renovation",   symbolName: "tree.fill",                        tint: .green,  imageName: "park_renovation"),
+        .init(title: "Tunnel",            symbolName: "arrow.left.and.right.circle.fill", tint: .indigo, imageName: "tunnel"),
     ]
 
     private let characterOptions: [PickOption] = [

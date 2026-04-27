@@ -19,12 +19,12 @@ struct GrimmsTalesModeView: View {
     @State private var customPlaceText: String = ""
 
     private let placeOptions: [PickOption] = [
-        .init(title: "Enchanted Forest", symbolName: "tree.fill",             tint: .green),
-        .init(title: "Castle Tower",     symbolName: "building.columns.fill", tint: .gray),
-        .init(title: "Witch's Cottage",  symbolName: "house.fill",            tint: .brown),
-        .init(title: "Royal Garden",     symbolName: "leaf.fill",             tint: .pink),
-        .init(title: "Magic Lake",       symbolName: "water.waves",           tint: .blue),
-        .init(title: "Faraway Kingdom",  symbolName: "crown.fill",            tint: .yellow),
+        .init(title: "Enchanted Forest", symbolName: "tree.fill",             tint: .green,  imageName: "enchanted_forest"),
+        .init(title: "Castle Tower",     symbolName: "building.columns.fill", tint: .gray,   imageName: "castle_tower"),
+        .init(title: "Witch's Cottage",  symbolName: "house.fill",            tint: .brown,  imageName: "witchs_cottage"),
+        .init(title: "Royal Garden",     symbolName: "leaf.fill",             tint: .pink,   imageName: "royal_garden"),
+        .init(title: "Magic Lake",       symbolName: "water.waves",           tint: .blue,   imageName: "magic_lake"),
+        .init(title: "Faraway Kingdom",  symbolName: "crown.fill",            tint: .yellow, imageName: "faraway_kingdom"),
     ]
 
     private let characterOptions: [PickOption] = [
