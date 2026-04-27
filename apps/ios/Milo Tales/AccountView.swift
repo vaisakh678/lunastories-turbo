@@ -22,16 +22,27 @@ struct AccountView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                VStack(spacing: 12) {
-                    Circle()
-                        .fill(Color.accentColor.opacity(0.18))
-                        .frame(width: 96, height: 96)
-                        .overlay(
-                            Image(systemName: "person.fill")
-                                .font(.system(size: 40, weight: .semibold))
-                                .foregroundStyle(.tint)
-                        )
-                    VStack(spacing: 2) {
+                VStack(spacing: 14) {
+                    ZStack {
+                        // Soft warm halo behind the avatar, echoing the splash.
+                        Circle()
+                            .fill(Color.accentColor.opacity(0.32))
+                            .frame(width: 140, height: 140)
+                            .blur(radius: 28)
+                        Circle()
+                            .fill(Color.accentColor.opacity(0.18))
+                            .frame(width: 96, height: 96)
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 40, weight: .semibold))
+                                    .foregroundStyle(.tint)
+                            )
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(Color.miloCream.opacity(0.12), lineWidth: 1)
+                            )
+                    }
+                    VStack(spacing: 4) {
                         Text(greeting)
                             .font(.title3.weight(.semibold))
                         Text("Manage your profile")
@@ -48,24 +59,24 @@ struct AccountView: View {
                         MenuRowLabel(icon: "book.fill", title: "My Stories")
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading, 60)
+                    SoftDivider()
                     Button {} label: {
                         MenuRowLabel(icon: "star.circle.fill", title: "Subscribe")
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading, 60)
+                    SoftDivider()
                     NavigationLink {
                         SettingsView()
                     } label: {
                         MenuRowLabel(icon: "gearshape.fill", title: "Settings")
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading, 60)
+                    SoftDivider()
                     Button {} label: {
                         MenuRowLabel(icon: "gift.fill", title: "Share and Earn")
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading, 60)
+                    SoftDivider()
                     NavigationLink {
                         FeedbackView()
                     } label: {
@@ -148,12 +159,23 @@ private struct MenuRowLabel: View {
     var tint: Color = .primary
     var isLoading: Bool = false
 
+    private var iconTint: Color {
+        tint == .primary ? Color.accentColor : tint
+    }
+
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(tint == .primary ? Color.accentColor : tint)
-                .frame(width: 24)
+        HStack(spacing: 14) {
+            // Tinted "chip" behind each icon for visual rhythm matching the
+            // tile aesthetic used elsewhere in the app.
+            ZStack {
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(iconTint.opacity(0.18))
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(iconTint)
+            }
+            .frame(width: 32, height: 32)
+
             Text(title)
                 .font(.body)
                 .foregroundStyle(tint)
@@ -169,8 +191,17 @@ private struct MenuRowLabel: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .contentShape(Rectangle())
+    }
+}
+
+private struct SoftDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.miloCream.opacity(0.08))
+            .frame(height: 1)
+            .padding(.leading, 62)
     }
 }
