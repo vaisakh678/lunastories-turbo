@@ -11,6 +11,7 @@ struct AccountView: View {
     @State private var confirmingLogout: Bool = false
     @State private var isLoggingOut: Bool = false
     @State private var errorMessage: String?
+    @State private var showPaywall: Bool = false
 
     private var greeting: String {
         if let name = clerk.user?.firstName, !name.isEmpty {
@@ -22,16 +23,27 @@ struct AccountView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                VStack(spacing: 12) {
-                    Circle()
-                        .fill(Color.accentColor.opacity(0.18))
-                        .frame(width: 96, height: 96)
-                        .overlay(
-                            Image(systemName: "person.fill")
-                                .font(.system(size: 40, weight: .semibold))
-                                .foregroundStyle(.tint)
-                        )
-                    VStack(spacing: 2) {
+                VStack(spacing: 14) {
+                    ZStack {
+                        // Soft warm halo behind the avatar, echoing the splash.
+                        Circle()
+                            .fill(Color.accentColor.opacity(0.32))
+                            .frame(width: 140, height: 140)
+                            .blur(radius: 28)
+                        Circle()
+                            .fill(Color.accentColor.opacity(0.18))
+                            .frame(width: 96, height: 96)
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 40, weight: .semibold))
+                                    .foregroundStyle(.tint)
+                            )
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(Color.miloCream.opacity(0.12), lineWidth: 1)
+                            )
+                    }
+                    VStack(spacing: 4) {
                         Text(greeting)
                             .font(.title3.weight(.semibold))
                         Text("Manage your profile")
@@ -48,24 +60,26 @@ struct AccountView: View {
                         MenuRowLabel(icon: "book.fill", title: "My Stories")
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading, 60)
-                    Button {} label: {
+                    SoftDivider()
+                    Button {
+                        showPaywall = true
+                    } label: {
                         MenuRowLabel(icon: "star.circle.fill", title: "Subscribe")
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading, 60)
+                    SoftDivider()
                     NavigationLink {
                         SettingsView()
                     } label: {
                         MenuRowLabel(icon: "gearshape.fill", title: "Settings")
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading, 60)
+                    SoftDivider()
                     Button {} label: {
                         MenuRowLabel(icon: "gift.fill", title: "Share and Earn")
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading, 60)
+                    SoftDivider()
                     NavigationLink {
                         FeedbackView()
                     } label: {
@@ -110,6 +124,23 @@ struct AccountView: View {
             .padding(.vertical, 20)
         }
         .background(MoodyTwilightBackground().ignoresSafeArea())
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showPaywall = true
+                } label: {
+                    ProBadge()
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Upgrade to Pro")
+            }
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(.clear)
+        }
         .alert(
             "Are you sure you want to logout?",
             isPresented: $confirmingLogout
@@ -142,18 +173,58 @@ struct AccountView: View {
     }
 }
 
+private struct ProBadge: View {
+    var body: some View {
+        Text("PRO")
+            .font(.system(size: 12, weight: .heavy))
+            .tracking(0.6)
+            .foregroundStyle(Color.miloCream)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                Capsule().fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.96, green: 0.73, blue: 0.26),
+                            Color(red: 0.91, green: 0.35, blue: 0.24),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            )
+            .overlay(
+                Capsule()
+                    .strokeBorder(Color.miloCream.opacity(0.20), lineWidth: 0.75)
+            )
+            .shadow(color: Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.4),
+                    radius: 6, x: 0, y: 3)
+    }
+}
+
 private struct MenuRowLabel: View {
     let icon: String
     let title: String
     var tint: Color = .primary
     var isLoading: Bool = false
 
+    private var iconTint: Color {
+        tint == .primary ? Color.accentColor : tint
+    }
+
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(tint == .primary ? Color.accentColor : tint)
-                .frame(width: 24)
+        HStack(spacing: 14) {
+            // Tinted "chip" behind each icon for visual rhythm matching the
+            // tile aesthetic used elsewhere in the app.
+            ZStack {
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(iconTint.opacity(0.18))
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(iconTint)
+            }
+            .frame(width: 32, height: 32)
+
             Text(title)
                 .font(.body)
                 .foregroundStyle(tint)
@@ -169,8 +240,17 @@ private struct MenuRowLabel: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .contentShape(Rectangle())
+    }
+}
+
+private struct SoftDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.miloCream.opacity(0.08))
+            .frame(height: 1)
+            .padding(.leading, 62)
     }
 }
