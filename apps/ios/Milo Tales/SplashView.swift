@@ -15,27 +15,41 @@ struct SplashView: View {
             MoodyTwilightBackground()
                 .ignoresSafeArea()
 
-            VStack(spacing: 20) {
+            VStack(spacing: 22) {
                 ZStack {
+                    // Outer warm halo — coral lantern glow
                     Circle()
-                        .fill(Color.miloCream.opacity(0.10))
-                        .frame(width: 220, height: 220)
-                    Image(systemName: "moon.stars.fill")
-                        .font(.system(size: 100, weight: .semibold))
-                        .foregroundStyle(Color.miloCream)
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundStyle(Color(red: 0.96, green: 0.73, blue: 0.26))
-                        .offset(x: 90, y: -70)
-                    Image(systemName: "sparkle")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(Color(red: 0.91, green: 0.45, blue: 0.30))
-                        .offset(x: -85, y: 60)
+                        .fill(Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.35))
+                        .frame(width: 280, height: 280)
+                        .blur(radius: 60)
+
+                    // Inner gold halo — closer warmth around the icon
+                    Circle()
+                        .fill(Color(red: 0.96, green: 0.73, blue: 0.26).opacity(0.30))
+                        .frame(width: 200, height: 200)
+                        .blur(radius: 40)
+
+                    Image("SplashIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 168, height: 168)
+                        .clipShape(RoundedRectangle(cornerRadius: 38, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 38, style: .continuous)
+                                .strokeBorder(Color.miloCream.opacity(0.12), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.45), radius: 30, x: 0, y: 14)
                 }
 
-                Text("Milo Tales")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(Color.miloCream)
+                VStack(spacing: 6) {
+                    Text("Milo Tales")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(Color.miloCream)
+                    Text("Bedtime, magical.")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(Color.miloCream.opacity(0.55))
+                        .tracking(0.4)
+                }
             }
         }
     }
