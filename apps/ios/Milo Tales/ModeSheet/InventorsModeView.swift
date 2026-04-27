@@ -17,16 +17,16 @@ struct InventorsModeView: View {
     @State private var place: String = ""
 
 private let inventorOptions: [PickOption] = [
-        .init(title: "Ada Lovelace",         symbolName: "laptopcomputer",     tint: .pink),
-        .init(title: "Albert Einstein",      symbolName: "function",           tint: .gray),
-        .init(title: "Charles Darwin",       symbolName: "leaf.fill",          tint: .green),
-        .init(title: "Florence Nightingale", symbolName: "cross.case.fill",    tint: .red),
-        .init(title: "Galileo Galilei",      symbolName: "moon.stars.fill",    tint: .indigo),
-        .init(title: "Isaac Newton",         symbolName: "atom",               tint: .orange),
-        .init(title: "Leonardo da Vinci",    symbolName: "paintpalette.fill",  tint: .yellow),
-        .init(title: "Marie Curie",          symbolName: "atom",               tint: .mint),
-        .init(title: "Nikola Tesla",         symbolName: "bolt.fill",          tint: .blue),
-        .init(title: "Rosalind Franklin",    symbolName: "waveform.path",      tint: .purple),
+        .init(title: "Ada Lovelace",         symbolName: "laptopcomputer",    tint: .pink,   imageName: "ada_lovelace"),
+        .init(title: "Albert Einstein",      symbolName: "function",          tint: .gray,   imageName: "albert_einstein"),
+        .init(title: "Charles Darwin",       symbolName: "leaf.fill",         tint: .green,  imageName: "charles_darwin"),
+        .init(title: "Florence Nightingale", symbolName: "cross.case.fill",   tint: .red,    imageName: "florence_nightingale"),
+        .init(title: "Galileo Galilei",      symbolName: "moon.stars.fill",   tint: .indigo, imageName: "galileo_galilei"),
+        .init(title: "Isaac Newton",         symbolName: "atom",              tint: .orange, imageName: "isaac_newton"),
+        .init(title: "Leonardo da Vinci",    symbolName: "paintpalette.fill", tint: .yellow, imageName: "leonardo_da_vinci"),
+        .init(title: "Marie Curie",          symbolName: "atom",              tint: .mint,   imageName: "marie_curie"),
+        .init(title: "Nikola Tesla",         symbolName: "bolt.fill",         tint: .blue,   imageName: "nikola_tesla"),
+        .init(title: "Rosalind Franklin",    symbolName: "waveform.path",     tint: .purple, imageName: "rosalind_franklin"),
     ]
 
     var body: some View {
