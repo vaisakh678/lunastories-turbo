@@ -31,8 +31,8 @@ struct ModeSheetView: View {
             .navigationDestination(for: StoryMode.self) { mode in
                 modeView(for: mode)
             }
-            .navigationDestination(for: GeneratingStoryRoute.self) { _ in
-                GeneratingStoryView(onClose: { dismiss() })
+            .navigationDestination(for: GeneratingStoryRoute.self) { route in
+                GeneratingStoryView(cues: route.cues, onClose: { dismiss() })
             }
         }
         .alert(
@@ -54,71 +54,82 @@ struct ModeSheetView: View {
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         case "Inventors":
             InventorsModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         case "Construction Site":
             ConstructionSiteModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         case "Vegetable":
             VegetableModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         case "Environment":
             EnvironmentModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         case "Jungle Book":
             JungleBookModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         case "Alice in Wonderland":
             AliceInWonderlandModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         case "Grimm's Tales":
             GrimmsTalesModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         case "Wizard of Oz":
             WizardOfOzModeView(
                 characters: characters,
                 path: $path,
                 onClose: { dismiss() },
-                onComplete: { handleComplete($0) }
+                onComplete: { handleComplete($0, cues: $1) }
             )
         default:
             EmptyView()
         }
     }
 
-    private func handleComplete(_ payload: StoryInputPayload) {
-        path.append(GeneratingStoryRoute())
+    private func handleComplete(_ payload: StoryInputPayload, cues: [GenerationCue]) {
+        // Prepend the user's home characters as cues so the carousel feels
+        // personal — "your story is being made for you and your kid."
+        let homeCues: [GenerationCue] = characters.map { c in
+            GenerationCue(
+                id: "char-\(c.id.uuidString)",
+                label: c.name,
+                imageName: nil,
+                symbolName: c.symbolName,
+                tint: c.tint
+            )
+        }
+        path.append(GeneratingStoryRoute(cues: homeCues + cues))
         let request = CreateStoryRequest(
             modeKey: payload.modeKey,
             characterIds: characters.map { $0.id.uuidString.lowercased() },

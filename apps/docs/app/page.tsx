@@ -67,7 +67,7 @@ function Header() {
             alt="Milo Tales"
             width={36}
             height={36}
-            className="rounded-lg shadow-sm ring-1 ring-black/5"
+            className="rounded-lg shadow-sm ring-1 ring-white/10"
           />
           <span className="font-display text-xl font-bold text-foreground">
             Milo Tales
@@ -80,7 +80,7 @@ function Header() {
         </nav>
         <a
           href="#download"
-          className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2 text-sm font-semibold shadow-sm hover:bg-violet transition"
+          className="inline-flex items-center gap-2 rounded-full bg-brand text-white px-4 py-2 text-sm font-semibold shadow-md shadow-brand/30 hover:bg-brand-deep transition"
         >
           Download
         </a>
@@ -94,7 +94,7 @@ function Hero() {
     <section className="bg-aurora relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28">
       <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div className="relative z-10">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/70 backdrop-blur px-3 py-1.5 text-xs font-semibold text-violet ring-1 ring-violet/15 shadow-sm">
+          <span className="inline-flex items-center gap-2 rounded-full bg-glass-strong backdrop-blur px-3 py-1.5 text-xs font-semibold text-cream ring-1 ring-white/10 shadow-sm">
             <span className="size-1.5 rounded-full bg-brand" />
             New · Personalized AI bedtime stories
           </span>
@@ -109,7 +109,7 @@ function Hero() {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <a
               href="#download"
-              className="inline-flex items-center gap-3 rounded-2xl bg-foreground text-background px-6 py-4 font-semibold shadow-lg shadow-violet/20 hover:scale-[1.02] transition"
+              className="inline-flex items-center gap-3 rounded-2xl bg-foreground text-background px-6 py-4 font-semibold shadow-lg shadow-black/40 hover:scale-[1.02] transition"
             >
               <AppleLogo />
               <div className="flex flex-col items-start leading-none">
@@ -119,7 +119,7 @@ function Hero() {
             </a>
             <a
               href="#stories"
-              className="inline-flex items-center gap-2 rounded-2xl bg-white/80 backdrop-blur text-foreground px-6 py-4 font-semibold ring-1 ring-black/5 hover:bg-white transition"
+              className="inline-flex items-center gap-2 rounded-2xl bg-glass-strong backdrop-blur text-foreground px-6 py-4 font-semibold ring-1 ring-white/10 hover:bg-glass transition"
             >
               See a sample story →
             </a>
@@ -154,7 +154,7 @@ function Phone({ src, className = "" }: { src: string; className?: string }) {
     <div
       className={`rounded-[2.2rem] bg-black p-2 shadow-2xl ring-1 ring-black/10 ${className}`}
     >
-      <div className="relative aspect-[9/19] overflow-hidden rounded-[1.8rem] bg-cream">
+      <div className="relative aspect-[9/19] overflow-hidden rounded-[1.8rem] bg-violet">
         <Image src={src} alt="" fill sizes="400px" className="object-cover" />
       </div>
     </div>
@@ -163,7 +163,8 @@ function Phone({ src, className = "" }: { src: string; className?: string }) {
 
 function ModesSection() {
   return (
-    <section id="stories" className="py-24 lg:py-32 bg-background">
+    <section id="stories" className="py-24 lg:py-32 bg-background relative overflow-hidden">
+      <div className="absolute inset-0 -z-10 bg-aurora opacity-30" />
       <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand">
@@ -171,7 +172,7 @@ function ModesSection() {
           </p>
           <h2 className="mt-3 font-display text-4xl sm:text-5xl font-bold leading-tight">
             Nine magical worlds.{" "}
-            <span className="text-violet-soft">Endless adventures.</span>
+            <span className="text-gold">Endless adventures.</span>
           </h2>
           <p className="mt-5 text-lg text-ink-soft">
             From Alice's looking glass to a busy construction site, every world is
@@ -183,7 +184,7 @@ function ModesSection() {
           {MODES.map((mode) => (
             <div
               key={mode.slug}
-              className="group relative rounded-3xl overflow-hidden bg-cream ring-1 ring-black/5 hover:ring-brand/30 hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-xl"
+              className="group relative rounded-3xl overflow-hidden bg-glass ring-1 ring-white/10 hover:ring-brand/40 hover:-translate-y-1 transition-all duration-300 shadow-md shadow-black/30 hover:shadow-xl hover:shadow-black/50"
             >
               <div className="relative aspect-square">
                 <Image
@@ -286,9 +287,9 @@ function BenefitsSection() {
           {BENEFITS.map((b) => (
             <div
               key={b.title}
-              className="rounded-3xl bg-white p-7 ring-1 ring-black/5 shadow-sm hover:shadow-md transition"
+              className="rounded-3xl bg-glass p-7 ring-1 ring-white/10 shadow-md shadow-black/30 hover:shadow-lg hover:shadow-black/40 hover:-translate-y-0.5 transition"
             >
-              <div className="size-11 rounded-2xl bg-cream flex items-center justify-center text-brand">
+              <div className="size-11 rounded-2xl bg-brand/15 flex items-center justify-center text-brand">
                 <Sparkle />
               </div>
               <h3 className="mt-5 font-display text-xl font-bold">{b.title}</h3>
@@ -313,10 +314,10 @@ function MoralsSection() {
     "Treat others the way you want to be treated",
   ];
   return (
-    <section id="morals" className="py-24 lg:py-32 bg-cream">
+    <section id="morals" className="py-24 lg:py-32 bg-night relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-5 gap-12 items-center">
         <div className="lg:col-span-2">
-          <p className="text-sm font-semibold uppercase tracking-wider text-violet-soft">
+          <p className="text-sm font-semibold uppercase tracking-wider text-gold">
             Lessons that stick
           </p>
           <h2 className="mt-3 font-display text-4xl sm:text-5xl font-bold leading-tight">
@@ -332,7 +333,7 @@ function MoralsSection() {
           {morals.map((m) => (
             <div
               key={m}
-              className="rounded-2xl bg-white px-5 py-4 ring-1 ring-black/5 flex items-center gap-3 shadow-sm"
+              className="rounded-2xl bg-glass px-5 py-4 ring-1 ring-white/10 flex items-center gap-3 shadow-md shadow-black/30"
             >
               <span className="size-8 rounded-full bg-gold/20 text-gold flex items-center justify-center font-display font-bold">
                 ★
@@ -350,21 +351,20 @@ function FinalCTA() {
   return (
     <section id="download" className="py-24 lg:py-32 bg-background">
       <div className="mx-auto max-w-5xl px-6">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-night p-10 sm:p-16 text-center text-white">
-          <div className="absolute inset-0 -z-0 bg-aurora opacity-30" />
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-aurora p-10 sm:p-16 text-center text-white ring-1 ring-white/10 shadow-2xl shadow-black/40">
           <div className="relative z-10">
             <h2 className="font-display text-4xl sm:text-5xl font-bold leading-tight">
               Tonight's story is{" "}
               <span className="text-gold">ready when you are.</span>
             </h2>
-            <p className="mt-5 text-lg text-white/80 max-w-xl mx-auto">
+            <p className="mt-5 text-lg text-ink-soft max-w-xl mx-auto">
               Download Milo Tales and write your child into their first adventure.
               Free to try, magical from the very first page.
             </p>
             <div className="mt-8 flex justify-center">
               <a
                 href="#"
-                className="inline-flex items-center gap-3 rounded-2xl bg-white text-violet px-7 py-4 font-semibold shadow-xl hover:scale-[1.02] transition"
+                className="inline-flex items-center gap-3 rounded-2xl bg-foreground text-background px-7 py-4 font-semibold shadow-xl shadow-black/40 hover:scale-[1.02] transition"
               >
                 <AppleLogo />
                 <div className="flex flex-col items-start leading-none">
@@ -382,7 +382,7 @@ function FinalCTA() {
 
 function Footer() {
   return (
-    <footer className="bg-background border-t border-black/5 py-12">
+    <footer className="bg-background border-t border-white/10 py-12">
       <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-2.5">
           <Image
