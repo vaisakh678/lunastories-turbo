@@ -17,12 +17,12 @@ struct ConstructionSiteModeView: View {
     @State private var place: String = ""
 
     private let characterOptions: [PickOption] = [
-        .init(title: "Benny the Bulldozer",          symbolName: "car.fill",       tint: .yellow),
-        .init(title: "Charlie the Construction Worker", symbolName: "person.fill", tint: .orange),
-        .init(title: "Kara the Crane",               symbolName: "arrow.up.right", tint: .blue),
-        .init(title: "Molly the Mixer",              symbolName: "drop.fill",      tint: .gray),
-        .init(title: "Patty the Paver",              symbolName: "rectangle.fill", tint: .brown),
-        .init(title: "Sammy the Safety Cone",        symbolName: "triangle.fill",  tint: .orange),
+        .init(title: "Benny the Bulldozer",             symbolName: "car.fill",       tint: .yellow, imageName: "benny_the_bulldozer"),
+        .init(title: "Charlie the Construction Worker", symbolName: "person.fill",    tint: .orange, imageName: "charlie_the_construction_worker"),
+        .init(title: "Kara the Crane",                  symbolName: "arrow.up.right", tint: .blue,   imageName: "kara_the_crane"),
+        .init(title: "Molly the Mixer",                 symbolName: "drop.fill",      tint: .gray,   imageName: "molly_the_mixer"),
+        .init(title: "Patty the Paver",                 symbolName: "rectangle.fill", tint: .brown,  imageName: "patty_the_paver"),
+        .init(title: "Sammy the Safety Cone",           symbolName: "triangle.fill",  tint: .orange, imageName: "sammy_the_safety_cone"),
     ]
 
     var body: some View {
