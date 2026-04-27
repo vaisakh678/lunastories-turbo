@@ -50,7 +50,6 @@ private struct ModeStepChromeModifier: ViewModifier {
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             #endif
-            .tint(Color.miloCream)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
