@@ -27,6 +27,12 @@ struct HomeView: View {
         }
     }
 
+    private func drainPendingStoryDeepLink() {
+        guard let id = deepLinks.pendingStoryId else { return }
+        navigationPath.append(HomeRoute.story(id: id))
+        deepLinks.pendingStoryId = nil
+    }
+
     private func handleBannerTap(_ inFlight: InFlightGeneration) {
         if let story = inFlight.status.readyStory {
             navigationPath.append(HomeRoute.story(id: story.id))
@@ -223,13 +229,14 @@ struct HomeView: View {
                     StoryReaderView(storyId: id)
                 }
             }
-            // Push the reader when a notification tap deep-links us to a
-            // specific story. Clears the slot so a tap on the same story
-            // again still registers.
-            .onChange(of: deepLinks.pendingStoryId) { _, id in
-                guard let id else { return }
-                navigationPath.append(HomeRoute.story(id: id))
-                deepLinks.pendingStoryId = nil
+            // Cold-launch case: notification tap may have set pendingStoryId
+            // BEFORE HomeView mounted, so .onChange never fires. Drain it
+            // on first appear too.
+            .onAppear { drainPendingStoryDeepLink() }
+            // Background tap: HomeView is already up, the click handler
+            // writes pendingStoryId, and .onChange picks it up.
+            .onChange(of: deepLinks.pendingStoryId) { _, _ in
+                drainPendingStoryDeepLink()
             }
         }
     }
