@@ -2,4 +2,4 @@
 
 API_BASE_URL = https:/$()/dev-api-development-13c7.up.railway.app
 APP_NAME = Luna Stories (Dev)
-ONESIGNAL_APP_ID = e0ab5a05-2223-4ef9-93d7-262e3cc965dd
+ONESIGNAL_APP_ID = 5d1e8899-6667-4617-95a8-defc97c8c048
