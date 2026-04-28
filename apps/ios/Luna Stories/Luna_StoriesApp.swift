@@ -15,6 +15,7 @@ struct Luna_StoriesApp: App {
     @State private var deepLinks = DeepLinkRouter()
     @State private var profile = ProfileViewModel()
     @State private var unread = LatestStoryViewModel()
+    @State private var subscriptions = SubscriptionsViewModel()
 
     init() {
         Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
@@ -23,6 +24,9 @@ struct Luna_StoriesApp: App {
         // so the SDK's handlers (click + foreground) can write into them
         // from anywhere.
         PushNotifications.configure(router: deepLinks, latestStory: unread)
+        // RevenueCat — configure once at launch. Login follows in
+        // ContentView.syncProfileAndPush once the backend user id is known.
+        Subscriptions.configure()
     }
 
     var body: some Scene {
@@ -34,6 +38,7 @@ struct Luna_StoriesApp: App {
                 .environment(deepLinks)
                 .environment(profile)
                 .environment(unread)
+                .environment(subscriptions)
                 .preferredColorScheme(.dark)
                 .task { await avatars.load() }
         }

@@ -11,6 +11,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(Clerk.self) private var clerk
     @Environment(ProfileViewModel.self) private var profile
+    @Environment(SubscriptionsViewModel.self) private var subscriptions
     @State private var auth = AuthFlowModel()
 
     /// Post-Dismiss Navigation Gate. Controls when the GetStartedView -> HomeView
@@ -65,6 +66,7 @@ struct ContentView: View {
                 canNavigateToHome = false
                 profile.clear()
                 PushNotifications.logout()
+                Task { await Subscriptions.logout() }
             } else {
                 Task { await syncProfileAndPush() }
             }
@@ -88,6 +90,10 @@ struct ContentView: View {
             print("🔐 syncProfileAndPush: profile loaded id=\(userId), calling OneSignal.login")
             PushNotifications.login(userId: userId)
             PushNotifications.requestPermissionIfNeeded()
+            // Hand the same internal user id to RevenueCat so subscription
+            // state follows the user across reinstalls and devices.
+            await Subscriptions.login(userId: userId)
+            await subscriptions.refresh()
         } else {
             print("🔐 syncProfileAndPush: profile is nil — OneSignal.login SKIPPED. errorMessage=\(profile.errorMessage ?? "nil")")
         }

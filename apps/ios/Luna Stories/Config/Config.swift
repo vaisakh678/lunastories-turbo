@@ -33,4 +33,15 @@ nonisolated enum Config {
         }
         return value
     }
+
+    /// RevenueCat public iOS SDK key (`appl_…`). Used to configure the
+    /// Purchases SDK at app launch. Sourced from `REVENUECAT_API_KEY` in
+    /// the per-env xcconfig.
+    nonisolated static var revenueCatAPIKey: String {
+        guard let value = Bundle.main.infoDictionary?["REVENUECAT_API_KEY"] as? String,
+              !value.isEmpty else {
+            fatalError("Missing REVENUECAT_API_KEY — check that the active build configuration links a Config/*.xcconfig and that Info.plist references $(REVENUECAT_API_KEY)")
+        }
+        return value
+    }
 }

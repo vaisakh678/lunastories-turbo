@@ -3,16 +3,28 @@
 //  Luna Stories
 //
 
+import RevenueCat
 import SwiftUI
 
 struct PaywallView: View {
-    enum Plan: Hashable {
-        case monthly
-        case annual
-    }
-
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedPlan: Plan = .annual
+    @Environment(SubscriptionsViewModel.self) private var subscriptions
+
+    /// Currently selected package id (e.g. `$rc_annual`, `$rc_monthly`).
+    /// Defaults to whatever's first in the offering's availablePackages
+    /// (we sort annual first when configuring the offering).
+    @State private var selectedPackageId: String?
+    @State private var isPurchasing: Bool = false
+    @State private var isRestoring: Bool = false
+    @State private var errorMessage: String?
+    @State private var didSucceed: Bool = false
+
+    private var offering: Offering? { subscriptions.offerings?.current }
+    private var packages: [Package] { offering?.availablePackages ?? [] }
+    private var selectedPackage: Package? {
+        guard let id = selectedPackageId else { return packages.first }
+        return packages.first { $0.identifier == id } ?? packages.first
+    }
 
     var body: some View {
         NavigationStack {
@@ -30,10 +42,14 @@ struct PaywallView: View {
                         .padding(.top, 8)
                         .padding(.bottom, 24)
                     }
-                    plans
+                    plansSection
                         .padding(.horizontal, 24)
                         .padding(.bottom, 12)
                     bottomBar
+                }
+
+                if didSucceed {
+                    successOverlay
                 }
             }
             #if os(iOS)
@@ -50,8 +66,27 @@ struct PaywallView: View {
                     .accessibilityLabel("Close")
                 }
             }
+            .task {
+                if subscriptions.offerings == nil {
+                    await subscriptions.refresh()
+                }
+                if selectedPackageId == nil {
+                    selectedPackageId = packages.first?.identifier
+                }
+            }
+            .alert(
+                "Couldn't complete the purchase",
+                isPresented: Binding(
+                    get: { errorMessage != nil },
+                    set: { if !$0 { errorMessage = nil } }
+                ),
+                actions: { Button("OK") { errorMessage = nil } },
+                message: { Text(errorMessage ?? "") }
+            )
         }
     }
+
+    // MARK: - Sections
 
     private var hero: some View {
         VStack(spacing: 14) {
@@ -80,7 +115,7 @@ struct PaywallView: View {
 
             VStack(spacing: 6) {
                 ProTitleBadge()
-                Text("Unlock the full Milo magic")
+                Text("Unlock the full Luna magic")
                     .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Color.miloCream)
                     .multilineTextAlignment(.center)
@@ -113,7 +148,7 @@ struct PaywallView: View {
             FeatureRow(
                 icon: "heart.fill",
                 title: "Lessons that stick",
-                detail: "Pick a moral and Milo weaves it gently into the story."
+                detail: "Pick a moral and Luna weaves it gently into the story."
             )
             FeatureRow(
                 icon: "rectangle.dashed.badge.record",
@@ -123,38 +158,48 @@ struct PaywallView: View {
         }
     }
 
-    private var plans: some View {
-        VStack(spacing: 12) {
-            PlanCard(
-                title: "Annual",
-                price: "$59.99",
-                cadence: "/ year",
-                subnote: "$5.00 / month — save 30%",
-                badge: "Best value",
-                isSelected: selectedPlan == .annual,
-                onTap: { selectedPlan = .annual }
-            )
-            PlanCard(
-                title: "Monthly",
-                price: "$6.99",
-                cadence: "/ month",
-                subnote: "Cancel anytime",
-                badge: nil,
-                isSelected: selectedPlan == .monthly,
-                onTap: { selectedPlan = .monthly }
-            )
+    @ViewBuilder
+    private var plansSection: some View {
+        if subscriptions.isLoading && packages.isEmpty {
+            HStack {
+                Spacer()
+                ProgressView().tint(Color.miloCream)
+                Spacer()
+            }
+            .frame(height: 80)
+        } else if packages.isEmpty {
+            // No offerings — likely the dev hasn't pushed products to App
+            // Store Connect / RevenueCat yet, or RevenueCat couldn't fetch.
+            Text("Couldn't load plans. Pull to retry.")
+                .font(.subheadline)
+                .foregroundStyle(Color.miloCream.opacity(0.6))
+                .frame(height: 80)
+        } else {
+            VStack(spacing: 12) {
+                ForEach(packages, id: \.identifier) { pkg in
+                    PlanCard(
+                        package: pkg,
+                        isSelected: pkg.identifier == selectedPackage?.identifier,
+                        onTap: { selectedPackageId = pkg.identifier }
+                    )
+                }
+            }
         }
     }
 
     private var bottomBar: some View {
         VStack(spacing: 10) {
             Button {
-                // TODO: wire up StoreKit purchase for selectedPlan.
+                Task { await purchaseSelected() }
             } label: {
                 HStack(spacing: 8) {
-                    Text("Start 7-day free trial")
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 14, weight: .bold))
+                    if isPurchasing {
+                        ProgressView().tint(Color.miloCream)
+                    } else {
+                        Text(ctaLabel)
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 14, weight: .bold))
+                    }
                 }
                 .font(.system(size: 17, weight: .bold))
                 .foregroundStyle(Color.miloCream)
@@ -174,18 +219,33 @@ struct PaywallView: View {
                 )
                 .shadow(color: Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.45),
                         radius: 14, x: 0, y: 6)
+                .opacity(selectedPackage == nil || isPurchasing ? 0.55 : 1)
             }
             .buttonStyle(.plain)
+            .disabled(selectedPackage == nil || isPurchasing)
 
-            Text("Then \(selectedPlan == .annual ? "$59.99 / year" : "$6.99 / month"). Cancel anytime.")
+            Text(footerText)
                 .font(.system(size: 12))
                 .foregroundStyle(Color.miloCream.opacity(0.5))
+                .multilineTextAlignment(.center)
 
             HStack(spacing: 16) {
+                Button {
+                    Task { await restorePurchases() }
+                } label: {
+                    if isRestoring {
+                        ProgressView().controlSize(.small).tint(Color.miloCream.opacity(0.5))
+                    } else {
+                        Text("Restore")
+                    }
+                }
+                .foregroundStyle(Color.miloCream.opacity(0.5))
+                .disabled(isRestoring)
+
+                Text("·").foregroundStyle(Color.miloCream.opacity(0.3))
                 Button("Terms") {}
                     .foregroundStyle(Color.miloCream.opacity(0.5))
-                Text("·")
-                    .foregroundStyle(Color.miloCream.opacity(0.3))
+                Text("·").foregroundStyle(Color.miloCream.opacity(0.3))
                 Button("Privacy") {}
                     .foregroundStyle(Color.miloCream.opacity(0.5))
             }
@@ -196,11 +256,131 @@ struct PaywallView: View {
         .padding(.bottom, 16)
         .padding(.top, 12)
     }
+
+    private var successOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.55).ignoresSafeArea()
+            VStack(spacing: 14) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 48))
+                    .foregroundStyle(Color.accentColor)
+                Text("Welcome to Luna Pro ✨")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(Color.miloCream)
+                Text("Tonight's stories are on us.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.miloCream.opacity(0.7))
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+        }
+        .transition(.opacity)
+    }
+
+    // MARK: - CTA copy
+
+    private var ctaLabel: String {
+        guard let pkg = selectedPackage else { return "Continue" }
+        if pkg.storeProduct.introductoryDiscount?.paymentMode == .freeTrial {
+            return "Start free trial"
+        }
+        return "Continue"
+    }
+
+    private var footerText: String {
+        guard let pkg = selectedPackage else { return "Cancel anytime." }
+        let price = pkg.storeProduct.localizedPriceString
+        let unit = pkg.subscriptionPeriodUnit
+        if pkg.storeProduct.introductoryDiscount?.paymentMode == .freeTrial,
+           let trial = pkg.storeProduct.introductoryDiscount {
+            let days = trial.subscriptionPeriod.value
+            return "Free for \(days) days, then \(price)\(unit). Cancel anytime."
+        }
+        return "Then \(price)\(unit). Cancel anytime."
+    }
+
+    // MARK: - Actions
+
+    private func purchaseSelected() async {
+        guard let pkg = selectedPackage else { return }
+        isPurchasing = true
+        defer { isPurchasing = false }
+        do {
+            let purchased = try await subscriptions.purchase(package: pkg)
+            if purchased {
+                withAnimation { didSucceed = true }
+                try? await Task.sleep(for: .seconds(1.4))
+                dismiss()
+            }
+        } catch {
+            errorMessage = (error as NSError).localizedDescription
+        }
+    }
+
+    private func restorePurchases() async {
+        isRestoring = true
+        defer { isRestoring = false }
+        do {
+            let restored = try await subscriptions.restore()
+            if restored {
+                withAnimation { didSucceed = true }
+                try? await Task.sleep(for: .seconds(1.4))
+                dismiss()
+            } else {
+                errorMessage = "No active Pro subscription found on this Apple ID."
+            }
+        } catch {
+            errorMessage = (error as NSError).localizedDescription
+        }
+    }
 }
+
+// MARK: - Helper extension
+
+private extension Package {
+    /// Short cadence label like " / month" / " / year". Falls back to
+    /// empty string for non-recurring or unknown periods.
+    var subscriptionPeriodUnit: String {
+        guard let period = storeProduct.subscriptionPeriod else { return "" }
+        switch period.unit {
+        case .day: return " / \(period.value > 1 ? "\(period.value) days" : "day")"
+        case .week: return " / \(period.value > 1 ? "\(period.value) weeks" : "week")"
+        case .month:
+            return period.value == 12 ? " / year" : " / \(period.value > 1 ? "\(period.value) months" : "month")"
+        case .year: return " / year"
+        @unknown default: return ""
+        }
+    }
+
+    /// "Annual" / "Monthly" / etc — derived from the subscription period
+    /// so the card label stays accurate even if the package id changes.
+    var displayTitle: String {
+        guard let period = storeProduct.subscriptionPeriod else {
+            return storeProduct.localizedTitle.isEmpty ? identifier : storeProduct.localizedTitle
+        }
+        switch period.unit {
+        case .year: return "Annual"
+        case .month: return period.value == 12 ? "Annual" : "Monthly"
+        case .week: return "Weekly"
+        case .day: return "Daily"
+        @unknown default: return identifier
+        }
+    }
+
+    var isAnnual: Bool {
+        guard let period = storeProduct.subscriptionPeriod else { return false }
+        return period.unit == .year || (period.unit == .month && period.value == 12)
+    }
+}
+
+// MARK: - Subviews
 
 private struct ProTitleBadge: View {
     var body: some View {
-        Text("MILO TALES PRO")
+        Text("LUNA STORIES PRO")
             .font(.system(size: 11, weight: .heavy))
             .tracking(1.2)
             .foregroundStyle(
@@ -256,11 +436,7 @@ private struct FeatureRow: View {
 }
 
 private struct PlanCard: View {
-    let title: String
-    let price: String
-    let cadence: String
-    let subnote: String
-    let badge: String?
+    let package: Package
     let isSelected: Bool
     let onTap: () -> Void
 
@@ -283,11 +459,11 @@ private struct PlanCard: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {
-                        Text(title)
+                        Text(package.displayTitle)
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(Color.miloCream)
-                        if let badge {
-                            Text(badge.uppercased())
+                        if package.isAnnual {
+                            Text("BEST VALUE")
                                 .font(.system(size: 10, weight: .heavy))
                                 .tracking(0.6)
                                 .foregroundStyle(Color.miloCream)
@@ -306,10 +482,10 @@ private struct PlanCard: View {
                 Spacer(minLength: 0)
 
                 VStack(alignment: .trailing, spacing: 0) {
-                    Text(price)
+                    Text(package.storeProduct.localizedPriceString)
                         .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(Color.miloCream)
-                    Text(cadence)
+                    Text(package.subscriptionPeriodUnit.replacingOccurrences(of: " / ", with: "/ "))
                         .font(.system(size: 11))
                         .foregroundStyle(Color.miloCream.opacity(0.55))
                 }
@@ -339,5 +515,12 @@ private struct PlanCard: View {
         }
         .buttonStyle(.plain)
         .animation(.easeInOut(duration: 0.18), value: isSelected)
+    }
+
+    private var subnote: String {
+        if package.isAnnual {
+            return "Save vs monthly · cancel anytime"
+        }
+        return "Cancel anytime"
     }
 }
