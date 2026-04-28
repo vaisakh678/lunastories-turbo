@@ -160,9 +160,13 @@ struct HomeView: View {
                     NavigationLink {
                         AccountView()
                     } label: {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.body.weight(.medium))
-                            .foregroundStyle(.primary)
+                        VStack(alignment: .trailing, spacing: 5) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .frame(width: 22, height: 2)
+                            RoundedRectangle(cornerRadius: 2)
+                                .frame(width: 14, height: 2)
+                        }
+                        .foregroundStyle(.primary)
                     }
                     .accessibilityLabel("Account")
                 }
@@ -769,3 +773,11 @@ private struct CharacterCardSkeleton: View {
 }
 
 // (Shimmer modifier lives in Shimmer.swift so MyStoriesView can use it too.)
+
+#Preview {
+    HomeView()
+        .environment(StoryGenerationManager())
+        .environment(DeepLinkRouter())
+        .environment(LatestStoryViewModel())
+        .preferredColorScheme(.dark)
+}
