@@ -2,6 +2,15 @@ import { z } from "zod";
 
 export const characterRoleSchema = z.enum(["main", "side"]);
 export const genderSchema = z.enum(["male", "female", "na"]);
+export const characterRelationSchema = z.enum([
+  "parent",
+  "grandparent",
+  "friend",
+  "pet",
+  "sibling",
+  "other",
+  "fictional",
+]);
 
 export const createCharacterSchema = z.object({
   role: characterRoleSchema,
@@ -9,6 +18,7 @@ export const createCharacterSchema = z.object({
   symbolName: z.string().min(1).max(64),
   tint: z.string().min(1).max(32),
   tagline: z.string().max(255).optional(),
+  relation: characterRelationSchema.optional(),
 
   age: z.number().int().min(1).max(150).optional(),
   gender: genderSchema.optional(),
@@ -29,6 +39,7 @@ export const updateCharacterSchema = z
     symbolName: z.string().min(1).max(64).optional(),
     tint: z.string().min(1).max(32).optional(),
     tagline: z.string().max(255).nullable().optional(),
+    relation: characterRelationSchema.nullable().optional(),
 
     age: z.number().int().min(1).max(150).nullable().optional(),
     gender: genderSchema.nullable().optional(),

@@ -7,7 +7,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-import { characterRoleEnum, genderEnum } from "./enums";
+import { characterRelationEnum, characterRoleEnum, genderEnum } from "./enums";
 import { userSchema } from "./users";
 
 export const characterSchema = pgTable("characters", {
@@ -17,6 +17,7 @@ export const characterSchema = pgTable("characters", {
     .references(() => userSchema.id, { onDelete: "cascade" }),
 
   role: characterRoleEnum("role").notNull(),
+  relation: characterRelationEnum("relation"),
   name: varchar("name", { length: 64 }).notNull(),
   symbolName: varchar("symbol_name", { length: 64 }).notNull(),
   tint: varchar("tint", { length: 32 }).notNull(),

@@ -12,7 +12,8 @@ struct CharacterWizardSheet: View {
     var onDelete: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
-    @State private var step: WizardStep = .basicInfo
+    @State private var mainStep: MainWizardStep = .basicInfo
+    @State private var sideStep: SideWizardStep = .basicInfo
     @State private var draft: CharacterDraft
     @State private var confirmingDelete: Bool = false
 
@@ -34,38 +35,64 @@ struct CharacterWizardSheet: View {
         isEditing ? "Edit Character" : role.addPromptTitle
     }
 
-    private var canAdvance: Bool {
-        switch step {
-        case .basicInfo:
-            return !draft.name.trimmingCharacters(in: .whitespaces).isEmpty
-        case .icon, .appearance, .interests:
-            return true
+    // MARK: Main character step helpers
+    private var mainStepIndex: Int { mainStep.rawValue }
+    private var mainTotal: Int { MainWizardStep.allCases.count }
+    private var isMainLastStep: Bool { mainStep == MainWizardStep.allCases.last }
+    private var canAdvanceMain: Bool {
+        switch mainStep {
+        case .basicInfo: return !draft.name.trimmingCharacters(in: .whitespaces).isEmpty
+        case .icon, .appearance, .interests: return true
         }
     }
 
-    private var isLastStep: Bool { step == WizardStep.allCases.last }
+    // MARK: Side character step helpers
+    private var sideStepIndex: Int { sideStep.rawValue }
+    private var sideTotal: Int { SideWizardStep.allCases.count }
+    private var isSideLastStep: Bool { sideStep == SideWizardStep.allCases.last }
+    private var canAdvanceSide: Bool {
+        switch sideStep {
+        case .basicInfo: return !draft.name.trimmingCharacters(in: .whitespaces).isEmpty
+        case .relation, .icon: return true
+        }
+    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                ProgressBar(currentIndex: step.rawValue, total: WizardStep.allCases.count)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                    .padding(.bottom, 8)
+                if role == .main {
+                    ProgressBar(currentIndex: mainStepIndex, total: mainTotal)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                        .padding(.bottom, 8)
+                } else {
+                    ProgressBar(currentIndex: sideStepIndex, total: sideTotal)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                        .padding(.bottom, 8)
+                }
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text(step.title)
+                        Text(role == .main ? mainStep.title : sideStep.title)
                             .font(.title2.weight(.bold))
                             .padding(.horizontal, 20)
                             .padding(.top, 8)
 
                         Group {
-                            switch step {
-                            case .basicInfo: BasicInfoStep(draft: $draft)
-                            case .icon: IconStep(draft: $draft)
-                            case .appearance: AppearanceStep(draft: $draft)
-                            case .interests: InterestsStep(draft: $draft)
+                            if role == .main {
+                                switch mainStep {
+                                case .basicInfo: BasicInfoStep(draft: $draft)
+                                case .icon: IconStep(draft: $draft)
+                                case .appearance: AppearanceStep(draft: $draft)
+                                case .interests: InterestsStep(draft: $draft)
+                                }
+                            } else {
+                                switch sideStep {
+                                case .basicInfo: SideBasicInfoStep(draft: $draft)
+                                case .relation: RelationStep(draft: $draft)
+                                case .icon: IconStep(draft: $draft)
+                                }
                             }
                         }
                         .padding(.horizontal, 20)
@@ -122,54 +149,69 @@ struct CharacterWizardSheet: View {
 
     private var bottomBar: some View {
         HStack(spacing: 12) {
-            if step != WizardStep.allCases.first {
-                Button {
-                    if let prev = WizardStep(rawValue: step.rawValue - 1) {
-                        step = prev
-                    }
-                } label: {
-                    Text("Back")
-                        .font(.headline)
-                        .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 28)
-                        .padding(.vertical, 16)
-                        .background(
-                            Capsule().fill(Color.accentColor.opacity(0.12))
-                        )
+            if role == .main {
+                if mainStep != MainWizardStep.allCases.first {
+                    backButton { if let prev = MainWizardStep(rawValue: mainStep.rawValue - 1) { mainStep = prev } }
                 }
-                .buttonStyle(.plain)
-            }
-
-            Button {
-                if isLastStep {
-                    save()
-                } else if let next = WizardStep(rawValue: step.rawValue + 1) {
-                    step = next
+                nextButton(isLast: isMainLastStep, canAdvance: canAdvanceMain) {
+                    if isMainLastStep { save() }
+                    else if let next = MainWizardStep(rawValue: mainStep.rawValue + 1) { mainStep = next }
                 }
-            } label: {
-                Text(isLastStep ? "Save" : "Next")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        Capsule().fill(canAdvance ? Color.accentColor : Color.gray.opacity(0.4))
-                    )
+            } else {
+                if sideStep != SideWizardStep.allCases.first {
+                    backButton { if let prev = SideWizardStep(rawValue: sideStep.rawValue - 1) { sideStep = prev } }
+                }
+                nextButton(isLast: isSideLastStep, canAdvance: canAdvanceSide) {
+                    if isSideLastStep { save() }
+                    else if let next = SideWizardStep(rawValue: sideStep.rawValue + 1) { sideStep = next }
+                }
             }
-            .buttonStyle(.plain)
-            .disabled(!canAdvance)
         }
+    }
+
+    @ViewBuilder
+    private func backButton(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text("Back")
+                .font(.headline)
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 28)
+                .padding(.vertical, 16)
+                .background(Capsule().fill(Color.accentColor.opacity(0.12)))
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func nextButton(isLast: Bool, canAdvance: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(isLast ? "Save" : "Next")
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Capsule().fill(canAdvance ? Color.accentColor : Color.gray.opacity(0.4)))
+        }
+        .buttonStyle(.plain)
+        .disabled(!canAdvance)
     }
 
     private func save() {
         let trimmedName = draft.name.trimmingCharacters(in: .whitespaces)
+        let tagline: String
+        if role == .side, let rel = draft.relation {
+            tagline = rel.displayName
+        } else {
+            tagline = draft.interests.sorted().prefix(2).joined(separator: " · ")
+        }
         let character = Character(
             id: editing?.id ?? UUID(),
             name: trimmedName,
             role: role,
             symbolName: draft.iconName,
             tintName: editing?.tintName ?? role.defaultTintName,
-            tagline: draft.interests.sorted().prefix(2).joined(separator: " · "),
+            tagline: tagline,
+            relation: draft.relation,
             age: draft.age,
             gender: draft.gender,
             hairColor: draft.hairColor,
@@ -187,6 +229,7 @@ struct CharacterWizardSheet: View {
 
 private struct CharacterDraft {
     var name: String = ""
+    var relation: CharacterRelation? = nil
     var age: Int = 6
     var gender: Gender = .na
     var iconName: String = "person.fill"
@@ -199,6 +242,7 @@ private struct CharacterDraft {
     init(editing: Character? = nil) {
         guard let c = editing else { return }
         name = c.name
+        relation = c.relation
         age = c.age ?? 6
         gender = c.gender ?? .na
         iconName = c.symbolName
@@ -210,7 +254,7 @@ private struct CharacterDraft {
     }
 }
 
-private enum WizardStep: Int, CaseIterable {
+private enum MainWizardStep: Int, CaseIterable {
     case basicInfo
     case icon
     case appearance
@@ -222,6 +266,20 @@ private enum WizardStep: Int, CaseIterable {
         case .icon: "Choose an Icon"
         case .appearance: "Appearance"
         case .interests: "Interests"
+        }
+    }
+}
+
+private enum SideWizardStep: Int, CaseIterable {
+    case basicInfo
+    case relation
+    case icon
+
+    var title: String {
+        switch self {
+        case .basicInfo: "Basic Info"
+        case .relation: "Relationship"
+        case .icon: "Choose an Icon"
         }
     }
 }
@@ -278,7 +336,79 @@ private struct ProgressBar: View {
     }
 }
 
-// MARK: - Step 1: Basic Info
+// MARK: - Side character steps
+
+private struct SideBasicInfoStep: View {
+    @Binding var draft: CharacterDraft
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            FieldLabel("Name")
+            TextField("e.g. Grandma Rose", text: $draft.name)
+                .textFieldStyle(.plain)
+                .font(.title3)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color.miloCream.opacity(0.08))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color.miloCream.opacity(0.18), lineWidth: 1)
+                )
+        }
+    }
+}
+
+private struct RelationStep: View {
+    @Binding var draft: CharacterDraft
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            FieldLabel("Choose a relation")
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(CharacterRelation.allCases) { relation in
+                    let isSelected = draft.relation == relation
+                    Button {
+                        draft.relation = isSelected ? nil : relation
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: relation.icon)
+                                .font(.system(size: 18, weight: .semibold))
+                                .frame(width: 28)
+                            Text(relation.displayName)
+                                .font(.subheadline.weight(.medium))
+                            Spacer(minLength: 0)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(isSelected ? Color.accentColor : Color.miloCream.opacity(0.08))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .strokeBorder(
+                                    isSelected ? Color.accentColor : Color.miloCream.opacity(0.15),
+                                    lineWidth: isSelected ? 0 : 1
+                                )
+                        )
+                        .foregroundStyle(isSelected ? Color.white : Color.miloCream)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Step 1: Basic Info (main character)
 
 private struct BasicInfoStep: View {
     @Binding var draft: CharacterDraft

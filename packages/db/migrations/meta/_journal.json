@@ -8,6 +8,13 @@
       "when": 1777341595735,
       "tag": "0000_tired_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777403628071,
+      "tag": "0001_chemical_karnak",
+      "breakpoints": true
     }
   ]
 }

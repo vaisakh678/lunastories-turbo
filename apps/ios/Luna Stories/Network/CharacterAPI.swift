@@ -11,6 +11,7 @@ nonisolated struct CreateCharacterRequest: Encodable {
     let symbolName: String
     let tint: String
     let tagline: String?
+    let relation: CharacterRelation?
     let age: Int?
     let gender: Gender?
     let hairColor: String?
@@ -26,6 +27,7 @@ nonisolated struct UpdateCharacterRequest: Encodable {
     var symbolName: String? = nil
     var tint: String? = nil
     var tagline: String? = nil
+    var relation: CharacterRelation? = nil
     var age: Int? = nil
     var gender: Gender? = nil
     var hairColor: String? = nil
@@ -42,6 +44,7 @@ nonisolated struct CharacterResponse: Decodable {
     let symbolName: String
     let tint: String
     let tagline: String?
+    let relation: CharacterRelation?
     let age: Int?
     let gender: Gender?
     let hairColor: String?
@@ -60,6 +63,7 @@ nonisolated struct CharacterResponse: Decodable {
             symbolName: symbolName,
             tintName: tint,
             tagline: tagline ?? "",
+            relation: relation,
             age: age,
             gender: gender,
             hairColor: hairColor,

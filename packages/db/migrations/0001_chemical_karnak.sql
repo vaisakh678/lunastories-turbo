@@ -1,0 +1,2 @@
+CREATE TYPE "public"."character_relation" AS ENUM('parent', 'grandparent', 'friend', 'pet', 'sibling', 'other', 'fictional');--> statement-breakpoint
+ALTER TABLE "characters" ADD COLUMN "relation" character_relation;
