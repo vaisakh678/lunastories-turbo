@@ -67,12 +67,16 @@ private final class NotificationClickHandler: NSObject, OSNotificationClickListe
     }
 
     func onClick(event: OSNotificationClickEvent) {
+        let payload = event.notification.additionalData
+        print("📬 OneSignal click — additionalData: \(String(describing: payload))")
         // Backend includes `{"storyId": "<uuid>"}` in additionalData when
         // story generation finishes. Anything else is treated as a generic
         // notification and just brings the app to the foreground.
-        guard let payload = event.notification.additionalData,
-              let storyId = payload["storyId"] as? String
-        else { return }
+        guard let storyId = payload?["storyId"] as? String else {
+            print("📬 No storyId in payload — bringing app to foreground only")
+            return
+        }
+        print("📬 Routing deep link to story: \(storyId)")
         Task { @MainActor in
             router.openStory(id: storyId)
         }
