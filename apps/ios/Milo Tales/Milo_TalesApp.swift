@@ -14,6 +14,7 @@ struct Milo_TalesApp: App {
     @State private var generations = StoryGenerationManager()
     @State private var deepLinks = DeepLinkRouter()
     @State private var profile = ProfileViewModel()
+    @State private var unread = UnreadStoryViewModel()
 
     init() {
         Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
@@ -31,6 +32,7 @@ struct Milo_TalesApp: App {
                 .environment(generations)
                 .environment(deepLinks)
                 .environment(profile)
+                .environment(unread)
                 .preferredColorScheme(.dark)
                 .task { await avatars.load() }
         }

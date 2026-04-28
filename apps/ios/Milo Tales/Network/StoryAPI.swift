@@ -168,6 +168,15 @@ enum StoryAPI {
         try await APIClient.shared.get("/api/v1/stories/\(id)")
     }
 
+    /// The most recent ready-but-unread story created in the last 48 hours,
+    /// or null if none. Powers the "Pick up where you left off" banner.
+    static func latestUnread() async throws -> StoryResponse? {
+        let wrapper: LatestUnreadWrapper = try await APIClient.shared.get(
+            "/api/v1/stories/latest-unread"
+        )
+        return wrapper.story
+    }
+
     static func generateAudio(_ id: String) async throws -> StoryResponse {
         try await APIClient.shared.post(
             "/api/v1/stories/\(id)/audio",
@@ -190,6 +199,10 @@ enum StoryAPI {
 nonisolated struct MarkAsReadResponse: Decodable {
     let id: String
     let lastReadAt: String
+}
+
+private nonisolated struct LatestUnreadWrapper: Decodable {
+    let story: StoryResponse?
 }
 
 private nonisolated struct EmptyBody: Encodable {}

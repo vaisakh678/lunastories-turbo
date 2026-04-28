@@ -8,6 +8,7 @@ import { getUserIdFromCTX } from "../lib/helpers";
 import {
   createStory,
   generateStoryAudio,
+  getLatestUnreadStory,
   getStoriesByUser,
   getStoryById,
   markStoryAsRead,
@@ -30,6 +31,13 @@ const storyRoute = new Hono()
 
     const stories = await getStoriesByUser(userId, query);
     return c.json<APIResponse<typeof stories>>({ data: stories });
+  })
+  .get("/latest-unread", async (c) => {
+    const userId = getUserIdFromCTX(c);
+    const story = await getLatestUnreadStory(userId);
+    // Wrap in a non-null object so the iOS APIClient (which rejects
+    // top-level null `data`) can decode the absence cleanly.
+    return c.json<APIResponse<{ story: typeof story }>>({ data: { story } });
   })
   .get("/:id", zValidator("param", storyIdParamSchema), async (c) => {
     const { id } = c.req.valid("param");

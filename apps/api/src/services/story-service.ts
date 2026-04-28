@@ -11,7 +11,7 @@ import type {
   StorySummaryDTO,
 } from "@repo/dto";
 import type { CreateStory, StoryListQuery } from "@repo/zod";
-import { and, asc, desc, eq, inArray, isNull, lt } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, lt } from "drizzle-orm";
 
 import { BadRequest, InternalError, NotFound } from "../lib/api-error";
 import { generateAudio } from "../lib/audio-generator";
@@ -166,6 +166,36 @@ export async function createStory(
     logger.error({ err, storyId: insertedId }, "Story generation failed");
     throw InternalError("Failed to generate story");
   }
+}
+
+/// The most recent ready-but-unread story created in the last 48 hours,
+/// or null if there is none. Powers the "Pick up where you left off"
+/// banner on the home screen.
+const UNREAD_BANNER_WINDOW_HOURS = 48;
+
+export async function getLatestUnreadStory(
+  userId: string,
+): Promise<StorySummaryDTO | null> {
+  const cutoff = new Date(
+    Date.now() - UNREAD_BANNER_WINDOW_HOURS * 60 * 60 * 1000,
+  );
+
+  const [row] = await db
+    .select()
+    .from(storySchema)
+    .where(
+      and(
+        eq(storySchema.userId, userId),
+        isNull(storySchema.deletedAt),
+        isNull(storySchema.lastReadAt),
+        eq(storySchema.status, "ready"),
+        gte(storySchema.createdAt, cutoff),
+      ),
+    )
+    .orderBy(desc(storySchema.createdAt))
+    .limit(1);
+
+  return row ? toSummaryDTO(row) : null;
 }
 
 export async function getStoriesByUser(
