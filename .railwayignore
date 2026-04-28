@@ -1,0 +1,30 @@
+# `railway up` uploads the repo root by default. We deploy a single
+# service (apps/api) — everything else is iOS app source, marketing site
+# assets, raw artwork, and generated build output that shouldn't be
+# anywhere near a Node container.
+
+# Other apps in the monorepo
+apps/ios
+apps/admin
+apps/docs
+
+# Raw source artwork and marketing assets
+docs
+
+# Local-only / generated
+.git
+.github
+.turbo
+.vscode
+.idea
+node_modules
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/build
+
+# OS / editor cruft
+.DS_Store
+**/.DS_Store
+*.log
