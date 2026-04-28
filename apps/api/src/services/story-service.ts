@@ -168,18 +168,21 @@ export async function createStory(
   }
 }
 
-/// The most recent ready-but-unread story created in the last 48 hours,
-/// or null if there is none. Powers the "Pick up where you left off"
-/// banner on the home screen.
-const UNREAD_BANNER_WINDOW_HOURS = 48;
+/// The single most recent story that should drive the home banner —
+/// either still being generated, or ready but not yet read. Anything
+/// older than the window, already read, or failed is filtered out.
+/// Returns null when there's nothing actionable.
+const HOME_BANNER_WINDOW_HOURS = 48;
 
-export async function getLatestUnreadStory(
+export async function getLatestActiveStory(
   userId: string,
 ): Promise<StorySummaryDTO | null> {
   const cutoff = new Date(
-    Date.now() - UNREAD_BANNER_WINDOW_HOURS * 60 * 60 * 1000,
+    Date.now() - HOME_BANNER_WINDOW_HOURS * 60 * 60 * 1000,
   );
 
+  // Pull the latest story in the window and decide eligibility in JS so
+  // the "ready means unread" rule lives in one obvious place.
   const [row] = await db
     .select()
     .from(storySchema)
@@ -187,15 +190,17 @@ export async function getLatestUnreadStory(
       and(
         eq(storySchema.userId, userId),
         isNull(storySchema.deletedAt),
-        isNull(storySchema.lastReadAt),
-        eq(storySchema.status, "ready"),
         gte(storySchema.createdAt, cutoff),
       ),
     )
     .orderBy(desc(storySchema.createdAt))
     .limit(1);
 
-  return row ? toSummaryDTO(row) : null;
+  if (!row) return null;
+  if (row.status === "failed") return null;
+  if (row.status === "ready" && row.lastReadAt) return null;
+
+  return toSummaryDTO(row);
 }
 
 export async function getStoriesByUser(
