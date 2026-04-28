@@ -82,10 +82,14 @@ struct ContentView: View {
     /// never completes and OneSignal returns "All included players are
     /// not subscribed" when the backend tries to send a push.
     private func syncProfileAndPush() async {
+        print("🔐 syncProfileAndPush: starting (clerk.user.id=\(clerk.user?.id ?? "nil"))")
         await profile.load()
         if let userId = profile.profile?.id {
+            print("🔐 syncProfileAndPush: profile loaded id=\(userId), calling OneSignal.login")
             PushNotifications.login(userId: userId)
             PushNotifications.requestPermissionIfNeeded()
+        } else {
+            print("🔐 syncProfileAndPush: profile is nil — OneSignal.login SKIPPED. errorMessage=\(profile.errorMessage ?? "nil")")
         }
     }
 
