@@ -160,13 +160,13 @@ struct HomeView: View {
                     NavigationLink {
                         AccountView()
                     } label: {
-                        VStack(alignment: .trailing, spacing: 5) {
+                        VStack(alignment: .trailing, spacing: 6) {
                             RoundedRectangle(cornerRadius: 2)
-                                .frame(width: 22, height: 2)
+                                .frame(width: 18, height: 2)
                             RoundedRectangle(cornerRadius: 2)
                                 .frame(width: 14, height: 2)
                         }
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.white)
                     }
                     .accessibilityLabel("Account")
                 }
