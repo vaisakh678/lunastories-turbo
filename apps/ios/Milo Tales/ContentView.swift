@@ -75,10 +75,17 @@ struct ContentView: View {
     /// hand that to OneSignal as the external_user_id. Falls back to a
     /// silent no-op if the profile fetch fails (e.g. backend offline) —
     /// the next sign-in / launch will retry.
+    ///
+    /// Also kicks the permission prompt right after login. The user has
+    /// just signed in, so they're committed to using the app — that's a
+    /// natural moment to ask. Without this, the OS-level subscription
+    /// never completes and OneSignal returns "All included players are
+    /// not subscribed" when the backend tries to send a push.
     private func syncProfileAndPush() async {
         await profile.load()
         if let userId = profile.profile?.id {
             PushNotifications.login(userId: userId)
+            PushNotifications.requestPermissionIfNeeded()
         }
     }
 

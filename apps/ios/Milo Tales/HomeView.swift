@@ -296,10 +296,25 @@ enum HomeRoute: Hashable {
 /// force-quit, ready and waiting to be read, etc.). Dismissable for the
 /// session; auto-clears once the user opens it (the reader stamps
 /// lastReadAt and the next refresh skips it).
+///
+/// Three render branches based on status + freshness:
+/// - `.pending` / `.generating` → "Crafting your story" + spinner
+/// - `.ready` AND created in the last `freshWindowMinutes` → "Your story
+///   is ready" with sparkle eyebrow, stronger coral border, and a gentle
+///   breathing pulse to draw the eye while the moment is hot
+/// - `.ready` after that window → "Pick up where you left off" — calmer
+///   nudge, same coral CTA
 private struct LatestStoryBanner: View {
     let story: StoryResponse
     let onTap: () -> Void
     let onDismiss: () -> Void
+
+    @State private var pulse: Bool = false
+
+    /// How long after `createdAt` we treat a ready story as "just landed".
+    /// Tight enough to feel timely, loose enough to survive a parent
+    /// stepping away to brush teeth, take a call, etc.
+    private static let freshWindowMinutes: Double = 30
 
     private var tint: Color {
         ColorPalette.color(for: story.coverTint ?? "blue")
@@ -309,8 +324,26 @@ private struct LatestStoryBanner: View {
         story.status == .generating || story.status == .pending
     }
 
+    private var createdDate: Date? {
+        let withFractional = ISO8601DateFormatter()
+        withFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return withFractional.date(from: story.createdAt)
+            ?? ISO8601DateFormatter().date(from: story.createdAt)
+    }
+
+    private var isFresh: Bool {
+        guard story.status == .ready, let date = createdDate else { return false }
+        return Date.now.timeIntervalSince(date) < Self.freshWindowMinutes * 60
+    }
+
     private var eyebrow: String {
-        isGenerating ? "Crafting your story" : "Pick up where you left off"
+        if isGenerating { return "Crafting your story" }
+        if isFresh { return "✨ Your story is ready" }
+        return "Pick up where you left off"
+    }
+
+    private var titleText: String {
+        story.title ?? (isGenerating ? "A new bedtime story…" : "Untitled story")
     }
 
     var body: some View {
@@ -332,10 +365,10 @@ private struct LatestStoryBanner: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(eyebrow)
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.miloCream.opacity(0.7))
+                        .foregroundStyle(Color.miloCream.opacity(isFresh ? 0.85 : 0.7))
                         .textCase(.uppercase)
                         .tracking(0.4)
-                    Text(story.title ?? (isGenerating ? "A new bedtime story…" : "Untitled story"))
+                    Text(titleText)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Color.miloCream)
                         .lineLimit(1)
@@ -357,19 +390,27 @@ private struct LatestStoryBanner: View {
                     .fill(.ultraThinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(Color.miloCream.opacity(0.04))
+                            .fill(
+                                isFresh
+                                    ? Color.accentColor.opacity(0.10)
+                                    : Color.miloCream.opacity(0.04)
+                            )
                     )
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(
-                        isGenerating
-                            ? Color.miloCream.opacity(0.10)
-                            : Color.accentColor.opacity(0.35),
-                        lineWidth: 1
-                    )
+                    .strokeBorder(borderColor, lineWidth: isFresh ? 1.5 : 1)
             )
-            .shadow(color: Color.black.opacity(0.32), radius: 14, x: 0, y: 6)
+            .shadow(color: shadowColor, radius: isFresh ? 18 : 14, x: 0, y: 6)
+            // Gentle breathing pulse only for fresh ready stories — draws
+            // the eye without being distracting.
+            .scaleEffect(isFresh && pulse ? 1.015 : 1.0)
+            .animation(
+                isFresh
+                    ? .easeInOut(duration: 1.6).repeatForever(autoreverses: true)
+                    : .default,
+                value: pulse
+            )
             .overlay(alignment: .topTrailing) {
                 Button(action: onDismiss) {
                     Image(systemName: "xmark.circle.fill")
@@ -382,6 +423,18 @@ private struct LatestStoryBanner: View {
             }
         }
         .buttonStyle(.plain)
+        .onAppear { if isFresh { pulse = true } }
+    }
+
+    private var borderColor: Color {
+        if isGenerating { return Color.miloCream.opacity(0.10) }
+        return isFresh ? Color.accentColor.opacity(0.6) : Color.accentColor.opacity(0.35)
+    }
+
+    private var shadowColor: Color {
+        isFresh
+            ? Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.30)
+            : Color.black.opacity(0.32)
     }
 }
 

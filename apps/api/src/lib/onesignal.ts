@@ -40,7 +40,17 @@ export async function sendStoryReadyNotification(
 ): Promise<void> {
   const client = getClient();
   if (!client || !env.ONESIGNAL_APP_ID) {
-    // Notifications not configured for this environment — quietly skip.
+    // Notifications not configured for this environment — log loud
+    // enough that a missing Railway env var is obvious.
+    logger.warn(
+      {
+        storyId: payload.storyId,
+        userId: payload.userId,
+        hasRestKey: Boolean(env.ONESIGNAL_REST_API_KEY),
+        hasAppId: Boolean(env.ONESIGNAL_APP_ID),
+      },
+      "Skipping story-ready push — OneSignal not configured",
+    );
     return;
   }
 
@@ -55,6 +65,11 @@ export async function sendStoryReadyNotification(
   notification.data = { storyId: payload.storyId };
   notification.ios_sound = "default";
 
+  logger.info(
+    { storyId: payload.storyId, userId: payload.userId },
+    "Dispatching story-ready push",
+  );
+
   try {
     const response = await client.createNotification(notification);
     if (response.errors) {
@@ -63,7 +78,7 @@ export async function sendStoryReadyNotification(
         "OneSignal push returned errors",
       );
     } else {
-      logger.debug(
+      logger.info(
         { notificationId: response.id, storyId: payload.storyId },
         "Story-ready push dispatched",
       );
