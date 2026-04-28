@@ -11,6 +11,7 @@ import SwiftUI
 @main
 struct Milo_TalesApp: App {
     @State private var avatars = AvatarsViewModel()
+    @State private var generations = StoryGenerationManager()
 
     init() {
         Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
@@ -21,6 +22,7 @@ struct Milo_TalesApp: App {
             RootView()
                 .environment(Clerk.shared)
                 .environment(avatars)
+                .environment(generations)
                 .preferredColorScheme(.dark)
                 .task { await avatars.load() }
         }
