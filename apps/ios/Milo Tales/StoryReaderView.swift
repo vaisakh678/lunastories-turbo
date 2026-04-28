@@ -35,9 +35,11 @@ struct StoryReaderView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.gray.opacity(0.08))
+        .background(MoodyTwilightBackground().ignoresSafeArea())
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         #endif
         .toolbar {
             if story?.status == .ready {
@@ -78,63 +80,10 @@ struct StoryReaderView: View {
         ZStack(alignment: .bottom) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    VStack(spacing: 16) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                                .fill(tint.opacity(0.18))
-                            Image(systemName: story.coverSymbol ?? "book.fill")
-                                .font(.system(size: 80, weight: .semibold))
-                                .foregroundStyle(tint)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .aspectRatio(1.3, contentMode: .fit)
+                    storyHero(story: story, tint: tint)
 
-                        VStack(spacing: 8) {
-                            Text(story.title ?? "Untitled")
-                                .font(.title.weight(.bold))
-                                .multilineTextAlignment(.center)
-                            if let summary = story.summary, !summary.isEmpty {
-                                Text(summary)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-
-                    VStack(alignment: .leading, spacing: 20) {
-                        if let blocks = story.content?.blocks {
-                            ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
-                                switch block {
-                                case .text(let text):
-                                    Text(text)
-                                        .font(.body)
-                                        .lineSpacing(6)
-                                        .padding(.horizontal, 24)
-                                case .illustration(let symbol, let blockTint):
-                                    let resolvedTint = ColorPalette.color(for: blockTint)
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 28, style: .continuous)
-                                            .fill(resolvedTint.opacity(0.18))
-                                        Image(systemName: symbol)
-                                            .font(.system(size: 60, weight: .semibold))
-                                            .foregroundStyle(resolvedTint)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .aspectRatio(1.5, contentMode: .fit)
-                                    .padding(.horizontal, 24)
-                                }
-                            }
-                        } else if let body = story.bodyText {
-                            Text(body)
-                                .font(.body)
-                                .lineSpacing(6)
-                                .padding(.horizontal, 24)
-                        }
-                    }
+                    storyPage(story: story, tint: tint)
+                        .padding(.horizontal, 16)
 
                     MakeAnotherCard(
                         isLoading: isMakingAnother,
@@ -147,9 +96,106 @@ struct StoryReaderView: View {
             }
 
             audioBar(for: story)
-                .background(Color.white)
-                .ignoresSafeArea(edges: .bottom)
+                .padding(.bottom, 12)
+                .background(
+                    audioBarBackground
+                        .ignoresSafeArea(edges: .bottom)
+                )
         }
+    }
+
+    /// Hero block — sits on the moody twilight bg with cream chrome.
+    /// Adds a soft warm halo behind the cover icon to echo the splash.
+    private func storyHero(story: StoryResponse, tint: Color) -> some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.28))
+                    .frame(maxWidth: 280, maxHeight: 280)
+                    .blur(radius: 50)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .fill(tint.opacity(0.32))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                                .strokeBorder(Color.miloCream.opacity(0.14), lineWidth: 1)
+                        )
+                    Image(systemName: story.coverSymbol ?? "book.fill")
+                        .font(.system(size: 80, weight: .semibold))
+                        .foregroundStyle(Color.miloCream)
+                }
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1.3, contentMode: .fit)
+                .shadow(color: Color.black.opacity(0.45), radius: 24, x: 0, y: 12)
+            }
+
+            VStack(spacing: 8) {
+                Text(story.title ?? "Untitled")
+                    .font(.title.weight(.bold))
+                    .foregroundStyle(Color.miloCream)
+                    .multilineTextAlignment(.center)
+                if let summary = story.summary, !summary.isEmpty {
+                    Text(summary)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.miloCream.opacity(0.65))
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+    }
+
+    /// The actual story prose lives on a warm "paper" surface so reading
+    /// long-form text doesn't fight the dark backdrop. Contrast is what
+    /// matters most for a prose body — kept as deep slate on cream paper.
+    private func storyPage(story: StoryResponse, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 22) {
+            if let blocks = story.content?.blocks {
+                ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                    switch block {
+                    case .text(let text):
+                        Text(text)
+                            .font(.system(size: 19))
+                            .lineSpacing(9)
+                            .foregroundStyle(Color.miloInk)
+                    case .illustration(let symbol, let blockTint):
+                        let resolvedTint = ColorPalette.color(for: blockTint)
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .fill(resolvedTint.opacity(0.16))
+                            Image(systemName: symbol)
+                                .font(.system(size: 60, weight: .semibold))
+                                .foregroundStyle(resolvedTint)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .aspectRatio(1.5, contentMode: .fit)
+                    }
+                }
+            } else if let body = story.bodyText {
+                Text(body)
+                    .font(.system(size: 19))
+                    .lineSpacing(9)
+                    .foregroundStyle(Color.miloInk)
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 28)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color.miloPaper)
+        )
+        .shadow(color: Color.black.opacity(0.30), radius: 22, x: 0, y: 10)
+    }
+
+    private var audioBarBackground: some View {
+        // Soft glass that blends with the moody bg above and the home
+        // indicator area below, instead of a hard white slab.
+        Rectangle()
+            .fill(.ultraThinMaterial)
+            .overlay(Rectangle().fill(Color.black.opacity(0.10)))
     }
 
     @ViewBuilder
@@ -270,33 +316,41 @@ private struct MakeAnotherCard: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .fill(Color.accentColor.opacity(0.15))
+                        .fill(Color.accentColor.opacity(0.32))
                         .frame(width: 44, height: 44)
                     if isLoading {
-                        ProgressView().tint(.accentColor)
+                        ProgressView().tint(Color.miloCream)
                     } else {
                         Image(systemName: "sparkles")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(Color.miloCream)
                     }
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(isLoading ? "Crafting another…" : "Make another with these heroes")
                         .font(.headline)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.miloCream)
                     Text("Same characters & mode, brand-new tale")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.miloCream.opacity(0.65))
                 }
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.bold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.miloCream.opacity(0.5))
             }
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color.accentColor.opacity(0.08))
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(Color.accentColor.opacity(0.10))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(Color.accentColor.opacity(0.30), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)

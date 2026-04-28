@@ -128,6 +128,14 @@ struct MoodyTwilightBackground: View {
 
 extension Color {
     static let miloCream = Color(red: 1.0, green: 0.97, blue: 0.93)
+    /// Warm off-white "page" surface used for long-form prose in the
+    /// story reader. Slightly darker than miloCream so it doesn't glare
+    /// against the moody twilight backdrop.
+    static let miloPaper = Color(red: 0.98, green: 0.95, blue: 0.89)
+    /// Deep slate-violet text color for prose on the cream page surface.
+    /// Warm-toned so it sits with the brand palette rather than feeling
+    /// like cold black ink.
+    static let miloInk = Color(red: 0.16, green: 0.12, blue: 0.22)
 }
 
 struct CharacterStepHeader: View {
