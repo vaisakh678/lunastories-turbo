@@ -1,0 +1,6 @@
+// Development environment — Railway-hosted dev API.
+
+API_BASE_URL = https:/$()/dev-api-development-13c7.up.railway.app
+APP_NAME = Luna (Dev)
+ONESIGNAL_APP_ID = 5d1e8899-6667-4617-95a8-defc97c8c048
+REVENUECAT_API_KEY = appl_gdwYZlhzWZMeSSEsDYWHwFNuQRM

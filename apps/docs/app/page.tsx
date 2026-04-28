@@ -30,7 +30,7 @@ const BENEFITS = [
   },
   {
     title: "Lessons that stick",
-    body: "Pick a moral — kindness, honesty, courage — and Milo weaves it into the story.",
+    body: "Pick a moral — kindness, honesty, courage — and Luna weaves it into the story.",
   },
   {
     title: "Never the same twice",
@@ -64,13 +64,13 @@ function Header() {
         <a href="#" className="flex items-center gap-2.5">
           <Image
             src="/icon.png"
-            alt="Milo Tales"
+            alt="Luna Stories"
             width={36}
             height={36}
             className="rounded-lg shadow-sm ring-1 ring-white/10"
           />
           <span className="font-display text-xl font-bold text-foreground">
-            Milo Tales
+            Luna Stories
           </span>
         </a>
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-soft">
@@ -103,7 +103,7 @@ function Hero() {
             <span className="text-brand">made for your child.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg sm:text-xl leading-relaxed text-ink-soft">
-            Pick a world, choose a hero, set the lesson. Milo writes a magical story
+            Pick a world, choose a hero, set the lesson. Luna writes a magical story
             starring your child — every single night, never the same twice.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -226,7 +226,7 @@ function CreativeSection() {
           </h2>
           <p className="mt-5 text-lg text-white/80">
             Want your child to be a unicorn detective on Mars? A dragon learning to
-            share? Pick a hero, a place, a moral, and Milo writes the rest in seconds.
+            share? Pick a hero, a place, a moral, and Luna writes the rest in seconds.
           </p>
           <div className="mt-8 space-y-4">
             <Step n={1} title="Pick a hero" body="Dragon, unicorn, fairy, robot — or your own kid." />
@@ -277,7 +277,7 @@ function BenefitsSection() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand">
-            Why parents love Milo
+            Why parents love Luna
           </p>
           <h2 className="mt-3 font-display text-4xl sm:text-5xl font-bold leading-tight">
             Bedtime, but actually magical.
@@ -325,7 +325,7 @@ function MoralsSection() {
             <span className="text-brand">teach.</span>
           </h2>
           <p className="mt-5 text-lg text-ink-soft">
-            Pick a moral and Milo weaves it gently into the story — no lectures,
+            Pick a moral and Luna weaves it gently into the story — no lectures,
             just a hero learning the same thing your child needs to.
           </p>
         </div>
@@ -358,7 +358,7 @@ function FinalCTA() {
               <span className="text-gold">ready when you are.</span>
             </h2>
             <p className="mt-5 text-lg text-ink-soft max-w-xl mx-auto">
-              Download Milo Tales and write your child into their first adventure.
+              Download Luna Stories and write your child into their first adventure.
               Free to try, magical from the very first page.
             </p>
             <div className="mt-8 flex justify-center">
@@ -392,7 +392,7 @@ function Footer() {
             height={28}
             className="rounded-md"
           />
-          <span className="font-display font-bold">Milo Tales</span>
+          <span className="font-display font-bold">Luna Stories</span>
           <span className="text-sm text-ink-soft ml-2">
             © {new Date().getFullYear()}
           </span>

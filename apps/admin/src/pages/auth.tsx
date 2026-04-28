@@ -104,7 +104,7 @@ export function AuthPage() {
     <div className="bg-muted/40 flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Milo Tales Admin</CardTitle>
+          <CardTitle className="text-xl">Luna Stories Admin</CardTitle>
           <CardDescription>
             {step === "otp"
               ? `Enter the code sent to ${email}.`

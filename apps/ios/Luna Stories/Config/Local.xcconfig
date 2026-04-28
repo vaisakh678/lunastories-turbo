@@ -1,0 +1,8 @@
+// Local development environment.
+// xcconfig URL escape: `//` is a comment. `$()` is an empty interpolation that
+// breaks the comment parser. So `http:/$()/host` reads as `http://host`.
+
+API_BASE_URL = http:/$()/localhost:3001
+APP_NAME = Luna (Local)
+ONESIGNAL_APP_ID = 5d1e8899-6667-4617-95a8-defc97c8c048
+REVENUECAT_API_KEY = appl_gdwYZlhzWZMeSSEsDYWHwFNuQRM

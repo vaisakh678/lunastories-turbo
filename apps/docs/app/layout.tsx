@@ -14,9 +14,9 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Milo Tales — Personalized bedtime stories for your child",
+  title: "Luna Stories — Personalized bedtime stories for your child",
   description:
-    "Magical, AI-crafted bedtime stories starring your child. Pick a world, pick a hero, pick a moral — Milo writes the rest.",
+    "Magical, AI-crafted bedtime stories starring your child. Pick a world, pick a hero, pick a moral — Luna writes the rest.",
 };
 
 export default function RootLayout({

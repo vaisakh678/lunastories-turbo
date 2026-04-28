@@ -38,7 +38,7 @@ export function UsersPage() {
     <div className="space-y-4">
       <PageHeader
         title="Users"
-        description="Everyone who has signed in to Milo Tales."
+        description="Everyone who has signed in to Luna Stories."
         actions={
           <div className="relative w-72">
             <Search className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />

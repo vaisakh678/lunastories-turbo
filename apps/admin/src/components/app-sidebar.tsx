@@ -53,7 +53,7 @@ export function AppSidebar() {
                 <Sparkles className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold">Milo Tales</span>
+                <span className="font-semibold">Luna Stories</span>
                 <span className="text-xs text-muted-foreground">Admin</span>
               </div>
             </SidebarMenuButton>
