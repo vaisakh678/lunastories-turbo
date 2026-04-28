@@ -22,6 +22,7 @@ export interface StorySummaryDTO {
   textInputTokens: number | null;
   textOutputTokens: number | null;
   audioInputChars: number | null;
+  lastReadAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -43,6 +43,12 @@ export const storySchema = pgTable("stories", {
   textOutputTokens: integer("text_output_tokens"),
   audioInputChars: integer("audio_input_chars"),
 
+  // First time the user opened the story in the reader. Drives the home
+  // "pick up where you left off" banner and any future "new" indicators.
+  // Nullable timestamp (not boolean) so we can later show e.g. "last read
+  // 3 days ago" or auto-dismiss the banner after N days.
+  lastReadAt: timestamp("last_read_at", { withTimezone: true }),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -134,6 +134,7 @@ nonisolated struct StoryResponse: Codable, Identifiable {
     let coverSymbol: String?
     let coverTint: String?
     let durationSeconds: Int?
+    let lastReadAt: String?
     let createdAt: String
     let updatedAt: String
 
@@ -173,6 +174,22 @@ enum StoryAPI {
             body: EmptyBody()
         )
     }
+
+    /// Stamp the story as opened. Idempotent on the backend — calling it
+    /// for an already-read story is a no-op (returns the original
+    /// `lastReadAt`). Safe to fire on every reader appearance.
+    @discardableResult
+    static func markAsRead(_ id: String) async throws -> MarkAsReadResponse {
+        try await APIClient.shared.post(
+            "/api/v1/stories/\(id)/read",
+            body: EmptyBody()
+        )
+    }
+}
+
+nonisolated struct MarkAsReadResponse: Decodable {
+    let id: String
+    let lastReadAt: String
 }
 
 private nonisolated struct EmptyBody: Encodable {}
