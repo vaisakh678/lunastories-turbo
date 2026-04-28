@@ -21,6 +21,14 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
+      # `railway up` uploads cwd and ignores .railwayignore on this CLI
+      # version, so prune everything the api container doesn't need before
+      # the upload step. Keeps the payload well under Railway's ingress
+      # limit (was 441 MB → Cloudflare 413 without this).
+      - name: Strip non-api dirs to shrink the Railway upload
+        run: |
+          rm -rf apps/ios apps/admin apps/docs docs
+
       - name: Deploy to Railway
         run: |
           npx railway up \
