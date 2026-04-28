@@ -8,6 +8,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var vm = CharactersViewModel()
     @Environment(StoryGenerationManager.self) private var generations
+    @Environment(DeepLinkRouter.self) private var deepLinks
     @State private var addingRole: CharacterRole?
     @State private var editingCharacter: Character?
     @State private var showStoryFlow: Bool = false
@@ -114,7 +115,13 @@ struct HomeView: View {
 
                         StartButton(
                             isEnabled: !selectedCharacterIds.isEmpty,
-                            action: { showStoryFlow = true }
+                            action: {
+                                // Lazy permission request — first generation
+                                // is a natural moment to ask, since the user
+                                // is opting into something that needs notifs.
+                                PushNotifications.requestPermissionIfNeeded()
+                                showStoryFlow = true
+                            }
                         )
                         .padding(.horizontal, 24)
                         .padding(.bottom, 36)
@@ -215,6 +222,14 @@ struct HomeView: View {
                 case .story(let id):
                     StoryReaderView(storyId: id)
                 }
+            }
+            // Push the reader when a notification tap deep-links us to a
+            // specific story. Clears the slot so a tap on the same story
+            // again still registers.
+            .onChange(of: deepLinks.pendingStoryId) { _, id in
+                guard let id else { return }
+                navigationPath.append(HomeRoute.story(id: id))
+                deepLinks.pendingStoryId = nil
             }
         }
     }

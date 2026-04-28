@@ -10,6 +10,7 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(Clerk.self) private var clerk
+    @Environment(ProfileViewModel.self) private var profile
     @State private var auth = AuthFlowModel()
 
     /// Post-Dismiss Navigation Gate. Controls when the GetStartedView -> HomeView
@@ -52,10 +53,32 @@ struct ContentView: View {
             message: { Text(auth.errorMessage ?? "") }
         )
         // Cold launch with restored session: skip the gate, go straight to Home.
-        .task { canNavigateToHome = clerk.user != nil }
+        .task {
+            canNavigateToHome = clerk.user != nil
+            if clerk.user != nil {
+                await syncProfileAndPush()
+            }
+        }
         // On logout, close the gate so the next login follows the dismiss flow.
         .onChange(of: clerk.user != nil) { _, isSignedIn in
-            if !isSignedIn { canNavigateToHome = false }
+            if !isSignedIn {
+                canNavigateToHome = false
+                profile.clear()
+                PushNotifications.logout()
+            } else {
+                Task { await syncProfileAndPush() }
+            }
+        }
+    }
+
+    /// Fetch the backend profile so we know the *internal* user id, then
+    /// hand that to OneSignal as the external_user_id. Falls back to a
+    /// silent no-op if the profile fetch fails (e.g. backend offline) —
+    /// the next sign-in / launch will retry.
+    private func syncProfileAndPush() async {
+        await profile.load()
+        if let userId = profile.profile?.id {
+            PushNotifications.login(userId: userId)
         }
     }
 

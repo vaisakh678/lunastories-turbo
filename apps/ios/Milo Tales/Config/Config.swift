@@ -23,4 +23,14 @@ nonisolated enum Config {
         }
         return value
     }
+
+    /// OneSignal app id (UUID) for the active environment. Sourced from
+    /// `ONESIGNAL_APP_ID` in the per-env xcconfig.
+    nonisolated static var oneSignalAppId: String {
+        guard let value = Bundle.main.infoDictionary?["ONESIGNAL_APP_ID"] as? String,
+              !value.isEmpty else {
+            fatalError("Missing ONESIGNAL_APP_ID — check that the active build configuration links a Config/*.xcconfig and that Info.plist references $(ONESIGNAL_APP_ID)")
+        }
+        return value
+    }
 }

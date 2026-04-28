@@ -3,3 +3,4 @@
 
 API_BASE_URL = http:/$()/localhost:3001
 APP_NAME = Milo Tales
+ONESIGNAL_APP_ID = e0ab5a05-2223-4ef9-93d7-262e3cc965dd
