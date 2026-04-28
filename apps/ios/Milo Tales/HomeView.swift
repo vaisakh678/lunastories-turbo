@@ -9,7 +9,7 @@ struct HomeView: View {
     @State private var vm = CharactersViewModel()
     @Environment(StoryGenerationManager.self) private var generations
     @Environment(DeepLinkRouter.self) private var deepLinks
-    @Environment(UnreadStoryViewModel.self) private var unread
+    @Environment(LatestStoryViewModel.self) private var unread
     @State private var addingRole: CharacterRole?
     @State private var editingCharacter: Character?
     @State private var showStoryFlow: Bool = false
@@ -53,9 +53,11 @@ struct HomeView: View {
             ZStack {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        // Generation in flight takes priority — once that
-                        // banner is gone (acknowledged or completed) the
-                        // unread banner can take over.
+                        // Local in-flight generation owns the cue carousel
+                        // for as long as it's tracked. Once it lands or the
+                        // user acknowledges it, the server-driven latest
+                        // banner takes over (which is also what restores
+                        // state after a force-quit).
                         if let inFlight = generations.inFlight {
                             GenerationBanner(
                                 inFlight: inFlight,
@@ -65,7 +67,7 @@ struct HomeView: View {
                             .padding(.horizontal, 20)
                             .transition(.move(edge: .top).combined(with: .opacity))
                         } else if let story = unread.story {
-                            UnreadStoryBanner(
+                            LatestStoryBanner(
                                 story: story,
                                 onTap: { openUnread(story) },
                                 onDismiss: { unread.dismiss(story.id) }
@@ -258,6 +260,21 @@ struct HomeView: View {
             .onChange(of: generations.inFlight?.status.kind) { _, _ in
                 Task { await unread.refresh() }
             }
+            // Poll while a server-side generation is in flight (e.g. user
+            // force-quit during generation and the local manager is no
+            // longer tracking it). Stops the moment the banner flips to
+            // ready (or null) because the task id changes.
+            .task(id: unread.story?.status) {
+                guard
+                    let status = unread.story?.status,
+                    status == .generating || status == .pending
+                else { return }
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(5))
+                    if Task.isCancelled { return }
+                    await unread.refresh()
+                }
+            }
             // Background tap: HomeView is already up, the click handler
             // writes pendingStoryId, and .onChange picks it up.
             .onChange(of: deepLinks.pendingStoryId) { _, _ in
@@ -274,17 +291,26 @@ enum HomeRoute: Hashable {
     case story(id: String)
 }
 
-/// "Pick up where you left off" banner shown above the character grid
-/// when the user has a recent unread story (created in the last 48 hours
-/// per the backend filter). Dismissable for the session; auto-clears
-/// once the user opens it (the reader stamps lastReadAt).
-private struct UnreadStoryBanner: View {
+/// Server-driven home banner that reflects the user's latest actionable
+/// story regardless of how it got that way (still generating after a
+/// force-quit, ready and waiting to be read, etc.). Dismissable for the
+/// session; auto-clears once the user opens it (the reader stamps
+/// lastReadAt and the next refresh skips it).
+private struct LatestStoryBanner: View {
     let story: StoryResponse
     let onTap: () -> Void
     let onDismiss: () -> Void
 
     private var tint: Color {
         ColorPalette.color(for: story.coverTint ?? "blue")
+    }
+
+    private var isGenerating: Bool {
+        story.status == .generating || story.status == .pending
+    }
+
+    private var eyebrow: String {
+        isGenerating ? "Crafting your story" : "Pick up where you left off"
     }
 
     var body: some View {
@@ -297,27 +323,33 @@ private struct UnreadStoryBanner: View {
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 .strokeBorder(Color.miloCream.opacity(0.15), lineWidth: 1)
                         )
-                    Image(systemName: story.coverSymbol ?? "book.fill")
+                    Image(systemName: story.coverSymbol ?? (isGenerating ? "sparkles" : "book.fill"))
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(Color.miloCream)
                 }
                 .frame(width: 48, height: 48)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Pick up where you left off")
+                    Text(eyebrow)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(Color.miloCream.opacity(0.7))
                         .textCase(.uppercase)
                         .tracking(0.4)
-                    Text(story.title ?? "Untitled story")
+                    Text(story.title ?? (isGenerating ? "A new bedtime story…" : "Untitled story"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Color.miloCream)
                         .lineLimit(1)
                 }
                 Spacer(minLength: 0)
-                Image(systemName: "arrow.right.circle.fill")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                if isGenerating {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(Color.miloCream.opacity(0.7))
+                } else {
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                }
             }
             .padding(12)
             .background(
@@ -330,7 +362,12 @@ private struct UnreadStoryBanner: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1)
+                    .strokeBorder(
+                        isGenerating
+                            ? Color.miloCream.opacity(0.10)
+                            : Color.accentColor.opacity(0.35),
+                        lineWidth: 1
+                    )
             )
             .shadow(color: Color.black.opacity(0.32), radius: 14, x: 0, y: 6)
             .overlay(alignment: .topTrailing) {

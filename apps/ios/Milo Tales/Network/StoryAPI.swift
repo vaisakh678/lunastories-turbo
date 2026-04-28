@@ -168,11 +168,13 @@ enum StoryAPI {
         try await APIClient.shared.get("/api/v1/stories/\(id)")
     }
 
-    /// The most recent ready-but-unread story created in the last 48 hours,
-    /// or null if none. Powers the "Pick up where you left off" banner.
-    static func latestUnread() async throws -> StoryResponse? {
-        let wrapper: LatestUnreadWrapper = try await APIClient.shared.get(
-            "/api/v1/stories/latest-unread"
+    /// The single most recent story that should drive the home banner —
+    /// either still being generated, or ready but not yet read. Anything
+    /// older than 48h, already read, or failed is filtered out by the
+    /// server. Returns nil when there's nothing actionable.
+    static func latestActive() async throws -> StoryResponse? {
+        let wrapper: LatestActiveWrapper = try await APIClient.shared.get(
+            "/api/v1/stories/latest-active"
         )
         return wrapper.story
     }
@@ -201,7 +203,7 @@ nonisolated struct MarkAsReadResponse: Decodable {
     let lastReadAt: String
 }
 
-private nonisolated struct LatestUnreadWrapper: Decodable {
+private nonisolated struct LatestActiveWrapper: Decodable {
     let story: StoryResponse?
 }
 

@@ -14,14 +14,15 @@ struct Milo_TalesApp: App {
     @State private var generations = StoryGenerationManager()
     @State private var deepLinks = DeepLinkRouter()
     @State private var profile = ProfileViewModel()
-    @State private var unread = UnreadStoryViewModel()
+    @State private var unread = LatestStoryViewModel()
 
     init() {
         Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
         // Initialize OneSignal early so it can pick up cold-start launches
-        // from a notification tap. The router lives at app scope so the
-        // SDK's click handler can write into it from anywhere.
-        PushNotifications.configure(router: deepLinks)
+        // from a notification tap. Router + latestStory live at app scope
+        // so the SDK's handlers (click + foreground) can write into them
+        // from anywhere.
+        PushNotifications.configure(router: deepLinks, latestStory: unread)
     }
 
     var body: some Scene {

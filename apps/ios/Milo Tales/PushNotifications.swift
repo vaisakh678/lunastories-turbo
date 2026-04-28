@@ -28,7 +28,10 @@ import OneSignalFramework
 
 enum PushNotifications {
     /// Call once during app launch (in `Milo_TalesApp.init`).
-    static func configure(router: DeepLinkRouter) {
+    static func configure(
+        router: DeepLinkRouter,
+        latestStory: LatestStoryViewModel
+    ) {
         // Verbose during dev; switch to .LL_WARN before release.
         OneSignal.Debug.setLogLevel(.LL_VERBOSE)
         OneSignal.initialize(Config.oneSignalAppId, withLaunchOptions: nil)
@@ -37,6 +40,15 @@ enum PushNotifications {
         // app was foreground, background, or terminated).
         OneSignal.Notifications.addClickListener(
             NotificationClickHandler(router: router)
+        )
+
+        // Foreground lifecycle — when a "story ready" push arrives while
+        // the app is open, suppress the OS banner (the in-app one is
+        // already going to show it) and refresh the LatestStoryViewModel
+        // so the banner morphs to "Pick up where you left off"
+        // immediately instead of waiting for the 5s poll.
+        OneSignal.Notifications.addForegroundLifecycleListener(
+            NotificationForegroundHandler(latestStory: latestStory)
         )
     }
 
@@ -79,6 +91,29 @@ private final class NotificationClickHandler: NSObject, OSNotificationClickListe
         print("📬 Routing deep link to story: \(storyId)")
         Task { @MainActor in
             router.openStory(id: storyId)
+        }
+    }
+}
+
+/// Suppresses foreground OS-banner notifications (the in-app banner is
+/// the better surface) and pokes the LatestStoryViewModel so it updates
+/// instantly rather than waiting for the next poll tick.
+private final class NotificationForegroundHandler: NSObject,
+    OSNotificationLifecycleListener
+{
+    let latestStory: LatestStoryViewModel
+
+    init(latestStory: LatestStoryViewModel) {
+        self.latestStory = latestStory
+    }
+
+    func onWillDisplay(event: OSNotificationWillDisplayEvent) {
+        let payload = event.notification.additionalData
+        print("📬 OneSignal foreground — additionalData: \(String(describing: payload))")
+        // Suppress the OS banner — the in-app banner already shows this.
+        event.preventDefault()
+        Task { @MainActor in
+            await latestStory.refresh()
         }
     }
 }
