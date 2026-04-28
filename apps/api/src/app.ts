@@ -35,7 +35,7 @@ export function createApp() {
   });
 
   app.get("/", (c) =>
-    c.json<APIResponse<{ name: string }>>({ data: { name: "Milo Tales API" } }),
+    c.json<APIResponse<{ name: string }>>({ data: { name: "Luna Stories API" } }),
   );
 
   app.route("/api/v1", appRoutes);

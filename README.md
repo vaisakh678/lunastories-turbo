@@ -1,4 +1,4 @@
-# Milo Tales
+# Luna Stories
 
 ## Story modes
 

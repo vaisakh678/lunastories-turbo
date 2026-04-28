@@ -1,7 +1,0 @@
-// Local development environment.
-// xcconfig URL escape: `//` is a comment. `$()` is an empty interpolation that
-// breaks the comment parser. So `http:/$()/host` reads as `http://host`.
-
-API_BASE_URL = http:/$()/localhost:3001
-APP_NAME = Milo Tales (Local)
-ONESIGNAL_APP_ID = e0ab5a05-2223-4ef9-93d7-262e3cc965dd
