@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 import { env } from "../config/env";
 import { Unauthorized } from "../lib/api-error";
+import { deletedEmail } from "../lib/helpers";
 import { logger } from "../lib/logger";
 
 const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
@@ -76,7 +77,7 @@ export async function findOrCreateUserByClerkId(
     await db
       .update(userSchema)
       .set({
-        email: `delete_${staleByEmail.id.slice(0, 5)}@gmail.com`,
+        email: deletedEmail(staleByEmail.id),
         deletedAt: new Date(),
       })
       .where(eq(userSchema.id, staleByEmail.id));
