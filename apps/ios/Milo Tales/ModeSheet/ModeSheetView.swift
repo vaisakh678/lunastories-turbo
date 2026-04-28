@@ -7,11 +7,15 @@ import SwiftUI
 
 struct ModeSheetView: View {
     let characters: [Character]
-    let onComplete: () -> Void
+    /// Called once the story has been created and the user did NOT cancel
+    /// mid-generation. Carries the freshly created story so the caller can
+    /// push the reader.
+    let onComplete: (StoryResponse) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var path = NavigationPath()
     @State private var errorMessage: String?
+    @State private var userCancelled: Bool = false
 
     private let supportedModes: Set<String> = [
         "Creative", "Inventors", "Construction Site", "Vegetable", "Environment",
@@ -32,7 +36,16 @@ struct ModeSheetView: View {
                 modeView(for: mode)
             }
             .navigationDestination(for: GeneratingStoryRoute.self) { route in
-                GeneratingStoryView(cues: route.cues, onClose: { dismiss() })
+                GeneratingStoryView(
+                    cues: route.cues,
+                    onClose: {
+                        // If the user bails out before generation finishes,
+                        // remember it so we don't yank them into the reader
+                        // for a story they abandoned.
+                        userCancelled = true
+                        dismiss()
+                    }
+                )
             }
         }
         .alert(
@@ -137,8 +150,10 @@ struct ModeSheetView: View {
         )
         Task {
             do {
-                _ = try await StoryAPI.create(request)
-                onComplete()
+                let story = try await StoryAPI.create(request)
+                if !userCancelled {
+                    onComplete(story)
+                }
                 dismiss()
             } catch {
                 errorMessage = (error as? APIError)?.errorDescription

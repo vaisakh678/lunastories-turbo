@@ -11,6 +11,7 @@ struct HomeView: View {
     @State private var editingCharacter: Character?
     @State private var showStoryFlow: Bool = false
     @State private var selectedCharacterIds: Set<UUID> = []
+    @State private var navigationPath = NavigationPath()
 
     private var selectedCharacters: [Character] {
         vm.characters.filter { selectedCharacterIds.contains($0.id) }
@@ -25,7 +26,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 28) {
@@ -179,15 +180,32 @@ struct HomeView: View {
                 message: { Text(vm.errorMessage ?? "") }
             )
             .sheet(isPresented: $showStoryFlow) {
-                ModeSheetView(characters: selectedCharacters) {
-                    // wizard finished — wire to story generation later
+                ModeSheetView(characters: selectedCharacters) { story in
+                    // Auto-push the reader for the just-created story unless
+                    // the user explicitly cancelled mid-generation. The sheet
+                    // dismisses itself; the reader pushes onto Home's stack so
+                    // the user can swipe back to Home naturally.
+                    navigationPath.append(HomeRoute.story(id: story.id))
                 }
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationBackground(.clear)
             }
+            .navigationDestination(for: HomeRoute.self) { route in
+                switch route {
+                case .story(let id):
+                    StoryReaderView(storyId: id)
+                }
+            }
         }
     }
+}
+
+/// Typed routes pushed onto HomeView's NavigationStack. Wrapping the story
+/// id in an enum keeps the destination type collision-free (a bare String
+/// destination would conflict with anything else that wants to push by id).
+enum HomeRoute: Hashable {
+    case story(id: String)
 }
 
 private struct StartButton: View {
