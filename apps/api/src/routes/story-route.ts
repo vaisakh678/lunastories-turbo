@@ -10,6 +10,7 @@ import {
   generateStoryAudio,
   getStoriesByUser,
   getStoryById,
+  markStoryAsRead,
   softDeleteStory,
 } from "../services/story-service";
 
@@ -48,6 +49,13 @@ const storyRoute = new Hono()
       return c.json<APIResponse<typeof story>>({ data: story });
     },
   )
+  .post("/:id/read", zValidator("param", storyIdParamSchema), async (c) => {
+    const { id } = c.req.valid("param");
+    const userId = getUserIdFromCTX(c);
+
+    const result = await markStoryAsRead(userId, id);
+    return c.json<APIResponse<typeof result>>({ data: result });
+  })
   .delete("/:id", zValidator("param", storyIdParamSchema), async (c) => {
     const { id } = c.req.valid("param");
     const userId = getUserIdFromCTX(c);

@@ -215,6 +215,9 @@ struct StoryReaderView: View {
         errorMessage = nil
         do {
             story = try await StoryAPI.get(storyId)
+            // Stamp this story as opened (idempotent on the server). Fire
+            // and forget — a failed mark shouldn't disrupt reading.
+            Task { try? await StoryAPI.markAsRead(storyId) }
         } catch {
             errorMessage = (error as? APIError)?.errorDescription
                 ?? error.localizedDescription

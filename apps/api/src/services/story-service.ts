@@ -33,6 +33,7 @@ function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
     textInputTokens: row.textInputTokens,
     textOutputTokens: row.textOutputTokens,
     audioInputChars: row.audioInputChars,
+    lastReadAt: row.lastReadAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -301,4 +302,49 @@ export async function softDeleteStory(
     .returning({ id: storySchema.id });
 
   if (!deleted) throw NotFound("Story not found");
+}
+
+/// Stamp the story as opened by the user. Idempotent — only sets
+/// `lastReadAt` the first time, so we keep the original "first opened"
+/// moment. Subsequent reads are a no-op.
+export async function markStoryAsRead(
+  userId: string,
+  storyId: string,
+): Promise<{ id: string; lastReadAt: string }> {
+  const [updated] = await db
+    .update(storySchema)
+    .set({ lastReadAt: new Date() })
+    .where(
+      and(
+        eq(storySchema.id, storyId),
+        eq(storySchema.userId, userId),
+        isNull(storySchema.deletedAt),
+        isNull(storySchema.lastReadAt),
+      ),
+    )
+    .returning({ id: storySchema.id, lastReadAt: storySchema.lastReadAt });
+
+  if (updated && updated.lastReadAt) {
+    return { id: updated.id, lastReadAt: updated.lastReadAt.toISOString() };
+  }
+
+  // Already read — fetch the existing timestamp so the caller can use it.
+  const [existing] = await db
+    .select({ id: storySchema.id, lastReadAt: storySchema.lastReadAt })
+    .from(storySchema)
+    .where(
+      and(
+        eq(storySchema.id, storyId),
+        eq(storySchema.userId, userId),
+        isNull(storySchema.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!existing) throw NotFound("Story not found");
+
+  return {
+    id: existing.id,
+    lastReadAt: existing.lastReadAt?.toISOString() ?? new Date().toISOString(),
+  };
 }
