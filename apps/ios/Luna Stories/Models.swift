@@ -55,8 +55,9 @@ nonisolated enum CharacterRelation: String, CaseIterable, Identifiable, Codable 
     case friend
     case pet
     case sibling
+    case teacher
+    case imaginary
     case other
-    case fictional
 
     var id: Self { self }
 
@@ -67,8 +68,9 @@ nonisolated enum CharacterRelation: String, CaseIterable, Identifiable, Codable 
         case .friend: "Friend"
         case .pet: "Pet"
         case .sibling: "Sibling"
+        case .teacher: "Teacher"
         case .other: "Other"
-        case .fictional: "Fictional"
+        case .imaginary: "Imaginary"
         }
     }
 
@@ -79,8 +81,9 @@ nonisolated enum CharacterRelation: String, CaseIterable, Identifiable, Codable 
         case .friend: "person.fill.checkmark"
         case .pet: "pawprint.fill"
         case .sibling: "person.2"
+        case .teacher: "pencil.and.ruler.fill"
         case .other: "person.fill.questionmark"
-        case .fictional: "sparkles"
+        case .imaginary: "sparkles"
         }
     }
 }

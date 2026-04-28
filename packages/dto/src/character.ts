@@ -6,8 +6,9 @@ export type CharacterRelation =
   | "friend"
   | "pet"
   | "sibling"
-  | "other"
-  | "fictional";
+  | "teacher"
+  | "imaginary"
+  | "other";
 
 export interface CharacterDTO {
   id: string;

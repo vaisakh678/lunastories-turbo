@@ -8,8 +8,9 @@ export const characterRelationEnum = pgEnum("character_relation", [
   "friend",
   "pet",
   "sibling",
+  "teacher",
+  "imaginary",
   "other",
-  "fictional",
 ]);
 
 export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);

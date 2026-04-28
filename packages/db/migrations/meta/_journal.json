@@ -15,6 +15,20 @@
       "when": 1777403628071,
       "tag": "0001_chemical_karnak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777403998472,
+      "tag": "0002_lovely_valeria_richards",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777404489156,
+      "tag": "0003_curvy_famine",
+      "breakpoints": true
     }
   ]
 }

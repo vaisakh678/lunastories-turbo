@@ -200,7 +200,8 @@ struct CharacterWizardSheet: View {
         let trimmedName = draft.name.trimmingCharacters(in: .whitespaces)
         let tagline: String
         if role == .side, let rel = draft.relation {
-            tagline = rel.displayName
+            let custom = draft.customRelation.trimmingCharacters(in: .whitespaces)
+            tagline = (rel == .other && !custom.isEmpty) ? custom : rel.displayName
         } else {
             tagline = draft.interests.sorted().prefix(2).joined(separator: " · ")
         }
@@ -230,6 +231,7 @@ struct CharacterWizardSheet: View {
 private struct CharacterDraft {
     var name: String = ""
     var relation: CharacterRelation? = nil
+    var customRelation: String = ""
     var age: Int = 6
     var gender: Gender = .na
     var iconName: String = "person.fill"
@@ -243,6 +245,7 @@ private struct CharacterDraft {
         guard let c = editing else { return }
         name = c.name
         relation = c.relation
+        customRelation = c.tagline == c.relation?.displayName ? "" : c.tagline
         age = c.age ?? 6
         gender = c.gender ?? .na
         iconName = c.symbolName
@@ -377,6 +380,7 @@ private struct RelationStep: View {
                     let isSelected = draft.relation == relation
                     Button {
                         draft.relation = isSelected ? nil : relation
+                        if !isSelected { draft.customRelation = "" }
                     } label: {
                         HStack(spacing: 10) {
                             Image(systemName: relation.icon)
@@ -404,7 +408,25 @@ private struct RelationStep: View {
                     .buttonStyle(.plain)
                 }
             }
+
+            if draft.relation == .other {
+                TextField("e.g. Mentor, Neighbour, Coach…", text: $draft.customRelation)
+                    .textFieldStyle(.plain)
+                    .font(.body)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.miloCream.opacity(0.08))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1)
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: draft.relation)
     }
 }
 

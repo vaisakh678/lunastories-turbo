@@ -8,8 +8,9 @@ export const characterRelationSchema = z.enum([
   "friend",
   "pet",
   "sibling",
+  "teacher",
+  "imaginary",
   "other",
-  "fictional",
 ]);
 
 export const createCharacterSchema = z.object({
