@@ -11,9 +11,16 @@ import SwiftUI
 @main
 struct Milo_TalesApp: App {
     @State private var avatars = AvatarsViewModel()
+    @State private var generations = StoryGenerationManager()
+    @State private var deepLinks = DeepLinkRouter()
+    @State private var profile = ProfileViewModel()
 
     init() {
         Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
+        // Initialize OneSignal early so it can pick up cold-start launches
+        // from a notification tap. The router lives at app scope so the
+        // SDK's click handler can write into it from anywhere.
+        PushNotifications.configure(router: deepLinks)
     }
 
     var body: some Scene {
@@ -21,6 +28,9 @@ struct Milo_TalesApp: App {
             RootView()
                 .environment(Clerk.shared)
                 .environment(avatars)
+                .environment(generations)
+                .environment(deepLinks)
+                .environment(profile)
                 .preferredColorScheme(.dark)
                 .task { await avatars.load() }
         }

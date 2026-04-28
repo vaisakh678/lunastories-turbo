@@ -8,6 +8,28 @@ import { logger } from "../lib/logger";
 
 const clerk = createClerkClient({ secretKey: env.CLERK_SECRET_KEY });
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+}
+
+export async function getOwnProfile(userId: string): Promise<UserProfile> {
+  const [user] = await db
+    .select({
+      id: userSchema.id,
+      email: userSchema.email,
+      name: userSchema.name,
+    })
+    .from(userSchema)
+    .where(and(eq(userSchema.id, userId), isNull(userSchema.deletedAt)))
+    .limit(1);
+
+  if (!user) throw NotFound("User not found");
+
+  return user;
+}
+
 export async function deleteOwnAccount(userId: string): Promise<void> {
   const [user] = await db
     .select({ clerkId: userSchema.clerkId })

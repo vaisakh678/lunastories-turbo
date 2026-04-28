@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E9AA1EE22FA03D4F0030A6FA /* OneSignalExtension in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA1EE12FA03D4F0030A6FA /* OneSignalExtension */; };
+		E9AA1EE42FA03D4F0030A6FA /* OneSignalFramework in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA1EE32FA03D4F0030A6FA /* OneSignalFramework */; };
+		E9AA1EE62FA03D4F0030A6FA /* OneSignalInAppMessages in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA1EE52FA03D4F0030A6FA /* OneSignalInAppMessages */; };
+		E9AA1EE82FA03D4F0030A6FA /* OneSignalLocation in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA1EE72FA03D4F0030A6FA /* OneSignalLocation */; };
 		E9E6ECD02F9CC0F3007B0CE5 /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */; };
 		E9E6ECD22F9CC0F3007B0CE5 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ECD12F9CC0F3007B0CE5 /* ClerkKitUI */; };
 		E9E6ED1E2F9DB494007B0CE5 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ED1D2F9DB494007B0CE5 /* Kingfisher */; };
@@ -29,9 +33,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9AA1EE62FA03D4F0030A6FA /* OneSignalInAppMessages in Frameworks */,
 				E9E6ED1E2F9DB494007B0CE5 /* Kingfisher in Frameworks */,
 				E9E6ECD02F9CC0F3007B0CE5 /* ClerkKit in Frameworks */,
 				E9E6ECD22F9CC0F3007B0CE5 /* ClerkKitUI in Frameworks */,
+				E9AA1EE22FA03D4F0030A6FA /* OneSignalExtension in Frameworks */,
+				E9AA1EE82FA03D4F0030A6FA /* OneSignalLocation in Frameworks */,
+				E9AA1EE42FA03D4F0030A6FA /* OneSignalFramework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +50,7 @@
 			isa = PBXGroup;
 			children = (
 				E98199952F9CAAE10045FE32 /* Milo Tales */,
+				E9AA1EE02FA03D4F0030A6FA /* Frameworks */,
 				E98199942F9CAAE10045FE32 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -52,6 +61,13 @@
 				E98199932F9CAAE10045FE32 /* Milo Tales.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E9AA1EE02FA03D4F0030A6FA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -77,6 +93,10 @@
 				E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */,
 				E9E6ECD12F9CC0F3007B0CE5 /* ClerkKitUI */,
 				E9E6ED1D2F9DB494007B0CE5 /* Kingfisher */,
+				E9AA1EE12FA03D4F0030A6FA /* OneSignalExtension */,
+				E9AA1EE32FA03D4F0030A6FA /* OneSignalFramework */,
+				E9AA1EE52FA03D4F0030A6FA /* OneSignalInAppMessages */,
+				E9AA1EE72FA03D4F0030A6FA /* OneSignalLocation */,
 			);
 			productName = "Milo Tales";
 			productReference = E98199932F9CAAE10045FE32 /* Milo Tales.app */;
@@ -109,6 +129,7 @@
 			packageReferences = (
 				E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */,
 				E9E6ED1C2F9DB494007B0CE5 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				E9AA1E752FA03A6D0030A6FA /* XCRemoteSwiftPackageReference "OneSignal-iOS-SDK" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E98199942F9CAAE10045FE32 /* Products */;
@@ -275,6 +296,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Milo Tales/Milo Tales.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KTJUU8D53Q;
@@ -291,7 +313,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.vaisakh.Milo-Tales";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cortexlumora.Milo-Tales";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -310,6 +332,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Milo Tales/Milo Tales.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KTJUU8D53Q;
@@ -326,7 +349,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.vaisakh.Milo-Tales";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cortexlumora.Milo-Tales";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -412,6 +435,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Milo Tales/Milo Tales.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KTJUU8D53Q;
@@ -428,7 +452,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.vaisakh.Milo-Tales";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cortexlumora.Milo-Tales";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -507,6 +531,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Milo Tales/Milo Tales.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KTJUU8D53Q;
@@ -523,7 +548,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.vaisakh.Milo-Tales";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cortexlumora.Milo-Tales";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -609,6 +634,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Milo Tales/Milo Tales.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KTJUU8D53Q;
@@ -625,7 +651,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.vaisakh.Milo-Tales";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cortexlumora.Milo-Tales";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -704,6 +730,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Milo Tales/Milo Tales.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KTJUU8D53Q;
@@ -720,7 +747,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.vaisakh.Milo-Tales";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cortexlumora.Milo-Tales";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -764,6 +791,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		E9AA1E752FA03A6D0030A6FA /* XCRemoteSwiftPackageReference "OneSignal-iOS-SDK" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/OneSignal/OneSignal-iOS-SDK";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.5.0;
+			};
+		};
 		E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/clerk/clerk-ios";
@@ -783,6 +818,26 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E9AA1EE12FA03D4F0030A6FA /* OneSignalExtension */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9AA1E752FA03A6D0030A6FA /* XCRemoteSwiftPackageReference "OneSignal-iOS-SDK" */;
+			productName = OneSignalExtension;
+		};
+		E9AA1EE32FA03D4F0030A6FA /* OneSignalFramework */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9AA1E752FA03A6D0030A6FA /* XCRemoteSwiftPackageReference "OneSignal-iOS-SDK" */;
+			productName = OneSignalFramework;
+		};
+		E9AA1EE52FA03D4F0030A6FA /* OneSignalInAppMessages */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9AA1E752FA03A6D0030A6FA /* XCRemoteSwiftPackageReference "OneSignal-iOS-SDK" */;
+			productName = OneSignalInAppMessages;
+		};
+		E9AA1EE72FA03D4F0030A6FA /* OneSignalLocation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9AA1E752FA03A6D0030A6FA /* XCRemoteSwiftPackageReference "OneSignal-iOS-SDK" */;
+			productName = OneSignalLocation;
+		};
 		E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */;

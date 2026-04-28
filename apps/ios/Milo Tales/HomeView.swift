@@ -7,10 +7,13 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var vm = CharactersViewModel()
+    @Environment(StoryGenerationManager.self) private var generations
+    @Environment(DeepLinkRouter.self) private var deepLinks
     @State private var addingRole: CharacterRole?
     @State private var editingCharacter: Character?
     @State private var showStoryFlow: Bool = false
     @State private var selectedCharacterIds: Set<UUID> = []
+    @State private var navigationPath = NavigationPath()
 
     private var selectedCharacters: [Character] {
         vm.characters.filter { selectedCharacterIds.contains($0.id) }
@@ -24,11 +27,29 @@ struct HomeView: View {
         }
     }
 
+    private func handleBannerTap(_ inFlight: InFlightGeneration) {
+        if let story = inFlight.status.readyStory {
+            navigationPath.append(HomeRoute.story(id: story.id))
+            generations.acknowledge()
+        }
+        // While still generating, the tap is a no-op for now. We could
+        // re-open the modal at the generating step here later.
+    }
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 28) {
+                    VStack(alignment: .leading, spacing: 20) {
+                        if let inFlight = generations.inFlight {
+                            GenerationBanner(
+                                inFlight: inFlight,
+                                onTap: { handleBannerTap(inFlight) },
+                                onDismiss: { generations.acknowledge() }
+                            )
+                            .padding(.horizontal, 20)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                        }
                         if vm.isLoading {
                             CharacterSectionSkeleton(role: .main)
                             CharacterSectionSkeleton(role: .side)
@@ -94,7 +115,13 @@ struct HomeView: View {
 
                         StartButton(
                             isEnabled: !selectedCharacterIds.isEmpty,
-                            action: { showStoryFlow = true }
+                            action: {
+                                // Lazy permission request — first generation
+                                // is a natural moment to ask, since the user
+                                // is opting into something that needs notifs.
+                                PushNotifications.requestPermissionIfNeeded()
+                                showStoryFlow = true
+                            }
                         )
                         .padding(.horizontal, 24)
                         .padding(.bottom, 36)
@@ -179,13 +206,185 @@ struct HomeView: View {
                 message: { Text(vm.errorMessage ?? "") }
             )
             .sheet(isPresented: $showStoryFlow) {
-                ModeSheetView(characters: selectedCharacters) {
-                    // wizard finished — wire to story generation later
+                ModeSheetView(characters: selectedCharacters) { story in
+                    // Auto-push the reader for the just-created story unless
+                    // the user explicitly cancelled mid-generation. The sheet
+                    // dismisses itself; the reader pushes onto Home's stack so
+                    // the user can swipe back to Home naturally.
+                    navigationPath.append(HomeRoute.story(id: story.id))
                 }
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationBackground(.clear)
             }
+            .navigationDestination(for: HomeRoute.self) { route in
+                switch route {
+                case .story(let id):
+                    StoryReaderView(storyId: id)
+                }
+            }
+            // Push the reader when a notification tap deep-links us to a
+            // specific story. Clears the slot so a tap on the same story
+            // again still registers.
+            .onChange(of: deepLinks.pendingStoryId) { _, id in
+                guard let id else { return }
+                navigationPath.append(HomeRoute.story(id: id))
+                deepLinks.pendingStoryId = nil
+            }
+        }
+    }
+}
+
+/// Typed routes pushed onto HomeView's NavigationStack. Wrapping the story
+/// id in an enum keeps the destination type collision-free (a bare String
+/// destination would conflict with anything else that wants to push by id).
+enum HomeRoute: Hashable {
+    case story(id: String)
+}
+
+/// Compact "your story is cooking" / "ready to read" banner that lives at
+/// the top of HomeView whenever a generation is in flight (or just landed
+/// and hasn't been opened yet).
+private struct GenerationBanner: View {
+    let inFlight: InFlightGeneration
+    let onTap: () -> Void
+    let onDismiss: () -> Void
+
+    @State private var pulse: Bool = false
+    @State private var cueIndex: Int = 0
+    private let cueInterval: Double = 1.8
+
+    private var currentCue: GenerationCue? {
+        guard !inFlight.cues.isEmpty else { return nil }
+        return inFlight.cues[cueIndex % inFlight.cues.count]
+    }
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 14) {
+                cueArtwork
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(headline)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.miloCream)
+                        .lineLimit(1)
+                    Text(subline)
+                        .font(.caption)
+                        .foregroundStyle(Color.miloCream.opacity(0.65))
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+                trailingAffordance
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(isReady ? Color.accentColor.opacity(0.10) : Color.miloCream.opacity(0.04))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(
+                        isReady ? Color.accentColor.opacity(0.45) : Color.miloCream.opacity(0.10),
+                        lineWidth: isReady ? 1.5 : 1
+                    )
+            )
+            .shadow(color: Color.black.opacity(0.32), radius: 14, x: 0, y: 6)
+        }
+        .buttonStyle(.plain)
+        .task {
+            pulse = true
+            // Cycle the cue thumbnail every cueInterval, only while still
+            // generating — once ready, freeze on the most recent.
+            while !Task.isCancelled, !isReady {
+                try? await Task.sleep(for: .seconds(cueInterval))
+                if Task.isCancelled || isReady { break }
+                withAnimation(.easeInOut(duration: 0.45)) {
+                    cueIndex += 1
+                }
+            }
+        }
+    }
+
+    private var isReady: Bool { inFlight.status.isReady }
+    private var didFail: Bool { if case .failed = inFlight.status { return true }; return false }
+
+    private var headline: String {
+        if isReady { return "Your story is ready ✨" }
+        if didFail { return "Generation hit a snag" }
+        return "Crafting \(inFlight.title)…"
+    }
+
+    private var subline: String {
+        if isReady { return "Tap to read" }
+        if case .failed(let msg) = inFlight.status { return msg }
+        return currentCue?.label ?? "Picking the perfect words…"
+    }
+
+    @ViewBuilder
+    private var cueArtwork: some View {
+        ZStack {
+            Circle()
+                .fill(Color.accentColor.opacity(0.22))
+                .frame(width: 52, height: 52)
+                .blur(radius: 10)
+                .opacity(pulse ? 1.0 : 0.55)
+                .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: pulse)
+
+            Group {
+                if let cue = currentCue, let imageName = cue.imageName {
+                    Image(imageName)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44, height: 44)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .id("artwork-\(cue.id)")
+                        .transition(.opacity)
+                } else if let cue = currentCue {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(cue.tint.opacity(0.32))
+                        Image(systemName: cue.symbolName)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(Color.miloCream)
+                    }
+                    .frame(width: 44, height: 44)
+                    .id("artwork-\(cue.id)")
+                    .transition(.opacity)
+                } else {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.miloCream.opacity(0.10))
+                        .frame(width: 44, height: 44)
+                }
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color.miloCream.opacity(0.15), lineWidth: 1)
+            )
+        }
+        .frame(width: 52, height: 52)
+    }
+
+    @ViewBuilder
+    private var trailingAffordance: some View {
+        if isReady {
+            Image(systemName: "arrow.right.circle.fill")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+        } else if didFail {
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(Color.miloCream.opacity(0.5))
+            }
+            .buttonStyle(.plain)
+        } else {
+            ProgressView()
+                .controlSize(.small)
+                .tint(Color.miloCream.opacity(0.7))
         }
     }
 }

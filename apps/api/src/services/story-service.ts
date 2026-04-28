@@ -16,6 +16,7 @@ import { and, asc, desc, eq, inArray, isNull, lt } from "drizzle-orm";
 import { BadRequest, InternalError, NotFound } from "../lib/api-error";
 import { generateAudio } from "../lib/audio-generator";
 import { logger } from "../lib/logger";
+import { sendStoryReadyNotification } from "../lib/onesignal";
 import { generateStory } from "../lib/story-generator";
 import { fileRefFor, uploadFile } from "./file-service";
 
@@ -145,6 +146,13 @@ export async function createStory(
       })
       .where(eq(storySchema.id, insertedId))
       .returning();
+
+    // Fire-and-forget push so a OneSignal hiccup doesn't fail the request.
+    void sendStoryReadyNotification({
+      userId,
+      storyId: updated.id,
+      title: updated.title,
+    });
 
     return toDTO(updated, data.characterIds);
   } catch (err) {
