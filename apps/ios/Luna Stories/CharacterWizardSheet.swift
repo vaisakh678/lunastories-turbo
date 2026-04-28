@@ -343,6 +343,7 @@ private struct ProgressBar: View {
 
 private struct SideBasicInfoStep: View {
     @Binding var draft: CharacterDraft
+    @FocusState private var focused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -350,11 +351,13 @@ private struct SideBasicInfoStep: View {
             TextField("e.g. Grandma Rose", text: $draft.name)
                 .textFieldStyle(.plain)
                 .font(.title3)
+                .focused($focused)
                 .padding(.horizontal, 16)
-                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity, minHeight: 52)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(Color.miloCream.opacity(0.08))
+                        .onTapGesture { focused = true }
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -434,6 +437,7 @@ private struct RelationStep: View {
 
 private struct BasicInfoStep: View {
     @Binding var draft: CharacterDraft
+    @FocusState private var focused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -441,11 +445,13 @@ private struct BasicInfoStep: View {
             TextField("e.g. Milo", text: $draft.name)
                 .textFieldStyle(.plain)
                 .font(.title3)
+                .focused($focused)
                 .padding(.horizontal, 16)
-                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity, minHeight: 52)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(Color.miloCream.opacity(0.08))
+                        .onTapGesture { focused = true }
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
