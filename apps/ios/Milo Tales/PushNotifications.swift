@@ -61,10 +61,12 @@ enum PushNotifications {
     /// Tie the OneSignal subscription to a stable user id so the backend
     /// can target this user across reinstalls and devices.
     static func login(userId: String) {
+        print("🔔 OneSignal.login(\(userId))")
         OneSignal.login(userId)
     }
 
     static func logout() {
+        print("🔔 OneSignal.logout()")
         OneSignal.logout()
     }
 }
