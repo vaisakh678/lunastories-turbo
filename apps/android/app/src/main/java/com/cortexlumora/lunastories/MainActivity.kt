@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Stage { Splash, Onboarding, Auth, Home }
+private enum class Stage { Splash, Auth, Home }
 
 private data class WizardTarget(val role: CharacterRole, val existing: CharacterResponse?)
 
@@ -79,10 +79,6 @@ private sealed class StoryRoute {
 
 @Composable
 private fun RootFlow() {
-    val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("luna_prefs", Context.MODE_PRIVATE) }
-    val hasSeenOnboarding = remember { mutableStateOf(prefs.getBoolean("has_seen_onboarding", false)) }
-
     val user by Clerk.userFlow.collectAsStateWithLifecycle(initialValue = null)
     val isClerkLoaded by Clerk.isInitialized.collectAsStateWithLifecycle(initialValue = false)
 
@@ -91,6 +87,7 @@ private fun RootFlow() {
     var storyRoute by remember { mutableStateOf<StoryRoute?>(null) }
     var showAccount by remember { mutableStateOf(false) }
     var accountSubroute by remember { mutableStateOf<AccountSubroute?>(null) }
+    var showOnboardingCarousel by remember { mutableStateOf(false) }
 
     val charactersVm: CharactersViewModel = viewModel()
     val authVm: AuthFlowViewModel = viewModel()
@@ -108,7 +105,6 @@ private fun RootFlow() {
 
     val stage: Stage = when {
         !readyToLeaveSplash -> Stage.Splash
-        !hasSeenOnboarding.value -> Stage.Onboarding
         user != null -> Stage.Home
         else -> Stage.Auth
     }
@@ -117,17 +113,9 @@ private fun RootFlow() {
         AnimatedVisibility(visible = stage == Stage.Splash, enter = fadeIn(), exit = fadeOut()) {
             SplashScreen()
         }
-        AnimatedVisibility(visible = stage == Stage.Onboarding, enter = fadeIn(), exit = fadeOut()) {
-            OnboardingScreen(
-                onFinish = {
-                    prefs.edit().putBoolean("has_seen_onboarding", true).apply()
-                    hasSeenOnboarding.value = true
-                },
-            )
-        }
         AnimatedVisibility(visible = stage == Stage.Auth, enter = fadeIn(), exit = fadeOut()) {
             GetStartedScreen(
-                onStartSignUp = { authVm.open(AuthMode.SignUp) },
+                onStartSignUp = { showOnboardingCarousel = true },
                 onSignIn = { authVm.open(AuthMode.SignIn) },
             )
         }
@@ -139,6 +127,22 @@ private fun RootFlow() {
                 onOpenStory = { id -> storyRoute = StoryRoute.Reader(id) },
                 onOpenAccount = { showAccount = true },
             )
+        }
+    }
+
+    if (showOnboardingCarousel && stage == Stage.Auth) {
+        Dialog(
+            onDismissRequest = { showOnboardingCarousel = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                OnboardingScreen(
+                    onFinish = {
+                        showOnboardingCarousel = false
+                        authVm.open(AuthMode.SignUp)
+                    },
+                )
+            }
         }
     }
 
