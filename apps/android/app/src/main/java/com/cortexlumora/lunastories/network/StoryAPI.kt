@@ -64,7 +64,16 @@ data class StoryPage(
     val nextCursor: String? = null,
 )
 
+@Serializable
+private data class StoryDeleteResponse(val id: String)
+
 object StoryAPI {
+    suspend fun delete(id: String) {
+        APIClient.request<StoryDeleteResponse>("/stories/$id") {
+            method = HttpMethod.Delete
+        }
+    }
+
     suspend fun list(cursor: String? = null, limit: Int = 30): StoryPage {
         val params = buildList {
             add("limit=$limit")

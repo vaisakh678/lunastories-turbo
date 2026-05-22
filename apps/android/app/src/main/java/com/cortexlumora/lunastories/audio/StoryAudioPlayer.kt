@@ -24,6 +24,10 @@ class StoryAudioPlayer(context: Context) {
     private val player: ExoPlayer = ExoPlayer.Builder(context).build()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var positionJob: Job? = null
+    private val prefs = context.getSharedPreferences("luna_audio_prefs", Context.MODE_PRIVATE)
+
+    private val _speed = MutableStateFlow(prefs.getFloat("playback_speed", 1f))
+    val speed: StateFlow<Float> = _speed.asStateFlow()
 
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
@@ -40,6 +44,7 @@ class StoryAudioPlayer(context: Context) {
     private var currentUrl: String? = null
 
     init {
+        player.setPlaybackSpeed(_speed.value)
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 _isPlaying.value = isPlaying
@@ -73,6 +78,19 @@ class StoryAudioPlayer(context: Context) {
     fun seekTo(ms: Long) {
         player.seekTo(ms.coerceIn(0L, player.duration.coerceAtLeast(0L)))
         _positionMs.value = ms
+    }
+
+    /** Cycles through 0.75 → 1.0 → 1.25 → 1.5 → 0.75. Persists across sessions. */
+    fun cycleSpeed() {
+        val next = when (_speed.value) {
+            0.75f -> 1.0f
+            1.0f -> 1.25f
+            1.25f -> 1.5f
+            else -> 0.75f
+        }
+        _speed.value = next
+        player.setPlaybackSpeed(next)
+        prefs.edit().putFloat("playback_speed", next).apply()
     }
 
     fun release() {
