@@ -83,6 +83,10 @@ export async function findOrCreateUserByClerkId(
       .where(eq(userSchema.id, staleByEmail.id));
   }
 
+  // ON CONFLICT clerk_id DO NOTHING guards the TOCTOU window: the iOS app
+  // fires several authed requests in parallel right after sign-in and both
+  // can reach this branch before either INSERT lands. When the second
+  // INSERT no-ops, `created` is undefined and we re-select the winner.
   const [created] = await db
     .insert(userSchema)
     .values({
@@ -92,7 +96,16 @@ export async function findOrCreateUserByClerkId(
       emailVerified:
         clerkUser.primaryEmailAddress?.verification?.status === "verified",
     })
+    .onConflictDoNothing({ target: userSchema.clerkId })
     .returning({ id: userSchema.id });
 
-  return created.id;
+  if (created) return created.id;
+
+  const [winner] = await db
+    .select({ id: userSchema.id })
+    .from(userSchema)
+    .where(eq(userSchema.clerkId, clerkId))
+    .limit(1);
+  if (!winner) throw Unauthorized("Failed to create user");
+  return winner.id;
 }
