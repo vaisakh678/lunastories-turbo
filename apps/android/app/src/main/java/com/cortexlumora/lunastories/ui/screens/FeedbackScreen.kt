@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -68,6 +69,8 @@ fun FeedbackScreen(onClose: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     var done by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    BackHandler(onBack = onClose)
 
     Box(modifier = Modifier.fillMaxSize()) {
         MoodyTwilightBackground()

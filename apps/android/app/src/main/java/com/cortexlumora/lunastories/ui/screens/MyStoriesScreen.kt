@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,20 +18,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,22 +56,64 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyStoriesScreen(
     onBack: () -> Unit,
     onOpenStory: (String) -> Unit,
 ) {
     var items by remember { mutableStateOf<List<StoryResponse>>(emptyList()) }
+    var cursor by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
+    var refreshing by remember { mutableStateOf(false) }
+    var loadingMore by remember { mutableStateOf(false) }
+    var reachedEnd by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
+    BackHandler(onBack = onBack)
+
+    suspend fun loadFirstPage() {
         runCatching { StoryAPI.list() }
-            .onSuccess { page -> items = page.items }
+            .onSuccess { page ->
+                items = page.items
+                cursor = page.nextCursor
+                reachedEnd = page.nextCursor == null
+            }
             .onFailure { error = it.message ?: "Couldn't load stories" }
+    }
+
+    suspend fun loadMore() {
+        val c = cursor ?: return
+        loadingMore = true
+        runCatching { StoryAPI.list(cursor = c) }
+            .onSuccess { page ->
+                items = items + page.items
+                cursor = page.nextCursor
+                reachedEnd = page.nextCursor == null
+            }
+            .onFailure { error = it.message ?: "Couldn't load more" }
+        loadingMore = false
+    }
+
+    LaunchedEffect(Unit) {
+        loadFirstPage()
         loading = false
     }
 
+    val listState = rememberLazyListState()
+    // Auto-load when within 4 items of the end.
+    val needsMore by remember {
+        derivedStateOf {
+            val li = listState.layoutInfo
+            val last = li.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            last >= items.size - 4 && !reachedEnd && !loadingMore && items.isNotEmpty()
+        }
+    }
+    LaunchedEffect(needsMore) {
+        if (needsMore) loadMore()
+    }
+
+    val pullState = rememberPullToRefreshState()
     Box(modifier = Modifier.fillMaxSize()) {
         MoodyTwilightBackground()
 
@@ -76,33 +125,57 @@ fun MyStoriesScreen(
                 Text("My Stories", color = MiloCream, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             }
 
-            when {
-                loading -> Centered { CircularProgressIndicator(color = Accent) }
-                error != null && items.isEmpty() -> Centered {
-                    Text(error!!, color = MiloCream, fontSize = 15.sp)
+            PullToRefreshBox(
+                isRefreshing = refreshing,
+                onRefresh = {
+                    refreshing = true
+                    // Reset + fetch
+                    loadingMore = false
+                    reachedEnd = false
+                },
+                state = pullState,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                LaunchedEffect(refreshing) {
+                    if (refreshing) {
+                        loadFirstPage()
+                        refreshing = false
+                    }
                 }
-                items.isEmpty() -> EmptyState()
-                else -> LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    items(items, key = { it.id }) { story ->
-                        StoryRow(
-                            story = story,
-                            onTap = {
-                                if (story.status == StoryStatus.ready) onOpenStory(story.id)
-                            },
-                        )
+
+                when {
+                    loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Accent)
+                    }
+                    error != null && items.isEmpty() -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(error!!, color = MiloCream, fontSize = 15.sp)
+                    }
+                    items.isEmpty() -> EmptyState()
+                    else -> LazyColumn(
+                        state = listState,
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        items(items, key = { it.id }) { story ->
+                            StoryRow(
+                                story = story,
+                                onTap = {
+                                    if (story.status == StoryStatus.ready) onOpenStory(story.id)
+                                },
+                            )
+                        }
+                        if (loadingMore) {
+                            item {
+                                Box(modifier = Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(color = Accent, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-private fun Centered(content: @Composable () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { content() }
 }
 
 @Composable

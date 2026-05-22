@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -64,6 +65,8 @@ fun GeneratingScreen(
     onFailed: (String) -> Unit,
 ) {
     val inFlight by StoryGenerationManager.inFlight.collectAsState()
+
+    BackHandler(onBack = onCancel)
     val cues = inFlight?.cues.orEmpty().ifEmpty { listOf(GenerationCue("idle", "Cooking up your story", null, "orange")) }
 
     var cueIndex by remember { mutableStateOf(0) }

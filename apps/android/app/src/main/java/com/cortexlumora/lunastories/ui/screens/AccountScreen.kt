@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -74,6 +75,8 @@ fun AccountScreen(
 
     val greeting = user?.firstName?.takeIf { it.isNotEmpty() }
         ?.let { "Hello, $it" } ?: "Hello, Storyteller"
+
+    BackHandler(onBack = onBack)
 
     Box(modifier = Modifier.fillMaxSize()) {
         MoodyTwilightBackground()

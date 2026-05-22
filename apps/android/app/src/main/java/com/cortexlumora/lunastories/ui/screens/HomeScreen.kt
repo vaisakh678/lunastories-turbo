@@ -35,9 +35,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -67,6 +70,7 @@ import com.cortexlumora.lunastories.viewmodels.LatestStoryViewModel
 import com.cortexlumora.lunastories.network.StoryResponse
 import com.cortexlumora.lunastories.network.StoryStatus
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onOpenWizard: (role: CharacterRole, existing: CharacterResponse?) -> Unit,
@@ -81,6 +85,7 @@ fun HomeScreen(
     val isFetching by vm.isFetching.collectAsState()
     val error by vm.error.collectAsState()
     val inFlight by StoryGenerationManager.inFlight.collectAsState()
+    val pullState = rememberPullToRefreshState()
     val latest by latestVm.story.collectAsState()
     var pendingDelete by remember { mutableStateOf<CharacterResponse?>(null) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -128,34 +133,43 @@ fun HomeScreen(
                     CircularProgressIndicator(color = Accent)
                 }
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                PullToRefreshBox(
+                    isRefreshing = isFetching,
+                    onRefresh = {
+                        vm.load()
+                        latestVm.refreshNow()
+                    },
+                    state = pullState,
                     modifier = Modifier.weight(1f),
                 ) {
-                    sectionHeader("Main Characters")
-                    items(main, key = { it.id }) { char ->
-                        CharacterCard(
-                            character = char,
-                            selected = char.id in selectedIds,
-                            onTap = { selectedIds = selectedIds.toggle(char.id) },
-                            onLongPress = { onOpenWizard(CharacterRole.main, char) },
-                        )
-                    }
-                    item { AddTile { onOpenWizard(CharacterRole.main, null) } }
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        sectionHeader("Main Characters")
+                        items(main, key = { it.id }) { char ->
+                            CharacterCard(
+                                character = char,
+                                selected = char.id in selectedIds,
+                                onTap = { selectedIds = selectedIds.toggle(char.id) },
+                                onLongPress = { onOpenWizard(CharacterRole.main, char) },
+                            )
+                        }
+                        item { AddTile { onOpenWizard(CharacterRole.main, null) } }
 
-                    sectionHeader("Side Characters")
-                    items(side, key = { it.id }) { char ->
-                        CharacterCard(
-                            character = char,
-                            selected = char.id in selectedIds,
-                            onTap = { selectedIds = selectedIds.toggle(char.id) },
-                            onLongPress = { onOpenWizard(CharacterRole.side, char) },
-                        )
+                        sectionHeader("Side Characters")
+                        items(side, key = { it.id }) { char ->
+                            CharacterCard(
+                                character = char,
+                                selected = char.id in selectedIds,
+                                onTap = { selectedIds = selectedIds.toggle(char.id) },
+                                onLongPress = { onOpenWizard(CharacterRole.side, char) },
+                            )
+                        }
+                        item { AddTile { onOpenWizard(CharacterRole.side, null) } }
                     }
-                    item { AddTile { onOpenWizard(CharacterRole.side, null) } }
                 }
 
                 Box(

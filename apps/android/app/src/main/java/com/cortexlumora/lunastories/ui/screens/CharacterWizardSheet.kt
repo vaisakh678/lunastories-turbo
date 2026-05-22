@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -137,6 +138,10 @@ fun CharacterWizardSheet(
     val canAdvance = when (stepIndex) {
         0 -> draft.name.trim().isNotEmpty()
         else -> true
+    }
+
+    BackHandler {
+        if (stepIndex > 0) stepIndex -= 1 else onDismiss()
     }
 
     Box(modifier = modifier.fillMaxSize()) {

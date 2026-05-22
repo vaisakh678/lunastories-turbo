@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,6 +65,8 @@ fun StoryReaderScreen(
     var loading by remember { mutableStateOf(true) }
     val ctx = LocalContext.current
     val player = remember { StoryAudioPlayer(ctx) }
+
+    BackHandler(onBack = onBack)
 
     DisposableEffect(Unit) {
         onDispose { player.release() }
