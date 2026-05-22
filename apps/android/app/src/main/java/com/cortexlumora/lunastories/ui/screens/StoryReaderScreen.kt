@@ -8,14 +8,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -89,8 +93,19 @@ fun StoryReaderScreen(
         MoodyTwilightBackground()
 
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            IconButton(onClick = onBack, modifier = Modifier.padding(8.dp)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                story?.takeIf { it.status == StoryStatus.ready }?.let { s ->
+                    IconButton(onClick = { shareStory(ctx, s) }) {
+                        Icon(Icons.Default.Share, contentDescription = "Share", tint = MiloCream)
+                    }
+                }
             }
 
             when {
@@ -229,6 +244,28 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
 
         Spacer(Modifier.height(140.dp))
     }
+}
+
+private fun shareStory(context: android.content.Context, story: StoryResponse) {
+    val title = story.title ?: "A Luna Stories story"
+    val summary = story.summary?.let { "\n\n$it" } ?: ""
+    val body = story.bodyText
+        ?: story.content?.blocks?.filter { it.type == "text" }?.joinToString("\n\n") { it.text.orEmpty() }
+        ?: ""
+    val text = buildString {
+        append(title)
+        append(summary)
+        if (body.isNotBlank()) {
+            append("\n\n")
+            append(body)
+        }
+    }
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, title)
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    context.startActivity(Intent.createChooser(intent, "Share story"))
 }
 
 @Composable

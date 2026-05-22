@@ -23,24 +23,33 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,6 +64,7 @@ import com.cortexlumora.lunastories.ui.theme.MiloCream
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,10 +79,14 @@ fun MyStoriesScreen(
     var loadingMore by remember { mutableStateOf(false) }
     var reachedEnd by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var retryNonce by remember { mutableStateOf(0) }
+    var pendingDelete by remember { mutableStateOf<StoryResponse?>(null) }
+    val scope = rememberCoroutineScope()
 
     BackHandler(onBack = onBack)
 
     suspend fun loadFirstPage() {
+        error = null
         runCatching { StoryAPI.list() }
             .onSuccess { page ->
                 items = page.items
@@ -95,13 +109,13 @@ fun MyStoriesScreen(
         loadingMore = false
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(retryNonce) {
+        loading = true
         loadFirstPage()
         loading = false
     }
 
     val listState = rememberLazyListState()
-    // Auto-load when within 4 items of the end.
     val needsMore by remember {
         derivedStateOf {
             val li = listState.layoutInfo
@@ -109,9 +123,7 @@ fun MyStoriesScreen(
             last >= items.size - 4 && !reachedEnd && !loadingMore && items.isNotEmpty()
         }
     }
-    LaunchedEffect(needsMore) {
-        if (needsMore) loadMore()
-    }
+    LaunchedEffect(needsMore) { if (needsMore) loadMore() }
 
     val pullState = rememberPullToRefreshState()
     Box(modifier = Modifier.fillMaxSize()) {
@@ -129,7 +141,6 @@ fun MyStoriesScreen(
                 isRefreshing = refreshing,
                 onRefresh = {
                     refreshing = true
-                    // Reset + fetch
                     loadingMore = false
                     reachedEnd = false
                 },
@@ -144,11 +155,9 @@ fun MyStoriesScreen(
                 }
 
                 when {
-                    loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Accent)
-                    }
-                    error != null && items.isEmpty() -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(error!!, color = MiloCream, fontSize = 15.sp)
+                    loading -> CenteredLoader()
+                    error != null && items.isEmpty() -> ErrorState(message = error!!) {
+                        retryNonce += 1
                     }
                     items.isEmpty() -> EmptyState()
                     else -> LazyColumn(
@@ -157,11 +166,12 @@ fun MyStoriesScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         items(items, key = { it.id }) { story ->
-                            StoryRow(
+                            SwipeableStoryRow(
                                 story = story,
                                 onTap = {
                                     if (story.status == StoryStatus.ready) onOpenStory(story.id)
                                 },
+                                onRequestDelete = { pendingDelete = story },
                             )
                         }
                         if (loadingMore) {
@@ -174,6 +184,92 @@ fun MyStoriesScreen(
                     }
                 }
             }
+        }
+    }
+
+    pendingDelete?.let { story ->
+        AlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text("Delete this story?") },
+            text = { Text(story.title ?: "Untitled story") },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingDelete = null
+                    scope.launch {
+                        runCatching { StoryAPI.delete(story.id) }
+                            .onSuccess { items = items.filterNot { it.id == story.id } }
+                            .onFailure { error = it.message ?: "Couldn't delete story" }
+                    }
+                }) { Text("Delete", color = Color(0xFFFF453A)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) { Text("Cancel") }
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeableStoryRow(
+    story: StoryResponse,
+    onTap: () -> Unit,
+    onRequestDelete: () -> Unit,
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { target ->
+            if (target == SwipeToDismissBoxValue.EndToStart || target == SwipeToDismissBoxValue.StartToEnd) {
+                onRequestDelete()
+            }
+            false // never auto-dismiss; we keep the row visible until the user confirms
+        },
+    )
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = { DeleteSwipeBackground() },
+    ) {
+        StoryRow(story = story, onTap = onTap)
+    }
+}
+
+@Composable
+private fun DeleteSwipeBackground() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFFF453A).copy(alpha = 0.85f))
+            .padding(horizontal = 24.dp),
+        contentAlignment = Alignment.CenterEnd,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Delete, contentDescription = null, tint = Color.White)
+            Spacer(Modifier.size(6.dp))
+            Text("Delete", color = Color.White, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+@Composable
+private fun CenteredLoader() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(color = Accent)
+    }
+}
+
+@Composable
+private fun ErrorState(message: String, onRetry: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Couldn't load stories", color = MiloCream, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(6.dp))
+            Text(message, color = MiloCream.copy(alpha = 0.65f), fontSize = 13.sp)
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = onRetry,
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = Color.White),
+            ) { Text("Try again", fontWeight = FontWeight.SemiBold) }
         }
     }
 }

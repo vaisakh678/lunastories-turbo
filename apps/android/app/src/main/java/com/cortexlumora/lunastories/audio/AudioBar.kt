@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -48,6 +49,7 @@ fun AudioBar(
     val isPlaying by player.isPlaying.collectAsState()
     val position by player.positionMs.collectAsState()
     val duration by player.durationMs.collectAsState()
+    val speed by player.speed.collectAsState()
     var dragging by remember { mutableStateOf<Float?>(null) }
 
     if (duration <= 0L) return
@@ -97,12 +99,24 @@ fun AudioBar(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = formatMmSs((progress * duration).toLong()),
                         color = MiloCream.copy(alpha = 0.7f),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
+                    )
+                    Text(
+                        text = formatSpeed(speed),
+                        color = MiloCream.copy(alpha = 0.8f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(50))
+                            .background(MiloCream.copy(alpha = 0.10f))
+                            .clickable { player.cycleSpeed() }
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
                     )
                     Text(
                         text = formatMmSs(duration),
@@ -114,6 +128,9 @@ fun AudioBar(
         }
     }
 }
+
+private fun formatSpeed(speed: Float): String =
+    if (speed == speed.toInt().toFloat()) "${speed.toInt()}x" else "${"%.2f".format(speed).trimEnd('0').trimEnd('.')}x"
 
 private fun formatMmSs(ms: Long): String {
     val total = (ms / 1000).coerceAtLeast(0)
