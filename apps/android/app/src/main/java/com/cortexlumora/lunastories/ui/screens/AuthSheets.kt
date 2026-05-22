@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -79,7 +81,7 @@ fun ProviderSheet(
         MoodyTwilightBackground()
 
         Column(
-            modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 24.dp),
+            modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 24.dp),
         ) {
             CloseRow(onClose)
             Spacer(Modifier.height(8.dp))
@@ -184,7 +186,10 @@ private fun TermsFooter() {
 @Composable
 private fun CloseRow(onClose: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onClose) {
+        // Offset the IconButton -12.dp so the visible icon's left edge lines up
+        // with the column's 24.dp content padding (IconButton ships a 48.dp
+        // touch target with the 24.dp icon centered, so the icon is 12.dp inset).
+        IconButton(onClick = onClose, modifier = Modifier.offset(x = (-12).dp)) {
             Icon(Icons.Default.Close, contentDescription = "Close", tint = MiloCream)
         }
         Spacer(Modifier.weight(1f))
@@ -209,7 +214,7 @@ fun EmailSheet(
         MoodyTwilightBackground()
 
         Column(
-            modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 24.dp),
+            modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 24.dp),
         ) {
             CloseRow(onClose)
             Spacer(Modifier.height(8.dp))
@@ -285,7 +290,7 @@ fun OtpSheet(
         MoodyTwilightBackground()
 
         Column(
-            modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 24.dp),
+            modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 24.dp),
         ) {
             CloseRow(onClose)
             Spacer(Modifier.height(8.dp))
