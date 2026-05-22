@@ -44,7 +44,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +53,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.clerk.api.Clerk
 import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
 import com.cortexlumora.lunastories.stories.GenerationStatus
@@ -68,13 +66,13 @@ import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
 import com.cortexlumora.lunastories.viewmodels.LatestStoryViewModel
 import com.cortexlumora.lunastories.network.StoryResponse
 import com.cortexlumora.lunastories.network.StoryStatus
-import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
     onOpenWizard: (role: CharacterRole, existing: CharacterResponse?) -> Unit,
     onStartFlow: (selected: List<CharacterResponse>) -> Unit,
     onOpenStory: (storyId: String) -> Unit,
+    onOpenAccount: () -> Unit,
     modifier: Modifier = Modifier,
     vm: CharactersViewModel = viewModel(),
     latestVm: LatestStoryViewModel = viewModel(),
@@ -82,7 +80,6 @@ fun HomeScreen(
     val characters by vm.characters.collectAsState()
     val isFetching by vm.isFetching.collectAsState()
     val error by vm.error.collectAsState()
-    val scope = rememberCoroutineScope()
     val inFlight by StoryGenerationManager.inFlight.collectAsState()
     val latest by latestVm.story.collectAsState()
     var pendingDelete by remember { mutableStateOf<CharacterResponse?>(null) }
@@ -99,7 +96,7 @@ fun HomeScreen(
         MoodyTwilightBackground()
 
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            HomeTopBar(onSignOut = { scope.launch { Clerk.auth.signOut() } })
+            HomeTopBar(onOpenAccount = onOpenAccount)
 
             // Banner: prefer in-flight; otherwise show latest-active.
             val gen = inFlight
@@ -339,7 +336,7 @@ private fun LazyGridScope.sectionHeader(text: String) {
 }
 
 @Composable
-private fun HomeTopBar(onSignOut: () -> Unit) {
+private fun HomeTopBar(onOpenAccount: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -351,7 +348,7 @@ private fun HomeTopBar(onSignOut: () -> Unit) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f),
         )
-        IconButton(onClick = onSignOut) {
+        IconButton(onClick = onOpenAccount) {
             Icon(Icons.Default.Menu, contentDescription = "Account", tint = MiloCream)
         }
     }
