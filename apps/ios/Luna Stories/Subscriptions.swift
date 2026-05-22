@@ -47,4 +47,16 @@ enum Subscriptions {
             print("💳 RevenueCat.logOut failed: \(error)")
         }
     }
+
+    /// Opens the App Store's subscription management sheet. The user can
+    /// cancel / change plan / restore from there. If the user has no
+    /// active subscription, App Store still shows the "no subscriptions"
+    /// screen rather than failing.
+    static func manage() async {
+        do {
+            try await Purchases.shared.showManageSubscriptions()
+        } catch {
+            print("💳 RevenueCat.showManageSubscriptions failed: \(error)")
+        }
+    }
 }
