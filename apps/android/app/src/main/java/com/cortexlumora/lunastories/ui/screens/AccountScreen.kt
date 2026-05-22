@@ -31,6 +31,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,6 +59,9 @@ import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.GlowCoral
 import com.cortexlumora.lunastories.ui.theme.GlowGold
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import kotlinx.coroutines.launch
 
@@ -191,9 +195,9 @@ private fun Hero(greeting: String) {
             )
         }
         Spacer(Modifier.height(14.dp))
-        Text(greeting, color = MiloCream, fontSize = 19.sp, fontWeight = FontWeight.SemiBold)
+        Text(greeting, color = MiloCream, style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(4.dp))
-        Text("Manage your profile", color = MiloCream.copy(alpha = 0.65f), fontSize = 14.sp)
+        Text("Manage your profile", color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.titleSmall)
     }
 }
 
@@ -223,14 +227,14 @@ private fun MenuRow(
             Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(16.dp))
         }
         Spacer(Modifier.size(14.dp))
-        Text(title, color = titleColor, fontSize = 16.sp, modifier = Modifier.weight(1f))
+        Text(title, color = titleColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
         if (isLoading) {
             CircularProgressIndicator(color = tint, strokeWidth = 2.dp, modifier = Modifier.size(14.dp))
         } else {
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = MiloCream.copy(alpha = 0.4f),
+                tint = MiloCream.copy(alpha = ALPHA_FAINT),
                 modifier = Modifier.size(18.dp),
             )
         }

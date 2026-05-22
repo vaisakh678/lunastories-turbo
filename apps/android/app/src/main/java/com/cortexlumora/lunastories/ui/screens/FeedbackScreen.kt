@@ -34,6 +34,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -57,6 +58,9 @@ import com.cortexlumora.lunastories.network.FeedbackAPI
 import com.cortexlumora.lunastories.network.FeedbackCategory
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import kotlinx.coroutines.launch
 
@@ -80,7 +84,7 @@ fun FeedbackScreen(onClose: () -> Unit) {
                 IconButton(onClick = onClose) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
                 }
-                Text("Send Feedback", color = MiloCream, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text("Send Feedback", color = MiloCream, style = MaterialTheme.typography.headlineSmall)
             }
 
             if (done) {
@@ -100,7 +104,7 @@ fun FeedbackScreen(onClose: () -> Unit) {
                 OutlinedTextField(
                     value = message,
                     onValueChange = { if (it.length <= 2000) message = it },
-                    placeholder = { Text("Tell us what's on your mind…", color = MiloCream.copy(alpha = 0.4f)) },
+                    placeholder = { Text("Tell us what's on your mind…", color = MiloCream.copy(alpha = ALPHA_FAINT)) },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 160.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = TextFieldDefaults.colors(
@@ -142,7 +146,7 @@ fun FeedbackScreen(onClose: () -> Unit) {
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Accent,
                         contentColor = Color.White,
-                        disabledContainerColor = Accent.copy(alpha = 0.4f),
+                        disabledContainerColor = Accent.copy(alpha = ALPHA_FAINT),
                     ),
                     modifier = Modifier.fillMaxWidth().height(52.dp).navigationBarsPadding(),
                 ) {
@@ -189,7 +193,7 @@ private fun CategoryChips(selected: FeedbackCategory, onSelect: (FeedbackCategor
             ) {
                 Icon(icon, contentDescription = null, tint = if (isSel) Accent else MiloCream, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.height(4.dp))
-                Text(label, color = MiloCream, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                Text(label, color = MiloCream, style = MaterialTheme.typography.labelSmall)
             }
         }
     }
@@ -204,7 +208,7 @@ private fun RatingRow(rating: Int?, onChange: (Int?) -> Unit) {
                 Icon(
                     imageVector = if (filled) Icons.Default.Star else Icons.Outlined.Star,
                     contentDescription = "$i stars",
-                    tint = if (filled) Color(0xFFFFCC00) else MiloCream.copy(alpha = 0.4f),
+                    tint = if (filled) Color(0xFFFFCC00) else MiloCream.copy(alpha = ALPHA_FAINT),
                 )
             }
         }
@@ -228,12 +232,12 @@ private fun SuccessBody(onClose: () -> Unit) {
             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF34C759), modifier = Modifier.size(44.dp))
         }
         Spacer(Modifier.height(18.dp))
-        Text("Thanks for the note!", color = MiloCream, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+        Text("Thanks for the note!", color = MiloCream, style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
         Text(
             "We read every message — your feedback helps make Luna Stories better.",
-            color = MiloCream.copy(alpha = 0.65f),
-            fontSize = 14.sp,
+            color = MiloCream.copy(alpha = ALPHA_MUTED),
+            style = MaterialTheme.typography.titleSmall,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(28.dp))

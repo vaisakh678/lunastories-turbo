@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cortexlumora.lunastories.R
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.GlowCoral
 import com.cortexlumora.lunastories.ui.theme.GlowGold
 import com.cortexlumora.lunastories.ui.theme.MiloCream
@@ -47,17 +49,15 @@ fun SplashScreen(modifier: Modifier = Modifier) {
             Text(
                 text = "Luna Stories",
                 color = MiloCream,
-                fontWeight = FontWeight.Bold,
-                fontSize = 34.sp,
+                style = MaterialTheme.typography.displayLarge,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Bedtime, magical.",
-                color = MiloCream.copy(alpha = 0.55f),
-                fontWeight = FontWeight.Medium,
-                fontSize = 15.sp,
+                color = MiloCream.copy(alpha = ALPHA_MUTED),
+                style = MaterialTheme.typography.labelMedium,
             )
         }
     }

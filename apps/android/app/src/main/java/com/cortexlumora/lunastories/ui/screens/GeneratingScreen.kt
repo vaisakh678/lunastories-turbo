@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,6 +49,9 @@ import com.cortexlumora.lunastories.stories.StoryGenerationManager
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import kotlinx.coroutines.delay
 
@@ -122,15 +126,14 @@ fun GeneratingScreen(
             Text(
                 text = inFlight?.title ?: "Crafting your story",
                 color = MiloCream,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 text = "About 10 seconds",
-                color = MiloCream.copy(alpha = 0.55f),
-                fontSize = 14.sp,
+                color = MiloCream.copy(alpha = ALPHA_CAPTION),
+                style = MaterialTheme.typography.titleSmall,
             )
 
             Spacer(Modifier.height(24.dp))
@@ -148,7 +151,7 @@ fun GeneratingScreen(
                 transitionSpec = { fadeIn() togetherWith fadeOut() },
                 label = "status",
             ) { line ->
-                Text(line, color = MiloCream.copy(alpha = 0.75f), fontSize = 14.sp)
+                Text(line, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.titleSmall)
             }
         }
     }

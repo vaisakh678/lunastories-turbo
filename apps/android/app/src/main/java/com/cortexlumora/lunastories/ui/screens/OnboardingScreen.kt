@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cortexlumora.lunastories.R
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import kotlinx.coroutines.launch
@@ -106,8 +107,8 @@ fun OnboardingScreen(
                 ) {
                     Text(
                         text = "Skip",
-                        color = MiloCream.copy(alpha = 0.7f),
-                        fontSize = 15.sp,
+                        color = MiloCream.copy(alpha = ALPHA_MUTED),
+                        style = MaterialTheme.typography.labelMedium,
                     )
                 }
             }
@@ -148,10 +149,7 @@ fun OnboardingScreen(
                     .padding(horizontal = 24.dp)
                     .height(56.dp),
             ) {
-                Text(
-                    text = if (isLast) "Get Started" else "Next",
-                    fontSize = 17.sp,
-                )
+                Text(text = if (isLast) "Get Started" else "Next")
             }
         }
     }
@@ -178,18 +176,16 @@ private fun SlideContent(slide: Slide) {
         Text(
             text = slide.title,
             color = MiloCream,
-            fontSize = 28.sp,
-            textAlign = TextAlign.Center,
             style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = slide.subtitle,
-            color = MiloCream.copy(alpha = 0.75f),
-            fontSize = 16.sp,
-            lineHeight = 24.sp,
+            color = MiloCream.copy(alpha = ALPHA_MUTED),
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 8.dp),
         )

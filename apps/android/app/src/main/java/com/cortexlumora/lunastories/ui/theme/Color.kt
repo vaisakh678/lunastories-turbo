@@ -23,3 +23,10 @@ val GlowPurple = Color(0xFF6B49A3)
 val MiloCream = Color(0xFFF7F5EE)
 val MiloPaper = Color(0xFFFAF3E3)
 val MiloInk = Color(0xFF281C38)
+
+// Standard alpha tokens for text on dark backgrounds. Use these instead
+// of ad-hoc 0.6/0.65/0.7/0.75 values so "muted" looks the same across
+// every screen.
+const val ALPHA_MUTED = 0.65f      // subtitles, descriptive secondary text
+const val ALPHA_CAPTION = 0.55f    // captions, timestamps, status meta
+const val ALPHA_FAINT = 0.4f       // placeholders, disabled-looking text

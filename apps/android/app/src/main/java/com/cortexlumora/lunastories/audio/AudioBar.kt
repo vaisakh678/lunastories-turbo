@@ -20,6 +20,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -35,6 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 
 /**
@@ -103,14 +107,13 @@ fun AudioBar(
                 ) {
                     Text(
                         text = formatMmSs((progress * duration).toLong()),
-                        color = MiloCream.copy(alpha = 0.7f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
+                        color = MiloCream.copy(alpha = ALPHA_MUTED),
+                        style = MaterialTheme.typography.labelSmall,
                     )
                     Text(
                         text = formatSpeed(speed),
                         color = MiloCream.copy(alpha = 0.8f),
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier
                             .clip(androidx.compose.foundation.shape.RoundedCornerShape(50))
@@ -120,8 +123,8 @@ fun AudioBar(
                     )
                     Text(
                         text = formatMmSs(duration),
-                        color = MiloCream.copy(alpha = 0.7f),
-                        fontSize = 12.sp,
+                        color = MiloCream.copy(alpha = ALPHA_MUTED),
+                        style = MaterialTheme.typography.labelSmall,
                     )
                 }
             }
