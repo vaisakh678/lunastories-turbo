@@ -146,8 +146,9 @@ struct ProviderSheet: View {
 
             Spacer(minLength: 24)
 
-            Text("By continuing you agree to Luna Stories's \(Text("Terms & Conditions").foregroundStyle(primaryBlue)) and \(Text("Privacy Policy").foregroundStyle(primaryBlue))")
+            Text("By continuing you agree to Luna Stories's [Terms & Conditions](\(LegalLinks.termsURL.absoluteString)) and [Privacy Policy](\(LegalLinks.privacyURL.absoluteString))")
                 .foregroundStyle(textMedium)
+                .tint(primaryBlue)
                 .font(.system(size: 13))
                 .multilineTextAlignment(.center)
             .padding(.horizontal, 8)
