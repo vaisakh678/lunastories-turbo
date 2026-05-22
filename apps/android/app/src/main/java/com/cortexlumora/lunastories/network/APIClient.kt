@@ -10,11 +10,12 @@ import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
@@ -40,7 +41,7 @@ data class Envelope<T>(
  * handlers can return `{ data: T }` and we extract `T` here.
  */
 object APIClient {
-    private val json = Json {
+    val json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
     }
@@ -53,15 +54,17 @@ object APIClient {
         }
     }
 
-    suspend inline fun <reified T> get(path: String): T = request(path) {}
+    suspend inline fun <reified T> get(path: String): T = request(path) {
+        method = HttpMethod.Get
+    }
 
     suspend inline fun <reified T> request(
         path: String,
         crossinline block: HttpRequestBuilder.() -> Unit,
     ): T {
         val token = sessionToken() ?: throw APIError.NotAuthenticated()
-        val response = http.get {
-            url { takeFrom(BuildConfig.API_BASE_URL + path.ensureLeadingSlash()) }
+        val response = http.request {
+            url { takeFrom(BuildConfig.API_BASE_URL + ensureLeadingSlash(path)) }
             header(HttpHeaders.Authorization, "Bearer $token")
             block()
         }
@@ -71,7 +74,7 @@ object APIClient {
     suspend inline fun <reified T> unwrap(response: HttpResponse): T {
         if (response.status == HttpStatusCode.Unauthorized) throw APIError.Unauthorized()
         val envelope = runCatching { response.body<Envelope<T>>() }.getOrNull()
-        if (response.status.isSuccess()) {
+        if (isSuccess(response.status)) {
             return envelope?.data
                 ?: throw APIError.Server(response.status.value, envelope?.error ?: "Empty response")
         }
@@ -89,7 +92,7 @@ object APIClient {
         }
     }
 
-    fun String.ensureLeadingSlash(): String = if (startsWith("/")) this else "/$this"
+    fun ensureLeadingSlash(path: String): String = if (path.startsWith("/")) path else "/$path"
 
-    fun HttpStatusCode.isSuccess(): Boolean = value in 200..299
+    fun isSuccess(status: HttpStatusCode): Boolean = status.value in 200..299
 }
