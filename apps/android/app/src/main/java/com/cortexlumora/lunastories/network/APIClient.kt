@@ -13,8 +13,8 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.takeFrom
@@ -73,14 +73,24 @@ object APIClient {
 
     suspend inline fun <reified T> unwrap(response: HttpResponse): T {
         if (response.status == HttpStatusCode.Unauthorized) throw APIError.Unauthorized()
-        val envelope = runCatching { response.body<Envelope<T>>() }.getOrNull()
+        // Only treat the body as our JSON envelope if the server actually sent
+        // JSON. Otherwise an HTML page (e.g. someone pointing at the wrong
+        // port and hitting the docs site) would land verbatim in the error
+        // dialog.
+        val isJson = response.contentType()?.match(io.ktor.http.ContentType.Application.Json) == true
+        val envelope = if (isJson) runCatching { response.body<Envelope<T>>() }.getOrNull() else null
         if (isSuccess(response.status)) {
             return envelope?.data
-                ?: throw APIError.Server(response.status.value, envelope?.error ?: "Empty response")
+                ?: throw APIError.Server(
+                    response.status.value,
+                    envelope?.error ?: "Server returned ${response.status.value} (non-JSON response)",
+                )
         }
         throw APIError.Server(
             response.status.value,
-            envelope?.error ?: envelope?.message ?: response.bodyAsText(),
+            envelope?.error
+                ?: envelope?.message
+                ?: "Server error ${response.status.value}",
         )
     }
 

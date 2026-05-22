@@ -22,7 +22,11 @@ android {
 
         // Emulator localhost is 10.0.2.2; override per-buildtype as the
         // staging/prod backends come online.
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000\"")
+        // 10.0.2.2 is the emulator's loopback for the host machine.
+        // The api server listens on 3001 (apps/api/src/index.ts) — 3000 is
+        // taken by apps/docs in dev, hitting it returns HTML and the Ktor
+        // client errors out with the Next.js page body as the message.
+        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3001\"")
         buildConfigField(
             "String",
             "CLERK_PUBLISHABLE_KEY",
