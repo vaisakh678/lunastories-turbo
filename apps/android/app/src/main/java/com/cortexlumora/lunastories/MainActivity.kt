@@ -29,6 +29,7 @@ import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
 import com.cortexlumora.lunastories.stories.StoryGenerationManager
 import com.cortexlumora.lunastories.stories.StoryMode
+import com.cortexlumora.lunastories.ui.screens.AccountScreen
 import com.cortexlumora.lunastories.ui.screens.CharacterWizardSheet
 import com.cortexlumora.lunastories.ui.screens.ChooseModeScreen
 import com.cortexlumora.lunastories.ui.screens.CreateOrUpdate
@@ -79,6 +80,7 @@ private fun RootFlow() {
     var showAuthSheet by remember { mutableStateOf(false) }
     var wizardTarget by remember { mutableStateOf<WizardTarget?>(null) }
     var storyRoute by remember { mutableStateOf<StoryRoute?>(null) }
+    var showAccount by remember { mutableStateOf(false) }
 
     val charactersVm: CharactersViewModel = viewModel()
 
@@ -120,6 +122,7 @@ private fun RootFlow() {
                 onOpenWizard = { role, existing -> wizardTarget = WizardTarget(role, existing) },
                 onStartFlow = { selected -> storyRoute = StoryRoute.ChooseMode(selected) },
                 onOpenStory = { id -> storyRoute = StoryRoute.Reader(id) },
+                onOpenAccount = { showAccount = true },
             )
         }
     }
@@ -153,6 +156,17 @@ private fun RootFlow() {
                     },
                     onDelete = { id -> charactersVm.delete(id) },
                 )
+            }
+        }
+    }
+
+    if (showAccount) {
+        Dialog(
+            onDismissRequest = { showAccount = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                AccountScreen(onBack = { showAccount = false })
             }
         }
     }
