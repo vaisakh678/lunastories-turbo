@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -102,6 +103,8 @@ private fun CreativeFlow(
         step < n * 2 -> profByChar.containsKey(characters[step - n].id)
         else -> moral != null
     }
+
+    BackHandler { if (step > 0) step -= 1 else onDismiss() }
 
     Scaffold(
         title = mode.title,
@@ -224,6 +227,8 @@ private fun IconicFlow(
         0 -> picked != null
         else -> place != null
     }
+
+    BackHandler { if (step > 0) step -= 1 else onDismiss() }
 
     Scaffold(
         title = mode.title,

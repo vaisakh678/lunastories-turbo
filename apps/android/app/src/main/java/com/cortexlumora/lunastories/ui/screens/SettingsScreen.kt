@@ -2,6 +2,7 @@ package com.cortexlumora.lunastories.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,6 +62,8 @@ fun SettingsScreen(onBack: () -> Unit) {
     var confirmingDelete by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+
+    BackHandler(enabled = !deleting, onBack = onBack)
 
     Box(modifier = Modifier.fillMaxSize()) {
         MoodyTwilightBackground()
