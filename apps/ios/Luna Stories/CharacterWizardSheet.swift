@@ -482,7 +482,6 @@ private struct BasicInfoStep: View {
 
 private struct IconStep: View {
     @Binding var draft: CharacterDraft
-    @Environment(AvatarsViewModel.self) private var avatars
 
     private let columns = Array(
         repeating: GridItem(.flexible(), spacing: 12),
@@ -492,39 +491,29 @@ private struct IconStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             FieldLabel("Pick an icon")
-            if avatars.avatars.isEmpty {
-                if avatars.isLoading {
-                    ProgressView().padding(.vertical, 16)
-                } else {
-                    Text("No avatars available yet.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(avatars.avatars) { avatar in
-                        let isSelected = draft.iconName == avatar.id
-                        Button {
-                            draft.iconName = avatar.id
-                        } label: {
-                            CharacterIconView(
-                                symbolName: avatar.id,
-                                tint: .accentColor,
-                                cornerRadius: 22,
-                                glyphPointSize: 28
-                            )
-                            .frame(maxWidth: .infinity)
-                            .aspectRatio(1, contentMode: .fit)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                    .strokeBorder(
-                                        isSelected ? Color.accentColor : Color.clear,
-                                        lineWidth: 3
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(BundledAvatars.ids, id: \.self) { avatarId in
+                    let isSelected = draft.iconName == avatarId
+                    Button {
+                        draft.iconName = avatarId
+                    } label: {
+                        CharacterIconView(
+                            symbolName: avatarId,
+                            tint: .accentColor,
+                            cornerRadius: 22,
+                            glyphPointSize: 28
+                        )
+                        .frame(maxWidth: .infinity)
+                        .aspectRatio(1, contentMode: .fit)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .strokeBorder(
+                                    isSelected ? Color.accentColor : Color.clear,
+                                    lineWidth: 3
+                                )
+                        )
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }

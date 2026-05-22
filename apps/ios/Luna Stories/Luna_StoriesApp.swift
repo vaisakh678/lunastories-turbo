@@ -10,7 +10,6 @@ import SwiftUI
 
 @main
 struct Luna_StoriesApp: App {
-    @State private var avatars = AvatarsViewModel()
     @State private var generations = StoryGenerationManager()
     @State private var deepLinks = DeepLinkRouter()
     @State private var profile = ProfileViewModel()
@@ -33,14 +32,12 @@ struct Luna_StoriesApp: App {
         WindowGroup {
             RootView()
                 .environment(Clerk.shared)
-                .environment(avatars)
                 .environment(generations)
                 .environment(deepLinks)
                 .environment(profile)
                 .environment(unread)
                 .environment(subscriptions)
                 .preferredColorScheme(.dark)
-                .task { await avatars.load() }
         }
     }
 }
