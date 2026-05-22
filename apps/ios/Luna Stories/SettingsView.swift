@@ -55,23 +55,15 @@ struct SettingsView: View {
             }
 
             Section {
-                NavigationLink {
-                    LegalDocView(
-                        title: "Terms of Service",
-                        text: legalPlaceholder("Terms of Service")
-                    )
-                } label: {
+                Link(destination: LegalLinks.termsURL) {
                     SettingsRow(icon: "doc.text", title: "Terms of Service")
                 }
+                .foregroundStyle(.primary)
 
-                NavigationLink {
-                    LegalDocView(
-                        title: "Privacy Policy",
-                        text: legalPlaceholder("Privacy Policy")
-                    )
-                } label: {
+                Link(destination: LegalLinks.privacyURL) {
                     SettingsRow(icon: "hand.raised", title: "Privacy Policy")
                 }
+                .foregroundStyle(.primary)
 
                 HStack {
                     SettingsRow(icon: "info.circle", title: "Version")
@@ -237,19 +229,6 @@ private var appVersion: String {
     return "\(v) (\(b))"
 }
 
-private func legalPlaceholder(_ title: String) -> String {
-    """
-    \(title)
-
-    Placeholder. Replace with the real document before App Store submission.
-
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod \
-    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \
-    veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea \
-    commodo consequat.
-    """
-}
-
 // MARK: - Row label
 
 private struct SettingsRow: View {
@@ -268,24 +247,3 @@ private struct SettingsRow: View {
     }
 }
 
-// MARK: - Legal doc viewer
-
-private struct LegalDocView: View {
-    let title: String
-    let text: String
-
-    var body: some View {
-        ScrollView {
-            Text(text)
-                .font(.body)
-                .lineSpacing(6)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(20)
-        }
-        .navigationTitle(title)
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-    }
-}

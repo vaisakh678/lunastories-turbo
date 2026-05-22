@@ -243,10 +243,10 @@ struct PaywallView: View {
                 .disabled(isRestoring)
 
                 Text("·").foregroundStyle(Color.miloCream.opacity(0.3))
-                Button("Terms") {}
+                Link("Terms", destination: LegalLinks.termsURL)
                     .foregroundStyle(Color.miloCream.opacity(0.5))
                 Text("·").foregroundStyle(Color.miloCream.opacity(0.3))
-                Button("Privacy") {}
+                Link("Privacy", destination: LegalLinks.privacyURL)
                     .foregroundStyle(Color.miloCream.opacity(0.5))
             }
             .font(.system(size: 12))
