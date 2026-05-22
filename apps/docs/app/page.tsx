@@ -398,9 +398,9 @@ function Footer() {
           </span>
         </div>
         <nav className="flex items-center gap-6 text-sm text-ink-soft">
-          <a href="#" className="hover:text-foreground transition">Privacy</a>
-          <a href="#" className="hover:text-foreground transition">Terms</a>
-          <a href="#" className="hover:text-foreground transition">Contact</a>
+          <a href="/privacy" className="hover:text-foreground transition">Privacy</a>
+          <a href="/terms" className="hover:text-foreground transition">Terms</a>
+          <a href="mailto:cortexlumora@gmail.com" className="hover:text-foreground transition">Contact</a>
         </nav>
       </div>
     </footer>
