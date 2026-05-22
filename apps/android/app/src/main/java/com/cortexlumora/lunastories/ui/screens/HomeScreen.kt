@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,11 +24,15 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,6 +57,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clerk.api.Clerk
 import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
+import com.cortexlumora.lunastories.stories.GenerationStatus
+import com.cortexlumora.lunastories.stories.StoryGenerationManager
 import com.cortexlumora.lunastories.ui.components.CharacterIconView
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
@@ -60,6 +70,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     onOpenWizard: (role: CharacterRole, existing: CharacterResponse?) -> Unit,
+    onStartFlow: (selected: List<CharacterResponse>) -> Unit,
+    onOpenStory: (storyId: String) -> Unit,
     modifier: Modifier = Modifier,
     vm: CharactersViewModel = viewModel(),
 ) {
@@ -67,18 +79,34 @@ fun HomeScreen(
     val isFetching by vm.isFetching.collectAsState()
     val error by vm.error.collectAsState()
     val scope = rememberCoroutineScope()
+    val inFlight by StoryGenerationManager.inFlight.collectAsState()
     var pendingDelete by remember { mutableStateOf<CharacterResponse?>(null) }
+    var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     LaunchedEffect(Unit) { vm.load() }
 
     val main = characters.filter { it.role == CharacterRole.main }
     val side = characters.filter { it.role == CharacterRole.side }
+    val selected = characters.filter { it.id in selectedIds }
 
     Box(modifier = modifier.fillMaxSize()) {
         MoodyTwilightBackground()
 
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             HomeTopBar(onSignOut = { scope.launch { Clerk.auth.signOut() } })
+
+            // Banner for in-flight or ready story
+            inFlight?.let { gen ->
+                GenerationBanner(
+                    title = gen.title,
+                    status = gen.status,
+                    onTapReady = { storyId ->
+                        StoryGenerationManager.acknowledge()
+                        onOpenStory(storyId)
+                    },
+                    onDismissFailed = { StoryGenerationManager.acknowledge() },
+                )
+            }
 
             if (vm.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -90,13 +118,15 @@ fun HomeScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.weight(1f),
                 ) {
                     sectionHeader("Main Characters")
                     items(main, key = { it.id }) { char ->
                         CharacterCard(
                             character = char,
-                            onTap = { onOpenWizard(CharacterRole.main, char) },
-                            onLongPress = { pendingDelete = char },
+                            selected = char.id in selectedIds,
+                            onTap = { selectedIds = selectedIds.toggle(char.id) },
+                            onLongPress = { onOpenWizard(CharacterRole.main, char) },
                         )
                     }
                     item { AddTile { onOpenWizard(CharacterRole.main, null) } }
@@ -105,11 +135,37 @@ fun HomeScreen(
                     items(side, key = { it.id }) { char ->
                         CharacterCard(
                             character = char,
-                            onTap = { onOpenWizard(CharacterRole.side, char) },
-                            onLongPress = { pendingDelete = char },
+                            selected = char.id in selectedIds,
+                            onTap = { selectedIds = selectedIds.toggle(char.id) },
+                            onLongPress = { onOpenWizard(CharacterRole.side, char) },
                         )
                     }
                     item { AddTile { onOpenWizard(CharacterRole.side, null) } }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(16.dp),
+                ) {
+                    Button(
+                        onClick = { onStartFlow(selected) },
+                        enabled = selected.isNotEmpty() && inFlight == null,
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Accent,
+                            contentColor = Color.White,
+                            disabledContainerColor = Accent.copy(alpha = 0.35f),
+                        ),
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                    ) {
+                        Text(
+                            text = if (selected.isEmpty()) "Pick characters to start" else "Start (${selected.size})",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
                 }
             }
         }
@@ -131,9 +187,7 @@ fun HomeScreen(
             onDismissRequest = vm::clearError,
             title = { Text("Something went wrong") },
             text = { Text(msg) },
-            confirmButton = {
-                TextButton(onClick = vm::clearError) { Text("OK") }
-            },
+            confirmButton = { TextButton(onClick = vm::clearError) { Text("OK") } },
         )
     }
 
@@ -155,6 +209,53 @@ fun HomeScreen(
     }
 }
 
+private fun Set<String>.toggle(id: String): Set<String> =
+    if (id in this) this - id else this + id
+
+@Composable
+private fun GenerationBanner(
+    title: String,
+    status: GenerationStatus,
+    onTapReady: (String) -> Unit,
+    onDismissFailed: () -> Unit,
+) {
+    val (eyebrow, isReady, storyId) = when (status) {
+        is GenerationStatus.Generating -> Triple("Crafting your story", false, null)
+        is GenerationStatus.Ready -> Triple("✨ Your story is ready", true, status.story.id)
+        is GenerationStatus.Failed -> Triple("Generation hit a snag", false, null)
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(MiloCream.copy(alpha = 0.08f))
+            .border(
+                width = if (isReady) 2.dp else 1.dp,
+                color = if (isReady) Accent else MiloCream.copy(alpha = 0.18f),
+                shape = RoundedCornerShape(18.dp),
+            )
+            .clickable(enabled = isReady && storyId != null) { storyId?.let(onTapReady) }
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (status is GenerationStatus.Generating) {
+            CircularProgressIndicator(color = Accent, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.size(12.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(eyebrow, color = MiloCream.copy(alpha = 0.7f), fontSize = 12.sp)
+            Text(title, color = MiloCream, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+        }
+        if (status is GenerationStatus.Failed) {
+            TextButton(onClick = onDismissFailed) {
+                Text("Dismiss", color = Accent, fontSize = 13.sp)
+            }
+        }
+    }
+}
+
 private fun LazyGridScope.sectionHeader(text: String) {
     item(span = { GridItemSpan(maxLineSpan) }) {
         Text(
@@ -170,9 +271,7 @@ private fun LazyGridScope.sectionHeader(text: String) {
 @Composable
 private fun HomeTopBar(onSignOut: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -183,11 +282,7 @@ private fun HomeTopBar(onSignOut: () -> Unit) {
             modifier = Modifier.weight(1f),
         )
         IconButton(onClick = onSignOut) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Account",
-                tint = MiloCream,
-            )
+            Icon(Icons.Default.Menu, contentDescription = "Account", tint = MiloCream)
         }
     }
 }
@@ -196,6 +291,7 @@ private fun HomeTopBar(onSignOut: () -> Unit) {
 @Composable
 private fun CharacterCard(
     character: CharacterResponse,
+    selected: Boolean,
     onTap: () -> Unit,
     onLongPress: () -> Unit,
 ) {
@@ -206,13 +302,37 @@ private fun CharacterCard(
             .combinedClickable(onClick = onTap, onLongClick = onLongPress),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        CharacterIconView(
-            symbolName = character.symbolName,
-            tint = tint,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f),
-        )
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f)) {
+            CharacterIconView(
+                symbolName = character.symbolName,
+                tint = tint,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(
+                        width = if (selected) 3.dp else 0.dp,
+                        color = if (selected) Accent else Color.Transparent,
+                        shape = RoundedCornerShape(22.dp),
+                    ),
+            )
+            if (selected) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(22.dp)
+                        .clip(CircleShape)
+                        .background(Accent),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
+        }
         Text(
             text = character.name,
             color = MiloCream,
@@ -234,26 +354,12 @@ private fun AddTile(onTap: () -> Unit) {
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(22.dp))
-                .border(
-                    width = 2.dp,
-                    color = Accent.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(22.dp),
-                )
+                .border(2.dp, Accent.copy(alpha = 0.6f), RoundedCornerShape(22.dp))
                 .clickable(onClick = onTap),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add character",
-                tint = Accent,
-                modifier = Modifier.size(32.dp),
-            )
+            Icon(Icons.Default.Add, contentDescription = "Add character", tint = Accent, modifier = Modifier.size(32.dp))
         }
-        Text(
-            text = "Add",
-            color = MiloCream.copy(alpha = 0.7f),
-            fontSize = 13.sp,
-            modifier = Modifier.padding(top = 6.dp),
-        )
+        Text("Add", color = MiloCream.copy(alpha = 0.7f), fontSize = 13.sp, modifier = Modifier.padding(top = 6.dp))
     }
 }
