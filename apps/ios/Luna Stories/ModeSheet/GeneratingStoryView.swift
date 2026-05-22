@@ -147,7 +147,10 @@ struct GeneratingStoryView: View {
     private var cueArtwork: some View {
         if let cue = currentCue {
             Group {
-                if let imageName = cue.imageName {
+                // Guard the named-asset branch with an existence check so a
+                // missing/misnamed catalog entry falls through to the SF
+                // Symbol tile instead of rendering a blank empty box.
+                if let imageName = cue.imageName, UIImage(named: imageName) != nil {
                     Image(imageName)
                         .resizable()
                         .scaledToFill()
