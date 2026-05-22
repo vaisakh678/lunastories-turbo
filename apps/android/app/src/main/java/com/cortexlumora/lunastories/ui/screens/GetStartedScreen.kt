@@ -34,8 +34,8 @@ import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 
 /**
- * Entry to auth — mirrors iOS GetStartedView. Both CTAs open the Clerk
- * AuthView sheet; the caller decides what state to seed it with.
+ * Entry to auth — mirrors iOS GetStartedView. CTAs open the custom
+ * ProviderSheet in either sign-in or sign-up mode.
  */
 @Composable
 fun GetStartedScreen(
