@@ -1,10 +1,19 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+}
+
+// Release signing — credentials live in app/keystore.properties (gitignored)
+// so the keystore file path + passwords + alias never enter source control.
+// See app/keystore.properties.example for the expected keys.
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("app/keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
 }
 
 android {
@@ -20,8 +29,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Emulator localhost is 10.0.2.2; override per-buildtype as the
-        // staging/prod backends come online.
         // 10.0.2.2 is the emulator's loopback for the host machine.
         // The api server listens on 3001 (apps/api/src/index.ts) — 3000 is
         // taken by apps/docs in dev, hitting it returns HTML and the Ktor
@@ -34,6 +41,18 @@ android {
         )
     }
 
+    signingConfigs {
+        create("release") {
+            val storePath = keystoreProps.getProperty("storeFile")
+            if (storePath != null) {
+                storeFile = file(storePath)
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -41,6 +60,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Only attach the release signing config when keystore.properties
+            // is present, so ./gradlew assembleRelease still compiles locally
+            // even before the keystore is set up.
+            if (keystoreProps.getProperty("storeFile") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {
@@ -78,6 +103,11 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.media3.exoplayer)
+    // Play Billing — adds the com.android.vending.BILLING permission via
+    // manifest merger, which is what unlocks the Subscriptions menu in
+    // Play Console once the AAB is uploaded. RevenueCat (or direct
+    // billing) wires up against this lib later.
+    implementation(libs.android.billing.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
