@@ -9,18 +9,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,13 +32,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cortexlumora.lunastories.audio.AudioBar
+import com.cortexlumora.lunastories.audio.StoryAudioPlayer
 import com.cortexlumora.lunastories.network.StoryAPI
 import com.cortexlumora.lunastories.network.StoryResponse
 import com.cortexlumora.lunastories.network.StoryStatus
+import com.cortexlumora.lunastories.stories.GenerationCue
+import com.cortexlumora.lunastories.stories.StoryGenerationManager
+import com.cortexlumora.lunastories.stories.StoryInputPayload
+import com.cortexlumora.lunastories.stories.StoryModes
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
@@ -48,16 +57,29 @@ import com.cortexlumora.lunastories.ui.theme.MiloPaper
 fun StoryReaderScreen(
     storyId: String,
     onBack: () -> Unit,
+    onRegenerate: () -> Unit,
 ) {
     var story by remember { mutableStateOf<StoryResponse?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
+    val ctx = LocalContext.current
+    val player = remember { StoryAudioPlayer(ctx) }
+
+    DisposableEffect(Unit) {
+        onDispose { player.release() }
+    }
 
     LaunchedEffect(storyId) {
+        loading = true
+        error = null
         runCatching { StoryAPI.get(storyId) }
             .onSuccess { story = it }
             .onFailure { error = it.message ?: "Couldn't load story" }
         loading = false
+    }
+
+    LaunchedEffect(story?.audio?.url) {
+        story?.audio?.url?.let { player.loadIfNeeded(it) }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -75,21 +97,48 @@ fun StoryReaderScreen(
                     story!!.errorMessage ?: "Couldn't generate this story",
                 )
                 story!!.status != StoryStatus.ready -> CenteredMessage("Still preparing this story…")
-                else -> ReaderBody(story!!)
+                else -> ReaderBody(
+                    story = story!!,
+                    onMakeAnother = {
+                        regenerate(story!!)
+                        onRegenerate()
+                    },
+                )
+            }
+        }
+
+        story?.takeIf { it.status == StoryStatus.ready && it.audio != null }?.let {
+            Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                AudioBar(player = player)
             }
         }
     }
 }
 
+private fun regenerate(story: StoryResponse) {
+    val ids = story.characterIds.orEmpty()
+    val input = story.generationInput ?: return
+    val mode = StoryModes.firstOrNull { it.modeKey == story.modeKey }
+    val cues = listOfNotNull(
+        mode?.let { GenerationCue("mode", it.title, it.heroRes, it.tintName) },
+    ).ifEmpty {
+        listOf(GenerationCue("idle", story.title ?: "Cooking up your story", null, story.coverTint ?: "orange"))
+    }
+    StoryGenerationManager.start(
+        payload = StoryInputPayload(story.modeKey, ids, input),
+        title = story.title ?: "Make another",
+        cues = cues,
+    )
+}
+
 @Composable
-private fun ReaderBody(story: StoryResponse) {
+private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
     ) {
-        // Hero
         val coverTint = ColorPalette.color(story.coverTint)
         Box(
             modifier = Modifier
@@ -118,7 +167,6 @@ private fun ReaderBody(story: StoryResponse) {
 
         Spacer(Modifier.height(20.dp))
 
-        // Prose body on warm paper
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -147,11 +195,7 @@ private fun ReaderBody(story: StoryResponse) {
                                     .background(tint.copy(alpha = 0.20f)),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Text(
-                                    text = block.symbol ?: "✦",
-                                    color = tint,
-                                    fontSize = 36.sp,
-                                )
+                                Text(text = block.symbol ?: "✦", color = tint, fontSize = 36.sp)
                             }
                         }
                         else -> Unit
@@ -164,7 +208,23 @@ private fun ReaderBody(story: StoryResponse) {
             }
         }
 
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(20.dp))
+
+        if (story.generationInput != null && !story.characterIds.isNullOrEmpty()) {
+            Button(
+                onClick = onMakeAnother,
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Accent,
+                    contentColor = Color.White,
+                ),
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+            ) {
+                Text("Make Another", fontWeight = FontWeight.SemiBold)
+            }
+        }
+
+        Spacer(Modifier.height(140.dp))
     }
 }
 

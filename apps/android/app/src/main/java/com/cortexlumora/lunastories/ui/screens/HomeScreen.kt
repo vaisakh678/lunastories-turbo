@@ -65,6 +65,9 @@ import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
+import com.cortexlumora.lunastories.viewmodels.LatestStoryViewModel
+import com.cortexlumora.lunastories.network.StoryResponse
+import com.cortexlumora.lunastories.network.StoryStatus
 import kotlinx.coroutines.launch
 
 @Composable
@@ -74,16 +77,19 @@ fun HomeScreen(
     onOpenStory: (storyId: String) -> Unit,
     modifier: Modifier = Modifier,
     vm: CharactersViewModel = viewModel(),
+    latestVm: LatestStoryViewModel = viewModel(),
 ) {
     val characters by vm.characters.collectAsState()
     val isFetching by vm.isFetching.collectAsState()
     val error by vm.error.collectAsState()
     val scope = rememberCoroutineScope()
     val inFlight by StoryGenerationManager.inFlight.collectAsState()
+    val latest by latestVm.story.collectAsState()
     var pendingDelete by remember { mutableStateOf<CharacterResponse?>(null) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     LaunchedEffect(Unit) { vm.load() }
+    LaunchedEffect(inFlight) { if (inFlight == null) latestVm.refreshNow() }
 
     val main = characters.filter { it.role == CharacterRole.main }
     val side = characters.filter { it.role == CharacterRole.side }
@@ -95,8 +101,9 @@ fun HomeScreen(
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             HomeTopBar(onSignOut = { scope.launch { Clerk.auth.signOut() } })
 
-            // Banner for in-flight or ready story
-            inFlight?.let { gen ->
+            // Banner: prefer in-flight; otherwise show latest-active.
+            val gen = inFlight
+            if (gen != null) {
                 GenerationBanner(
                     title = gen.title,
                     status = gen.status,
@@ -106,6 +113,17 @@ fun HomeScreen(
                     },
                     onDismissFailed = { StoryGenerationManager.acknowledge() },
                 )
+            } else {
+                latest?.let { story ->
+                    LatestStoryBanner(
+                        story = story,
+                        onTap = {
+                            latestVm.consume(story.id)
+                            onOpenStory(story.id)
+                        },
+                        onDismiss = { latestVm.dismiss(story.id) },
+                    )
+                }
             }
 
             if (vm.isLoading) {
@@ -211,6 +229,58 @@ fun HomeScreen(
 
 private fun Set<String>.toggle(id: String): Set<String> =
     if (id in this) this - id else this + id
+
+@Composable
+private fun LatestStoryBanner(
+    story: StoryResponse,
+    onTap: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val isReady = story.status == StoryStatus.ready
+    val ageMs = runCatching {
+        java.time.Instant.parse(story.updatedAt).toEpochMilli().let {
+            System.currentTimeMillis() - it
+        }
+    }.getOrDefault(0L)
+    val fresh = isReady && ageMs in 0L..(30L * 60_000L)
+    val eyebrow = when {
+        !isReady -> "Crafting your story"
+        fresh -> "✨ Your story is ready"
+        else -> "Pick up where you left off"
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(MiloCream.copy(alpha = 0.08f))
+            .border(
+                width = if (fresh) 2.dp else 1.dp,
+                color = if (fresh) Accent else MiloCream.copy(alpha = 0.18f),
+                shape = RoundedCornerShape(18.dp),
+            )
+            .clickable(onClick = onTap)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (!isReady) {
+            CircularProgressIndicator(color = Accent, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.size(12.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(eyebrow, color = MiloCream.copy(alpha = 0.7f), fontSize = 12.sp)
+            Text(
+                story.title ?: "Untitled story",
+                color = MiloCream,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        TextButton(onClick = onDismiss) {
+            Text("Dismiss", color = MiloCream.copy(alpha = 0.6f), fontSize = 13.sp)
+        }
+    }
+}
 
 @Composable
 private fun GenerationBanner(
