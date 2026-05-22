@@ -5,6 +5,12 @@
 
 import Foundation
 
+nonisolated struct FileRefResponse: Codable, Hashable {
+    let fileId: String
+    let key: String
+    let url: String
+}
+
 nonisolated indirect enum AnyJSON: Codable {
     case string(String)
     case int(Int)
