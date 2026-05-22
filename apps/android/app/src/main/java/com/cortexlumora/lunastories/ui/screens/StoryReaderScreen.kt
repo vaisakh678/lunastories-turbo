@@ -25,6 +25,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -54,6 +55,9 @@ import com.cortexlumora.lunastories.stories.StoryModes
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import com.cortexlumora.lunastories.ui.theme.MiloInk
 import com.cortexlumora.lunastories.ui.theme.MiloPaper
@@ -176,11 +180,11 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
 
         Spacer(Modifier.height(16.dp))
         story.title?.let {
-            Text(it, color = MiloCream, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text(it, color = MiloCream, style = MaterialTheme.typography.headlineMedium)
         }
         story.summary?.let {
             Spacer(Modifier.height(8.dp))
-            Text(it, color = MiloCream.copy(alpha = 0.7f), fontSize = 15.sp, lineHeight = 22.sp)
+            Text(it, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.labelMedium, lineHeight = 22.sp)
         }
 
         Spacer(Modifier.height(20.dp))
@@ -200,8 +204,7 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
                         "text" -> Text(
                             text = block.text.orEmpty(),
                             color = MiloInk,
-                            fontSize = 19.sp,
-                            lineHeight = 28.sp,
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                         "illustration" -> {
                             val tint = ColorPalette.color(block.tint)
@@ -220,9 +223,9 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
                     }
                 }
             } else if (!story.bodyText.isNullOrBlank()) {
-                Text(story.bodyText, color = MiloInk, fontSize = 19.sp, lineHeight = 28.sp)
+                Text(story.bodyText, color = MiloInk, style = MaterialTheme.typography.titleLarge, lineHeight = 28.sp)
             } else {
-                Text("This story has no content yet.", color = MiloInk.copy(alpha = 0.6f))
+                Text("This story has no content yet.", color = MiloInk.copy(alpha = ALPHA_MUTED))
             }
         }
 
@@ -278,6 +281,6 @@ private fun CenteredLoader() {
 @Composable
 private fun CenteredMessage(text: String) {
     Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-        Text(text, color = MiloCream, fontSize = 16.sp, textAlign = TextAlign.Center)
+        Text(text, color = MiloCream, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
     }
 }

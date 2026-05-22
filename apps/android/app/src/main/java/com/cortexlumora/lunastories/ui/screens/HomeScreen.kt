@@ -37,6 +37,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -64,6 +65,9 @@ import com.cortexlumora.lunastories.ui.components.CharacterIconView
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
 import com.cortexlumora.lunastories.viewmodels.LatestStoryViewModel
@@ -185,14 +189,13 @@ fun HomeScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Accent,
                             contentColor = Color.White,
-                            disabledContainerColor = Accent.copy(alpha = 0.35f),
+                            disabledContainerColor = Accent.copy(alpha = ALPHA_FAINT),
                         ),
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                     ) {
                         Text(
                             text = if (selected.isEmpty()) "Pick characters to start" else "Start (${selected.size})",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleMedium,
                         )
                     }
                 }
@@ -279,16 +282,16 @@ private fun LatestStoryBanner(
             Spacer(Modifier.size(12.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(eyebrow, color = MiloCream.copy(alpha = 0.7f), fontSize = 12.sp)
+            Text(eyebrow, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.labelSmall)
             Text(
                 story.title ?: "Untitled story",
                 color = MiloCream,
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
             )
         }
         TextButton(onClick = onDismiss) {
-            Text("Dismiss", color = MiloCream.copy(alpha = 0.6f), fontSize = 13.sp)
+            Text("Dismiss", color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -326,12 +329,12 @@ private fun GenerationBanner(
             Spacer(Modifier.size(12.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(eyebrow, color = MiloCream.copy(alpha = 0.7f), fontSize = 12.sp)
-            Text(title, color = MiloCream, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Text(eyebrow, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.labelSmall)
+            Text(title, color = MiloCream, style = MaterialTheme.typography.labelMedium)
         }
         if (status is GenerationStatus.Failed) {
             TextButton(onClick = onDismissFailed) {
-                Text("Dismiss", color = Accent, fontSize = 13.sp)
+                Text("Dismiss", color = Accent, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -342,8 +345,7 @@ private fun LazyGridScope.sectionHeader(text: String) {
         Text(
             text = text,
             color = MiloCream,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
         )
     }
@@ -358,8 +360,7 @@ private fun HomeTopBar(onOpenAccount: () -> Unit) {
         Text(
             text = "Luna Stories",
             color = MiloCream,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.weight(1f),
         )
         IconButton(onClick = onOpenAccount) {
@@ -417,8 +418,7 @@ private fun CharacterCard(
         Text(
             text = character.name,
             color = MiloCream,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = 6.dp),
         )
     }
@@ -435,12 +435,12 @@ private fun AddTile(onTap: () -> Unit) {
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(22.dp))
-                .border(2.dp, Accent.copy(alpha = 0.6f), RoundedCornerShape(22.dp))
+                .border(2.dp, Accent.copy(alpha = ALPHA_MUTED), RoundedCornerShape(22.dp))
                 .clickable(onClick = onTap),
             contentAlignment = Alignment.Center,
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add character", tint = Accent, modifier = Modifier.size(32.dp))
         }
-        Text("Add", color = MiloCream.copy(alpha = 0.7f), fontSize = 13.sp, modifier = Modifier.padding(top = 6.dp))
+        Text("Add", color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
     }
 }

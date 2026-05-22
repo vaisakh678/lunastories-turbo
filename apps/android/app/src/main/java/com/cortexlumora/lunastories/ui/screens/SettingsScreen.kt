@@ -27,6 +27,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,6 +50,9 @@ import com.cortexlumora.lunastories.BuildConfig
 import com.cortexlumora.lunastories.network.UserAPI
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import kotlinx.coroutines.launch
 
@@ -73,7 +77,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
                 }
-                Text("Settings", color = MiloCream, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text("Settings", color = MiloCream, style = MaterialTheme.typography.headlineSmall)
             }
 
             Column(
@@ -91,8 +95,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Terms of Service", color = MiloCream, fontSize = 15.sp, modifier = Modifier.weight(1f))
-                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MiloCream.copy(alpha = 0.4f))
+                        Text("Terms of Service", color = MiloCream, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f))
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MiloCream.copy(alpha = ALPHA_FAINT))
                     }
                     SoftDivider()
                     Row(
@@ -102,8 +106,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Privacy Policy", color = MiloCream, fontSize = 15.sp, modifier = Modifier.weight(1f))
-                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MiloCream.copy(alpha = 0.4f))
+                        Text("Privacy Policy", color = MiloCream, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f))
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MiloCream.copy(alpha = ALPHA_FAINT))
                     }
                     SoftDivider()
                     Row(
@@ -112,11 +116,11 @@ fun SettingsScreen(onBack: () -> Unit) {
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Version", color = MiloCream, fontSize = 15.sp, modifier = Modifier.weight(1f))
+                        Text("Version", color = MiloCream, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f))
                         Text(
                             "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
-                            color = MiloCream.copy(alpha = 0.55f),
-                            fontSize = 14.sp,
+                            color = MiloCream.copy(alpha = ALPHA_CAPTION),
+                            style = MaterialTheme.typography.titleSmall,
                         )
                     }
                 }
@@ -134,17 +138,17 @@ fun SettingsScreen(onBack: () -> Unit) {
                         Text(
                             "Delete Account",
                             color = Color(0xFFFF453A),
-                            fontSize = 15.sp,
+                            style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.weight(1f),
                         )
-                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MiloCream.copy(alpha = 0.4f))
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MiloCream.copy(alpha = ALPHA_FAINT))
                     }
                 }
                 Text(
                     "This permanently deletes your account, characters, and stories. This cannot be undone.",
-                    color = MiloCream.copy(alpha = 0.55f),
-                    fontSize = 12.sp,
+                    color = MiloCream.copy(alpha = ALPHA_CAPTION),
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(horizontal = 4.dp),
                 )
 
@@ -156,13 +160,13 @@ fun SettingsScreen(onBack: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.55f)),
+                    .background(Color.Black.copy(alpha = ALPHA_CAPTION)),
                 contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator(color = Accent)
                     Spacer(Modifier.height(16.dp))
-                    Text("Deleting account…", color = MiloCream, fontSize = 14.sp)
+                    Text("Deleting account…", color = MiloCream, style = MaterialTheme.typography.titleSmall)
                 }
             }
         }
@@ -208,8 +212,8 @@ private fun Section(title: String, content: @Composable () -> Unit) {
     Column {
         Text(
             title,
-            color = MiloCream.copy(alpha = 0.7f),
-            fontSize = 12.sp,
+            color = MiloCream.copy(alpha = ALPHA_MUTED),
+            style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp),
         )

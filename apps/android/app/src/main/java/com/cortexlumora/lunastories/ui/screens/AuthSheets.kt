@@ -31,6 +31,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -57,6 +58,9 @@ import com.cortexlumora.lunastories.auth.AuthMode
 import com.cortexlumora.lunastories.auth.AuthProviderKind
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 
 // ─────────────────────────────────────────────────────────────────────
@@ -85,13 +89,12 @@ fun ProviderSheet(
         ) {
             CloseRow(onClose)
             Spacer(Modifier.height(8.dp))
-            Text(title, color = MiloCream, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(title, color = MiloCream, style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(10.dp))
             Text(
                 subtitle,
-                color = MiloCream.copy(alpha = 0.7f),
-                fontSize = 15.sp,
-                lineHeight = 22.sp,
+                color = MiloCream.copy(alpha = ALPHA_MUTED),
+                style = MaterialTheme.typography.labelMedium,
             )
             Spacer(Modifier.height(28.dp))
 
@@ -109,7 +112,7 @@ fun ProviderSheet(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.weight(1f).height(1.dp).background(MiloCream.copy(alpha = 0.15f)))
-                Text("or", color = MiloCream.copy(alpha = 0.6f), fontSize = 13.sp, modifier = Modifier.padding(horizontal = 10.dp))
+                Text("or", color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 10.dp))
                 Box(modifier = Modifier.weight(1f).height(1.dp).background(MiloCream.copy(alpha = 0.15f)))
             }
 
@@ -149,8 +152,8 @@ private fun ProviderButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = background,
             contentColor = textColor,
-            disabledContainerColor = background.copy(alpha = 0.4f),
-            disabledContentColor = textColor.copy(alpha = 0.6f),
+            disabledContainerColor = background.copy(alpha = ALPHA_FAINT),
+            disabledContentColor = textColor.copy(alpha = ALPHA_MUTED),
         ),
         modifier = Modifier.fillMaxWidth().height(52.dp),
     ) {
@@ -159,7 +162,7 @@ private fun ProviderButton(
         } else {
             logo()
             Spacer(Modifier.size(10.dp))
-            Text(label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text(label, style = MaterialTheme.typography.titleMedium)
         }
     }
 }
@@ -175,8 +178,8 @@ private fun TermsFooter() {
     }
     Text(
         text = text,
-        color = MiloCream.copy(alpha = 0.7f),
-        fontSize = 12.sp,
+        color = MiloCream.copy(alpha = ALPHA_MUTED),
+        style = MaterialTheme.typography.labelSmall,
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
         lineHeight = 18.sp,
@@ -218,21 +221,20 @@ fun EmailSheet(
         ) {
             CloseRow(onClose)
             Spacer(Modifier.height(8.dp))
-            Text("Enter your email", color = MiloCream, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("Enter your email", color = MiloCream, style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(10.dp))
             Text(
                 "We'll send you a 6-digit code to sign in.",
-                color = MiloCream.copy(alpha = 0.7f),
-                fontSize = 15.sp,
-                lineHeight = 22.sp,
+                color = MiloCream.copy(alpha = ALPHA_MUTED),
+                style = MaterialTheme.typography.labelMedium,
             )
             Spacer(Modifier.height(28.dp))
 
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("Email address", color = MiloCream.copy(alpha = 0.4f)) },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = MiloCream.copy(alpha = 0.7f)) },
+                placeholder = { Text("Email address", color = MiloCream.copy(alpha = ALPHA_FAINT)) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = MiloCream.copy(alpha = ALPHA_MUTED)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(14.dp),
@@ -257,14 +259,14 @@ fun EmailSheet(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Accent,
                     contentColor = Color.White,
-                    disabledContainerColor = Accent.copy(alpha = 0.5f),
+                    disabledContainerColor = Accent.copy(alpha = ALPHA_CAPTION),
                 ),
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) {
                 if (isSubmitting) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
                 } else {
-                    Text("Continue", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                    Text("Continue", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -301,21 +303,21 @@ fun OtpSheet(
                 Icon(Icons.Default.Email, contentDescription = null, tint = Accent, modifier = Modifier.size(26.dp))
             }
             Spacer(Modifier.height(14.dp))
-            Text("Check your email", color = MiloCream, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("Check your email", color = MiloCream, style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(8.dp))
             val sub = buildAnnotatedString {
-                withStyle(SpanStyle(color = MiloCream.copy(alpha = 0.65f))) { append("We sent a 6-digit code to ") }
+                withStyle(SpanStyle(color = MiloCream.copy(alpha = ALPHA_MUTED))) { append("We sent a 6-digit code to ") }
                 withStyle(SpanStyle(color = MiloCream, fontWeight = FontWeight.SemiBold)) { append(email) }
             }
-            Text(sub, fontSize = 15.sp, lineHeight = 22.sp)
+            Text(sub, style = MaterialTheme.typography.labelMedium, lineHeight = 22.sp)
 
             Spacer(Modifier.height(24.dp))
 
             OutlinedTextField(
                 value = code,
                 onValueChange = { raw -> code = raw.filter { it.isDigit() }.take(6) },
-                placeholder = { Text("Enter 6-digit code", color = MiloCream.copy(alpha = 0.4f)) },
-                leadingIcon = { Icon(Icons.Default.Pin, contentDescription = null, tint = MiloCream.copy(alpha = 0.7f)) },
+                placeholder = { Text("Enter 6-digit code", color = MiloCream.copy(alpha = ALPHA_FAINT)) },
+                leadingIcon = { Icon(Icons.Default.Pin, contentDescription = null, tint = MiloCream.copy(alpha = ALPHA_MUTED)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 shape = RoundedCornerShape(14.dp),
@@ -340,14 +342,14 @@ fun OtpSheet(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Accent,
                     contentColor = Color.White,
-                    disabledContainerColor = Accent.copy(alpha = 0.5f),
+                    disabledContainerColor = Accent.copy(alpha = ALPHA_CAPTION),
                 ),
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) {
                 if (isSubmitting) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
                 } else {
-                    Text("Verify", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                    Text("Verify", style = MaterialTheme.typography.titleMedium)
                 }
             }
 
@@ -358,12 +360,11 @@ fun OtpSheet(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Didn't receive a code? ", color = MiloCream.copy(alpha = 0.6f), fontSize = 14.sp)
+                Text("Didn't receive a code? ", color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.titleSmall)
                 Text(
                     "Resend",
                     color = Accent,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.clickable(enabled = !isSubmitting, onClick = onResend),
                 )
             }

@@ -41,6 +41,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -69,6 +70,9 @@ import com.cortexlumora.lunastories.ui.components.CharacterIconView
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 
 private data class CharacterDraft(
@@ -162,7 +166,7 @@ fun CharacterWizardSheet(
                 Text(
                     text = if (isEdit) "Edit Character" else if (role == CharacterRole.main) "New main character" else "New side character",
                     color = MiloCream,
-                    fontSize = 17.sp,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(modifier = Modifier.weight(1f))
@@ -235,7 +239,7 @@ fun CharacterWizardSheet(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Accent,
                         contentColor = Color.White,
-                        disabledContainerColor = Accent.copy(alpha = 0.4f),
+                        disabledContainerColor = Accent.copy(alpha = ALPHA_FAINT),
                     ),
                 ) { Text(if (isLast) "Save" else "Next", fontWeight = FontWeight.SemiBold) }
             }
@@ -284,9 +288,8 @@ private fun ProgressBar(current: Int, total: Int) {
 private fun FieldLabel(text: String) {
     Text(
         text = text,
-        color = MiloCream.copy(alpha = 0.7f),
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Medium,
+        color = MiloCream.copy(alpha = ALPHA_MUTED),
+        style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.padding(bottom = 6.dp),
     )
 }
@@ -296,7 +299,7 @@ private fun NameField(value: String, placeholder: String, onChange: (String) -> 
     OutlinedTextField(
         value = value,
         onValueChange = onChange,
-        placeholder = { Text(placeholder, color = MiloCream.copy(alpha = 0.35f)) },
+        placeholder = { Text(placeholder, color = MiloCream.copy(alpha = ALPHA_FAINT)) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -333,8 +336,7 @@ private fun BasicsStepMain(draft: CharacterDraft, onChange: (CharacterDraft) -> 
                 Text(
                     text = "${draft.age} years",
                     color = MiloCream,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                 )
@@ -507,7 +509,7 @@ private fun ColorChipRow(
                 Text(
                     text = name,
                     color = MiloCream.copy(alpha = if (isSelected) 1f else 0.7f),
-                    fontSize = 11.sp,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 4.dp),
                 )
             }
@@ -558,7 +560,7 @@ private fun SegmentChip(
         Text(
             text = text,
             color = if (selected) Color.White else MiloCream,
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Medium,
         )
     }

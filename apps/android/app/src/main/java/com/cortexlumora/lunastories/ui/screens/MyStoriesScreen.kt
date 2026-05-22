@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -60,6 +61,9 @@ import com.cortexlumora.lunastories.network.StoryStatus
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -134,7 +138,7 @@ fun MyStoriesScreen(
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
                 }
-                Text("My Stories", color = MiloCream, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text("My Stories", color = MiloCream, style = MaterialTheme.typography.headlineSmall)
             }
 
             PullToRefreshBox(
@@ -261,9 +265,9 @@ private fun CenteredLoader() {
 private fun ErrorState(message: String, onRetry: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Couldn't load stories", color = MiloCream, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Text("Couldn't load stories", color = MiloCream, style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(6.dp))
-            Text(message, color = MiloCream.copy(alpha = 0.65f), fontSize = 13.sp)
+            Text(message, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(16.dp))
             Button(
                 onClick = onRetry,
@@ -281,16 +285,16 @@ private fun EmptyState() {
             Icon(
                 Icons.AutoMirrored.Filled.MenuBook,
                 contentDescription = null,
-                tint = MiloCream.copy(alpha = 0.4f),
+                tint = MiloCream.copy(alpha = ALPHA_FAINT),
                 modifier = Modifier.size(56.dp),
             )
             Spacer(Modifier.height(16.dp))
-            Text("No stories yet", color = MiloCream, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Text("No stories yet", color = MiloCream, style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(6.dp))
             Text(
                 "Create your first story from the home screen.",
-                color = MiloCream.copy(alpha = 0.65f),
-                fontSize = 14.sp,
+                color = MiloCream.copy(alpha = ALPHA_MUTED),
+                style = MaterialTheme.typography.titleSmall,
             )
         }
     }
@@ -319,8 +323,7 @@ private fun StoryRow(story: StoryResponse, onTap: () -> Unit) {
             Text(
                 text = story.title?.take(2)?.uppercase() ?: "✨",
                 color = tint,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall,
             )
         }
         Spacer(Modifier.size(12.dp))
@@ -328,8 +331,7 @@ private fun StoryRow(story: StoryResponse, onTap: () -> Unit) {
             Text(
                 text = story.title ?: "Untitled story",
                 color = MiloCream,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -337,8 +339,8 @@ private fun StoryRow(story: StoryResponse, onTap: () -> Unit) {
                 Spacer(Modifier.height(2.dp))
                 Text(
                     it,
-                    color = MiloCream.copy(alpha = 0.65f),
-                    fontSize = 13.sp,
+                    color = MiloCream.copy(alpha = ALPHA_MUTED),
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -348,9 +350,9 @@ private fun StoryRow(story: StoryResponse, onTap: () -> Unit) {
                 text = metaLine(story),
                 color = when (story.status) {
                     StoryStatus.failed -> Accent
-                    else -> MiloCream.copy(alpha = 0.55f)
+                    else -> MiloCream.copy(alpha = ALPHA_CAPTION)
                 },
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelSmall,
             )
         }
     }
