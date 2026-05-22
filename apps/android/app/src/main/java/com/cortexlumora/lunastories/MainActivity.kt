@@ -22,13 +22,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clerk.api.Clerk
 import com.clerk.ui.auth.AuthView
+import com.cortexlumora.lunastories.network.CharacterResponse
+import com.cortexlumora.lunastories.network.CharacterRole
+import com.cortexlumora.lunastories.ui.screens.CharacterWizardSheet
+import com.cortexlumora.lunastories.ui.screens.CreateOrUpdate
 import com.cortexlumora.lunastories.ui.screens.GetStartedScreen
 import com.cortexlumora.lunastories.ui.screens.HomeScreen
 import com.cortexlumora.lunastories.ui.screens.OnboardingScreen
 import com.cortexlumora.lunastories.ui.screens.SplashScreen
 import com.cortexlumora.lunastories.ui.theme.LunaStoriesTheme
+import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -45,18 +51,22 @@ class MainActivity : ComponentActivity() {
 
 private enum class Stage { Splash, Onboarding, Auth, Home }
 
+private data class WizardTarget(val role: CharacterRole, val existing: CharacterResponse?)
+
 @Composable
 private fun RootFlow() {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("luna_prefs", Context.MODE_PRIVATE) }
     val hasSeenOnboarding = remember { mutableStateOf(prefs.getBoolean("has_seen_onboarding", false)) }
 
-    // Clerk session state. Null when signed out, non-null when restored or after sign-in.
     val user by Clerk.userFlow.collectAsStateWithLifecycle(initialValue = null)
     val isClerkLoaded by Clerk.isInitialized.collectAsStateWithLifecycle(initialValue = false)
 
     var minimumHoldDone by remember { mutableStateOf(false) }
     var showAuthSheet by remember { mutableStateOf(false) }
+    var wizardTarget by remember { mutableStateOf<WizardTarget?>(null) }
+
+    val charactersVm: CharactersViewModel = viewModel()
 
     LaunchedEffect(Unit) {
         delay(1000)
@@ -91,7 +101,10 @@ private fun RootFlow() {
             )
         }
         AnimatedVisibility(visible = stage == Stage.Home, enter = fadeIn(), exit = fadeOut()) {
-            HomeScreen()
+            HomeScreen(
+                vm = charactersVm,
+                onOpenWizard = { role, existing -> wizardTarget = WizardTarget(role, existing) },
+            )
         }
     }
 
@@ -109,8 +122,32 @@ private fun RootFlow() {
         }
     }
 
-    // Close the sheet automatically once Clerk reports a signed-in user.
     LaunchedEffect(user) {
         if (user != null) showAuthSheet = false
+    }
+
+    wizardTarget?.let { target ->
+        Dialog(
+            onDismissRequest = { wizardTarget = null },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+            ),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                CharacterWizardSheet(
+                    role = target.role,
+                    existing = target.existing,
+                    onDismiss = { wizardTarget = null },
+                    onSubmit = { op ->
+                        when (op) {
+                            is CreateOrUpdate.Create -> charactersVm.create(op.request)
+                            is CreateOrUpdate.Update -> charactersVm.update(op.id, op.request)
+                        }
+                    },
+                    onDelete = { id -> charactersVm.delete(id) },
+                )
+            }
+        }
     }
 }
