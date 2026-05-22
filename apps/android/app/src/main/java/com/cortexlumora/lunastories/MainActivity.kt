@@ -24,13 +24,18 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clerk.api.Clerk
-import com.clerk.ui.auth.AuthView
+import com.cortexlumora.lunastories.auth.AuthFlowViewModel
+import com.cortexlumora.lunastories.auth.AuthMode
+import com.cortexlumora.lunastories.auth.AuthStep
 import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
 import com.cortexlumora.lunastories.stories.StoryGenerationManager
 import com.cortexlumora.lunastories.stories.StoryMode
 import com.cortexlumora.lunastories.ui.screens.AccountScreen
 import com.cortexlumora.lunastories.ui.screens.CharacterWizardSheet
+import com.cortexlumora.lunastories.ui.screens.EmailSheet
+import com.cortexlumora.lunastories.ui.screens.OtpSheet
+import com.cortexlumora.lunastories.ui.screens.ProviderSheet
 import com.cortexlumora.lunastories.ui.screens.ChooseModeScreen
 import com.cortexlumora.lunastories.ui.screens.FeedbackScreen
 import com.cortexlumora.lunastories.ui.screens.MyStoriesScreen
@@ -82,13 +87,17 @@ private fun RootFlow() {
     val isClerkLoaded by Clerk.isInitialized.collectAsStateWithLifecycle(initialValue = false)
 
     var minimumHoldDone by remember { mutableStateOf(false) }
-    var showAuthSheet by remember { mutableStateOf(false) }
     var wizardTarget by remember { mutableStateOf<WizardTarget?>(null) }
     var storyRoute by remember { mutableStateOf<StoryRoute?>(null) }
     var showAccount by remember { mutableStateOf(false) }
     var accountSubroute by remember { mutableStateOf<AccountSubroute?>(null) }
 
     val charactersVm: CharactersViewModel = viewModel()
+    val authVm: AuthFlowViewModel = viewModel()
+    val authStep by authVm.step.collectAsStateWithLifecycle(initialValue = null)
+    val authLoadingProvider by authVm.loadingProvider.collectAsStateWithLifecycle(initialValue = null)
+    val authIsSubmitting by authVm.isSubmitting.collectAsStateWithLifecycle(initialValue = false)
+    val authError by authVm.error.collectAsStateWithLifecycle(initialValue = null)
 
     LaunchedEffect(Unit) {
         delay(1000)
@@ -118,8 +127,8 @@ private fun RootFlow() {
         }
         AnimatedVisibility(visible = stage == Stage.Auth, enter = fadeIn(), exit = fadeOut()) {
             GetStartedScreen(
-                onStartSignUp = { showAuthSheet = true },
-                onSignIn = { showAuthSheet = true },
+                onStartSignUp = { authVm.open(AuthMode.SignUp) },
+                onSignIn = { authVm.open(AuthMode.SignIn) },
             )
         }
         AnimatedVisibility(visible = stage == Stage.Home, enter = fadeIn(), exit = fadeOut()) {
@@ -133,16 +142,51 @@ private fun RootFlow() {
         }
     }
 
-    if (showAuthSheet && stage == Stage.Auth) {
+    authStep?.let { step ->
         Dialog(
-            onDismissRequest = { showAuthSheet = false },
+            onDismissRequest = authVm::close,
             properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
         ) {
-            Surface(modifier = Modifier.fillMaxSize()) { AuthView() }
+            Surface(modifier = Modifier.fillMaxSize()) {
+                when (step) {
+                    is AuthStep.Providers -> ProviderSheet(
+                        mode = step.mode,
+                        loadingProvider = authLoadingProvider,
+                        onClose = authVm::close,
+                        onPickGoogle = authVm::startGoogleOAuth,
+                        onPickEmail = authVm::startEmailFlow,
+                    )
+                    is AuthStep.Email -> EmailSheet(
+                        isSubmitting = authIsSubmitting,
+                        onClose = authVm::backToProviders,
+                        onSubmit = authVm::submitEmail,
+                    )
+                    is AuthStep.Otp -> OtpSheet(
+                        email = step.email,
+                        isSubmitting = authIsSubmitting,
+                        onClose = authVm::close,
+                        onVerify = authVm::verifyOtp,
+                        onResend = authVm::resendOtp,
+                    )
+                }
+            }
         }
     }
 
-    LaunchedEffect(user) { if (user != null) showAuthSheet = false }
+    authError?.let { msg ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = authVm::clearError,
+            title = { androidx.compose.material3.Text("Sign-in failed") },
+            text = { androidx.compose.material3.Text(msg) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = authVm::clearError) {
+                    androidx.compose.material3.Text("OK")
+                }
+            },
+        )
+    }
+
+    LaunchedEffect(user) { if (user != null) authVm.close() }
 
     wizardTarget?.let { target ->
         Dialog(
