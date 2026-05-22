@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -89,7 +91,9 @@ fun OnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 24.dp),
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(top = 12.dp, bottom = 16.dp),
         ) {
             Row(
                 modifier = Modifier
@@ -111,7 +115,6 @@ fun OnboardingScreen(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(horizontal = 24.dp),
             ) { page ->
                 SlideContent(Slides[page])
             }
@@ -150,8 +153,6 @@ fun OnboardingScreen(
                     fontSize = 17.sp,
                 )
             }
-
-            Spacer(modifier = Modifier.height(28.dp))
         }
     }
 }
@@ -159,7 +160,7 @@ fun OnboardingScreen(
 @Composable
 private fun SlideContent(slide: Slide) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
