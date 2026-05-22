@@ -32,6 +32,9 @@ import com.cortexlumora.lunastories.stories.StoryMode
 import com.cortexlumora.lunastories.ui.screens.AccountScreen
 import com.cortexlumora.lunastories.ui.screens.CharacterWizardSheet
 import com.cortexlumora.lunastories.ui.screens.ChooseModeScreen
+import com.cortexlumora.lunastories.ui.screens.FeedbackScreen
+import com.cortexlumora.lunastories.ui.screens.MyStoriesScreen
+import com.cortexlumora.lunastories.ui.screens.SettingsScreen
 import com.cortexlumora.lunastories.ui.screens.CreateOrUpdate
 import com.cortexlumora.lunastories.ui.screens.GeneratingScreen
 import com.cortexlumora.lunastories.ui.screens.GetStartedScreen
@@ -60,6 +63,8 @@ private enum class Stage { Splash, Onboarding, Auth, Home }
 
 private data class WizardTarget(val role: CharacterRole, val existing: CharacterResponse?)
 
+private enum class AccountSubroute { MyStories, Settings, Feedback }
+
 private sealed class StoryRoute {
     data class ChooseMode(val characters: List<CharacterResponse>) : StoryRoute()
     data class ModeForm(val mode: StoryMode, val characters: List<CharacterResponse>) : StoryRoute()
@@ -81,6 +86,7 @@ private fun RootFlow() {
     var wizardTarget by remember { mutableStateOf<WizardTarget?>(null) }
     var storyRoute by remember { mutableStateOf<StoryRoute?>(null) }
     var showAccount by remember { mutableStateOf(false) }
+    var accountSubroute by remember { mutableStateOf<AccountSubroute?>(null) }
 
     val charactersVm: CharactersViewModel = viewModel()
 
@@ -166,7 +172,34 @@ private fun RootFlow() {
             properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
         ) {
             Surface(modifier = Modifier.fillMaxSize()) {
-                AccountScreen(onBack = { showAccount = false })
+                AccountScreen(
+                    onBack = { showAccount = false },
+                    onOpenMyStories = { accountSubroute = AccountSubroute.MyStories },
+                    onOpenSettings = { accountSubroute = AccountSubroute.Settings },
+                    onOpenFeedback = { accountSubroute = AccountSubroute.Feedback },
+                )
+            }
+        }
+    }
+
+    accountSubroute?.let { sub ->
+        Dialog(
+            onDismissRequest = { accountSubroute = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                when (sub) {
+                    AccountSubroute.MyStories -> MyStoriesScreen(
+                        onBack = { accountSubroute = null },
+                        onOpenStory = { id ->
+                            accountSubroute = null
+                            showAccount = false
+                            storyRoute = StoryRoute.Reader(id)
+                        },
+                    )
+                    AccountSubroute.Settings -> SettingsScreen(onBack = { accountSubroute = null })
+                    AccountSubroute.Feedback -> FeedbackScreen(onClose = { accountSubroute = null })
+                }
             }
         }
     }
