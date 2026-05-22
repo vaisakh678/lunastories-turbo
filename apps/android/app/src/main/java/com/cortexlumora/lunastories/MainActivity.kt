@@ -27,12 +27,18 @@ import com.clerk.api.Clerk
 import com.clerk.ui.auth.AuthView
 import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
+import com.cortexlumora.lunastories.stories.StoryGenerationManager
+import com.cortexlumora.lunastories.stories.StoryMode
 import com.cortexlumora.lunastories.ui.screens.CharacterWizardSheet
+import com.cortexlumora.lunastories.ui.screens.ChooseModeScreen
 import com.cortexlumora.lunastories.ui.screens.CreateOrUpdate
+import com.cortexlumora.lunastories.ui.screens.GeneratingScreen
 import com.cortexlumora.lunastories.ui.screens.GetStartedScreen
 import com.cortexlumora.lunastories.ui.screens.HomeScreen
+import com.cortexlumora.lunastories.ui.screens.ModeFormScreen
 import com.cortexlumora.lunastories.ui.screens.OnboardingScreen
 import com.cortexlumora.lunastories.ui.screens.SplashScreen
+import com.cortexlumora.lunastories.ui.screens.StoryReaderScreen
 import com.cortexlumora.lunastories.ui.theme.LunaStoriesTheme
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
 import kotlinx.coroutines.delay
@@ -53,6 +59,13 @@ private enum class Stage { Splash, Onboarding, Auth, Home }
 
 private data class WizardTarget(val role: CharacterRole, val existing: CharacterResponse?)
 
+private sealed class StoryRoute {
+    data class ChooseMode(val characters: List<CharacterResponse>) : StoryRoute()
+    data class ModeForm(val mode: StoryMode, val characters: List<CharacterResponse>) : StoryRoute()
+    data object Generating : StoryRoute()
+    data class Reader(val storyId: String) : StoryRoute()
+}
+
 @Composable
 private fun RootFlow() {
     val context = LocalContext.current
@@ -65,6 +78,7 @@ private fun RootFlow() {
     var minimumHoldDone by remember { mutableStateOf(false) }
     var showAuthSheet by remember { mutableStateOf(false) }
     var wizardTarget by remember { mutableStateOf<WizardTarget?>(null) }
+    var storyRoute by remember { mutableStateOf<StoryRoute?>(null) }
 
     val charactersVm: CharactersViewModel = viewModel()
 
@@ -104,6 +118,8 @@ private fun RootFlow() {
             HomeScreen(
                 vm = charactersVm,
                 onOpenWizard = { role, existing -> wizardTarget = WizardTarget(role, existing) },
+                onStartFlow = { selected -> storyRoute = StoryRoute.ChooseMode(selected) },
+                onOpenStory = { id -> storyRoute = StoryRoute.Reader(id) },
             )
         }
     }
@@ -111,28 +127,18 @@ private fun RootFlow() {
     if (showAuthSheet && stage == Stage.Auth) {
         Dialog(
             onDismissRequest = { showAuthSheet = false },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false,
-            ),
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
         ) {
-            Surface(modifier = Modifier.fillMaxSize()) {
-                AuthView()
-            }
+            Surface(modifier = Modifier.fillMaxSize()) { AuthView() }
         }
     }
 
-    LaunchedEffect(user) {
-        if (user != null) showAuthSheet = false
-    }
+    LaunchedEffect(user) { if (user != null) showAuthSheet = false }
 
     wizardTarget?.let { target ->
         Dialog(
             onDismissRequest = { wizardTarget = null },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false,
-            ),
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
         ) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 CharacterWizardSheet(
@@ -147,6 +153,51 @@ private fun RootFlow() {
                     },
                     onDelete = { id -> charactersVm.delete(id) },
                 )
+            }
+        }
+    }
+
+    storyRoute?.let { route ->
+        Dialog(
+            onDismissRequest = { storyRoute = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                when (route) {
+                    is StoryRoute.ChooseMode -> ChooseModeScreen(
+                        onDismiss = { storyRoute = null },
+                        onPickMode = { mode ->
+                            storyRoute = StoryRoute.ModeForm(mode, route.characters)
+                        },
+                    )
+                    is StoryRoute.ModeForm -> ModeFormScreen(
+                        mode = route.mode,
+                        characters = route.characters,
+                        onDismiss = { storyRoute = StoryRoute.ChooseMode(route.characters) },
+                        onGenerate = { payload, title, cues ->
+                            StoryGenerationManager.start(payload, title, cues)
+                            storyRoute = StoryRoute.Generating
+                        },
+                    )
+                    is StoryRoute.Generating -> GeneratingScreen(
+                        onCancel = {
+                            StoryGenerationManager.acknowledge()
+                            storyRoute = null
+                        },
+                        onReady = { story ->
+                            StoryGenerationManager.acknowledge()
+                            storyRoute = StoryRoute.Reader(story.id)
+                        },
+                        onFailed = { _ ->
+                            // leave manager state for banner; close generating sheet
+                            storyRoute = null
+                        },
+                    )
+                    is StoryRoute.Reader -> StoryReaderScreen(
+                        storyId = route.storyId,
+                        onBack = { storyRoute = null },
+                    )
+                }
             }
         }
     }

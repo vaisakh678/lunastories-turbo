@@ -1,0 +1,183 @@
+package com.cortexlumora.lunastories.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.cortexlumora.lunastories.network.StoryAPI
+import com.cortexlumora.lunastories.network.StoryResponse
+import com.cortexlumora.lunastories.network.StoryStatus
+import com.cortexlumora.lunastories.ui.components.ColorPalette
+import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
+import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.MiloCream
+import com.cortexlumora.lunastories.ui.theme.MiloInk
+import com.cortexlumora.lunastories.ui.theme.MiloPaper
+
+@Composable
+fun StoryReaderScreen(
+    storyId: String,
+    onBack: () -> Unit,
+) {
+    var story by remember { mutableStateOf<StoryResponse?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var loading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(storyId) {
+        runCatching { StoryAPI.get(storyId) }
+            .onSuccess { story = it }
+            .onFailure { error = it.message ?: "Couldn't load story" }
+        loading = false
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        MoodyTwilightBackground()
+
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+            IconButton(onClick = onBack, modifier = Modifier.padding(8.dp)) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
+            }
+
+            when {
+                loading -> CenteredLoader()
+                story == null -> CenteredMessage(error ?: "Couldn't load story")
+                story!!.status == StoryStatus.failed -> CenteredMessage(
+                    story!!.errorMessage ?: "Couldn't generate this story",
+                )
+                story!!.status != StoryStatus.ready -> CenteredMessage("Still preparing this story…")
+                else -> ReaderBody(story!!)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReaderBody(story: StoryResponse) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
+    ) {
+        // Hero
+        val coverTint = ColorPalette.color(story.coverTint)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(coverTint.copy(alpha = 0.18f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = story.title?.take(2)?.uppercase() ?: "✨",
+                color = coverTint,
+                fontSize = 44.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+        story.title?.let {
+            Text(it, color = MiloCream, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        }
+        story.summary?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(it, color = MiloCream.copy(alpha = 0.7f), fontSize = 15.sp, lineHeight = 22.sp)
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // Prose body on warm paper
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(MiloPaper)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            val blocks = story.content?.blocks
+            if (!blocks.isNullOrEmpty()) {
+                blocks.forEach { block ->
+                    when (block.type) {
+                        "text" -> Text(
+                            text = block.text.orEmpty(),
+                            color = MiloInk,
+                            fontSize = 19.sp,
+                            lineHeight = 28.sp,
+                        )
+                        "illustration" -> {
+                            val tint = ColorPalette.color(block.tint)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(tint.copy(alpha = 0.20f)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = block.symbol ?: "✦",
+                                    color = tint,
+                                    fontSize = 36.sp,
+                                )
+                            }
+                        }
+                        else -> Unit
+                    }
+                }
+            } else if (!story.bodyText.isNullOrBlank()) {
+                Text(story.bodyText, color = MiloInk, fontSize = 19.sp, lineHeight = 28.sp)
+            } else {
+                Text("This story has no content yet.", color = MiloInk.copy(alpha = 0.6f))
+            }
+        }
+
+        Spacer(Modifier.height(40.dp))
+    }
+}
+
+@Composable
+private fun CenteredLoader() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(color = Accent)
+    }
+}
+
+@Composable
+private fun CenteredMessage(text: String) {
+    Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+        Text(text, color = MiloCream, fontSize = 16.sp, textAlign = TextAlign.Center)
+    }
+}
