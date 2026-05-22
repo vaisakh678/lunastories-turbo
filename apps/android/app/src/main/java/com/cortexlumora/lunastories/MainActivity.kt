@@ -196,6 +196,7 @@ private fun RootFlow() {
                     is StoryRoute.Reader -> StoryReaderScreen(
                         storyId = route.storyId,
                         onBack = { storyRoute = null },
+                        onRegenerate = { storyRoute = StoryRoute.Generating },
                     )
                 }
             }
