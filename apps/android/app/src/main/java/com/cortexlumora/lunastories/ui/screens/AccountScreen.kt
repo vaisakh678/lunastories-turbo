@@ -61,7 +61,12 @@ import com.cortexlumora.lunastories.ui.theme.MiloCream
 import kotlinx.coroutines.launch
 
 @Composable
-fun AccountScreen(onBack: () -> Unit) {
+fun AccountScreen(
+    onBack: () -> Unit,
+    onOpenMyStories: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenFeedback: () -> Unit,
+) {
     val user by Clerk.userFlow.collectAsStateWithLifecycle(initialValue = null)
     val scope = rememberCoroutineScope()
     var confirmingLogout by remember { mutableStateOf(false) }
@@ -97,11 +102,11 @@ fun AccountScreen(onBack: () -> Unit) {
                     .background(MiloCream.copy(alpha = 0.06f))
                     .border(1.dp, MiloCream.copy(alpha = 0.08f), RoundedCornerShape(16.dp)),
             ) {
-                MenuRow(icon = Icons.AutoMirrored.Filled.MenuBook, title = "My Stories", onTap = {})
+                MenuRow(icon = Icons.AutoMirrored.Filled.MenuBook, title = "My Stories", onTap = onOpenMyStories)
                 SoftDivider()
-                MenuRow(icon = Icons.Default.Settings, title = "Settings", onTap = {})
+                MenuRow(icon = Icons.Default.Settings, title = "Settings", onTap = onOpenSettings)
                 SoftDivider()
-                MenuRow(icon = Icons.AutoMirrored.Filled.Chat, title = "Send Feedback", onTap = {})
+                MenuRow(icon = Icons.AutoMirrored.Filled.Chat, title = "Send Feedback", onTap = onOpenFeedback)
             }
 
             Spacer(Modifier.height(16.dp))
