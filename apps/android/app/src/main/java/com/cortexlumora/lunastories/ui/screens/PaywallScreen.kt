@@ -131,6 +131,7 @@ fun PaywallScreen(
                 Spacer(Modifier.weight(1f))
             }
 
+            // Scroll area — only the hero + features. Plans pinned with CTA below.
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -142,11 +143,17 @@ fun PaywallScreen(
                 Hero()
                 Spacer(Modifier.height(28.dp))
                 Features.forEach { FeatureRow(it) }
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(12.dp))
+            }
 
+            // Sticky footer — plans + CTA + restore/links. Always visible.
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 when {
                     isLoading && packages.isEmpty() -> Box(
-                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        modifier = Modifier.fillMaxWidth().height(80.dp),
                         contentAlignment = Alignment.Center,
                     ) { CircularProgressIndicator(color = Accent) }
                     packages.isEmpty() -> Text(
@@ -154,9 +161,12 @@ fun PaywallScreen(
                         color = MiloCream.copy(alpha = ALPHA_CAPTION),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(vertical = 24.dp),
+                        modifier = Modifier.padding(vertical = 16.dp),
                     )
-                    else -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    else -> Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         packages.forEach { pkg ->
                             PlanCard(
                                 pkg = pkg,
@@ -167,14 +177,8 @@ fun PaywallScreen(
                     }
                 }
 
-                Spacer(Modifier.height(20.dp))
-            }
+                Spacer(Modifier.height(12.dp))
 
-            // Footer CTA + restore + links
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
                 CtaButton(
                     label = if (selected?.hasFreeTrial() == true) "Start free trial" else "Continue",
                     isPurchasing = isPurchasing,
