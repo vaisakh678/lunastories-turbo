@@ -45,14 +45,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cortexlumora.lunastories.LegalLinks
 import com.cortexlumora.lunastories.R
 import com.cortexlumora.lunastories.auth.AuthMode
 import com.cortexlumora.lunastories.auth.AuthProviderKind
@@ -169,11 +173,16 @@ private fun ProviderButton(
 
 @Composable
 private fun TermsFooter() {
+    val linkStyle = TextLinkStyles(style = SpanStyle(color = Color(0xFF60A5FA)))
     val text = buildAnnotatedString {
         append("By continuing you agree to Luna Stories's ")
-        withStyle(SpanStyle(color = Color(0xFF60A5FA))) { append("Terms & Conditions") }
+        withLink(LinkAnnotation.Url(LegalLinks.TERMS_URL, styles = linkStyle)) {
+            append("Terms & Conditions")
+        }
         append(" and ")
-        withStyle(SpanStyle(color = Color(0xFF60A5FA))) { append("Privacy Policy") }
+        withLink(LinkAnnotation.Url(LegalLinks.PRIVACY_URL, styles = linkStyle)) {
+            append("Privacy Policy")
+        }
         append(".")
     }
     Text(
