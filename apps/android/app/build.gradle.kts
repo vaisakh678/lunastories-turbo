@@ -39,6 +39,11 @@ android {
             "CLERK_PUBLISHABLE_KEY",
             "\"pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ\"",
         )
+        buildConfigField(
+            "String",
+            "REVENUECAT_API_KEY",
+            "\"goog_ysmCipdCRiqpPxyJgsxMdBpTDdm\"",
+        )
     }
 
     signingConfigs {
@@ -108,6 +113,7 @@ dependencies {
     // Play Console once the AAB is uploaded. RevenueCat (or direct
     // billing) wires up against this lib later.
     implementation(libs.android.billing.ktx)
+    implementation(libs.revenuecat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
