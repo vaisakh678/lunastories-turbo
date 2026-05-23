@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clerk.api.Clerk
 import com.cortexlumora.lunastories.BuildConfig
+import com.cortexlumora.lunastories.LegalLinks
 import com.cortexlumora.lunastories.network.UserAPI
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
@@ -56,8 +57,6 @@ import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import kotlinx.coroutines.launch
 
-private const val TERMS_URL = "https://lunastories.app/terms"
-private const val PRIVACY_URL = "https://lunastories.app/privacy"
 
 @Composable
 fun SettingsScreen(onBack: () -> Unit) {
@@ -91,7 +90,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { open(ctx, TERMS_URL) }
+                            .clickable { open(ctx, LegalLinks.TERMS_URL) }
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -102,7 +101,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { open(ctx, PRIVACY_URL) }
+                            .clickable { open(ctx, LegalLinks.PRIVACY_URL) }
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {

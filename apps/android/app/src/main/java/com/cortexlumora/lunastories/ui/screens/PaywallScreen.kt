@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cortexlumora.lunastories.LegalLinks
 import com.cortexlumora.lunastories.R
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
@@ -200,9 +201,9 @@ fun PaywallScreen(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     RestoreButton(isRestoring = isRestoring, onClick = vm::restore)
                     Text("·", color = MiloCream.copy(alpha = ALPHA_CAPTION))
-                    LinkText("Terms") { open(context, "https://lunastories.app/terms") }
+                    LinkText("Terms") { open(context, LegalLinks.TERMS_URL) }
                     Text("·", color = MiloCream.copy(alpha = ALPHA_CAPTION))
-                    LinkText("Privacy") { open(context, "https://lunastories.app/privacy") }
+                    LinkText("Privacy") { open(context, LegalLinks.PRIVACY_URL) }
                 }
             }
         }
