@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -71,6 +72,7 @@ fun AccountScreen(
     onOpenMyStories: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenFeedback: () -> Unit,
+    onOpenPaywall: () -> Unit,
 ) {
     val user by Clerk.userFlow.collectAsStateWithLifecycle(initialValue = null)
     val scope = rememberCoroutineScope()
@@ -110,6 +112,12 @@ fun AccountScreen(
                     .border(1.dp, MiloCream.copy(alpha = 0.08f), RoundedCornerShape(16.dp)),
             ) {
                 MenuRow(icon = Icons.AutoMirrored.Filled.MenuBook, title = "My Stories", onTap = onOpenMyStories)
+                SoftDivider()
+                MenuRow(
+                    icon = Icons.Default.Star,
+                    title = "Subscribe",
+                    onTap = onOpenPaywall,
+                )
                 SoftDivider()
                 MenuRow(icon = Icons.Default.Settings, title = "Settings", onTap = onOpenSettings)
                 SoftDivider()

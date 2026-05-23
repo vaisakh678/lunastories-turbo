@@ -46,7 +46,9 @@ import com.cortexlumora.lunastories.ui.screens.GetStartedScreen
 import com.cortexlumora.lunastories.ui.screens.HomeScreen
 import com.cortexlumora.lunastories.ui.screens.ModeFormScreen
 import com.cortexlumora.lunastories.ui.screens.OnboardingScreen
+import com.cortexlumora.lunastories.ui.screens.PaywallScreen
 import com.cortexlumora.lunastories.ui.screens.SplashScreen
+import com.cortexlumora.lunastories.subscriptions.Subscriptions
 import com.cortexlumora.lunastories.ui.screens.StoryReaderScreen
 import com.cortexlumora.lunastories.ui.theme.LunaStoriesTheme
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
@@ -88,6 +90,7 @@ private fun RootFlow() {
     var showAccount by remember { mutableStateOf(false) }
     var accountSubroute by remember { mutableStateOf<AccountSubroute?>(null) }
     var showOnboardingCarousel by remember { mutableStateOf(false) }
+    var showPaywall by remember { mutableStateOf(false) }
 
     val charactersVm: CharactersViewModel = viewModel()
     val authVm: AuthFlowViewModel = viewModel()
@@ -190,7 +193,29 @@ private fun RootFlow() {
         )
     }
 
-    LaunchedEffect(user) { if (user != null) authVm.close() }
+    LaunchedEffect(user) {
+        if (user != null) {
+            authVm.close()
+            // Tie RevenueCat's app-user-id to the Clerk id so Pro entitlement
+            // follows the user across reinstalls and devices.
+            user?.id?.let { uid -> Subscriptions.login(uid) }
+        } else {
+            // Signed out — drop the RC alias so the next signed-in user
+            // doesn't inherit cached state.
+            Subscriptions.logout()
+        }
+    }
+
+    if (showPaywall) {
+        Dialog(
+            onDismissRequest = { showPaywall = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                PaywallScreen(onDismiss = { showPaywall = false })
+            }
+        }
+    }
 
     wizardTarget?.let { target ->
         Dialog(
@@ -225,6 +250,7 @@ private fun RootFlow() {
                     onOpenMyStories = { accountSubroute = AccountSubroute.MyStories },
                     onOpenSettings = { accountSubroute = AccountSubroute.Settings },
                     onOpenFeedback = { accountSubroute = AccountSubroute.Feedback },
+                    onOpenPaywall = { showPaywall = true },
                 )
             }
         }
