@@ -101,6 +101,15 @@ struct HomeView: View {
                     .padding(.bottom, 100)
                 }
                 .background(MoodyTwilightBackground().ignoresSafeArea())
+                .refreshable {
+                    // Pull-to-refresh re-pulls characters and the server-driven
+                    // latest-story banner together. Both are silent SWR refreshes
+                    // (isFetching, not isLoading) so the skeleton never flashes
+                    // while data is already on screen.
+                    async let characters: Void = vm.load()
+                    async let latest: Void = unread.refresh()
+                    _ = await (characters, latest)
+                }
 
                 VStack(spacing: 0) {
                     Spacer()
