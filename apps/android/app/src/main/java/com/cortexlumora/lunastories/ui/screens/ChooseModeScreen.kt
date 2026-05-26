@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,6 +37,9 @@ import androidx.compose.ui.unit.sp
 import com.cortexlumora.lunastories.stories.StoryMode
 import com.cortexlumora.lunastories.stories.StoryModes
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 
 @Composable
@@ -55,8 +59,7 @@ fun ChooseModeScreen(
                 Text(
                     text = "Choose a Mode",
                     color = MiloCream,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineSmall,
                 )
             }
 
@@ -100,14 +103,13 @@ private fun ModeTile(mode: StoryMode, onTap: () -> Unit) {
         Text(
             text = mode.title,
             color = MiloCream,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(top = 8.dp),
         )
         Text(
             text = mode.description,
-            color = MiloCream.copy(alpha = 0.6f),
-            fontSize = 11.sp,
+            color = MiloCream.copy(alpha = ALPHA_MUTED),
+            style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(top = 2.dp),
         )
     }

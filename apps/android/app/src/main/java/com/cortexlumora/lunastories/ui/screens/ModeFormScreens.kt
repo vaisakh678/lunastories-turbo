@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -50,6 +52,9 @@ import com.cortexlumora.lunastories.stories.StoryMode
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.components.OptionGrid
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -102,6 +107,8 @@ private fun CreativeFlow(
         step < n * 2 -> profByChar.containsKey(characters[step - n].id)
         else -> moral != null
     }
+
+    BackHandler { if (step > 0) step -= 1 else onDismiss() }
 
     Scaffold(
         title = mode.title,
@@ -225,6 +232,8 @@ private fun IconicFlow(
         else -> place != null
     }
 
+    BackHandler { if (step > 0) step -= 1 else onDismiss() }
+
     Scaffold(
         title = mode.title,
         step = step,
@@ -320,10 +329,10 @@ private fun Scaffold(
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                Text(title, color = MiloCream, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                Text(title, color = MiloCream, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = onClose) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", tint = MiloCream.copy(alpha = 0.6f))
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = MiloCream.copy(alpha = ALPHA_MUTED))
                 }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -346,7 +355,7 @@ private fun Scaffold(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Accent,
                     contentColor = Color.White,
-                    disabledContainerColor = Accent.copy(alpha = 0.4f),
+                    disabledContainerColor = Accent.copy(alpha = ALPHA_FAINT),
                 ),
                 modifier = Modifier.fillMaxWidth().height(52.dp).padding(vertical = 4.dp),
             ) {
@@ -362,8 +371,7 @@ private fun StepHeader(text: String) {
     Text(
         text = text,
         color = MiloCream,
-        fontSize = 22.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.headlineSmall,
         modifier = Modifier.padding(bottom = 12.dp),
     )
 }
@@ -384,7 +392,7 @@ private fun CustomTile(label: String, onTap: () -> Unit) {
         ) {
             Icon(Icons.Default.Edit, contentDescription = label, tint = MiloCream)
         }
-        Text(label, color = MiloCream.copy(alpha = 0.7f), fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
+        Text(label, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
     }
 }
 

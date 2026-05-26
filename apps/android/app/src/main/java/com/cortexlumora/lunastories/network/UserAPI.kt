@@ -9,6 +9,12 @@ data class UserResponse(
     val email: String? = null,
 )
 
+@Serializable
+data class DeleteAccountResponse(val deleted: Boolean)
+
 object UserAPI {
     suspend fun me(): UserResponse = APIClient.get("/users/me")
+
+    suspend fun deleteMe(): DeleteAccountResponse =
+        APIClient.request("/users/me") { method = io.ktor.http.HttpMethod.Delete }
 }

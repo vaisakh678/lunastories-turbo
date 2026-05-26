@@ -17,6 +17,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,8 +35,8 @@ import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 
 /**
- * Entry to auth — mirrors iOS GetStartedView. Both CTAs open the Clerk
- * AuthView sheet; the caller decides what state to seed it with.
+ * Entry to auth — mirrors iOS GetStartedView. CTAs open the custom
+ * ProviderSheet in either sign-in or sign-up mode.
  */
 @Composable
 fun GetStartedScreen(
@@ -71,8 +72,7 @@ fun GetStartedScreen(
             Text(
                 text = "Welcome to Luna Stories",
                 color = MiloCream,
-                fontSize = 34.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.displayLarge,
                 textAlign = TextAlign.Center,
             )
 
@@ -80,9 +80,8 @@ fun GetStartedScreen(
 
             Text(
                 text = "Your story begins here.\nLet's explore together.",
-                color = MiloCream.copy(alpha = 0.7f),
-                fontSize = 16.sp,
-                lineHeight = 24.sp,
+                color = MiloCream.copy(alpha = ALPHA_MUTED),
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
             )
 
@@ -99,7 +98,7 @@ fun GetStartedScreen(
                     .fillMaxWidth()
                     .height(56.dp),
             ) {
-                Text(text = "Get Started", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                Text(text = "Get Started")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -107,14 +106,13 @@ fun GetStartedScreen(
             TextButton(onClick = onSignIn) {
                 Text(
                     text = "Already have an account? ",
-                    color = MiloCream.copy(alpha = 0.7f),
-                    fontSize = 15.sp,
+                    color = MiloCream.copy(alpha = ALPHA_MUTED),
+                    style = MaterialTheme.typography.labelMedium,
                 )
                 Text(
                     text = "Sign in",
                     color = Accent,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 )
             }
         }

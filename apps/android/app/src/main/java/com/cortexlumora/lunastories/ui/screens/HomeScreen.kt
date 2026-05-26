@@ -35,16 +35,19 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +57,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.clerk.api.Clerk
 import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
 import com.cortexlumora.lunastories.stories.GenerationStatus
@@ -63,18 +65,22 @@ import com.cortexlumora.lunastories.ui.components.CharacterIconView
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
 import com.cortexlumora.lunastories.viewmodels.LatestStoryViewModel
 import com.cortexlumora.lunastories.network.StoryResponse
 import com.cortexlumora.lunastories.network.StoryStatus
-import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onOpenWizard: (role: CharacterRole, existing: CharacterResponse?) -> Unit,
     onStartFlow: (selected: List<CharacterResponse>) -> Unit,
     onOpenStory: (storyId: String) -> Unit,
+    onOpenAccount: () -> Unit,
     modifier: Modifier = Modifier,
     vm: CharactersViewModel = viewModel(),
     latestVm: LatestStoryViewModel = viewModel(),
@@ -82,8 +88,8 @@ fun HomeScreen(
     val characters by vm.characters.collectAsState()
     val isFetching by vm.isFetching.collectAsState()
     val error by vm.error.collectAsState()
-    val scope = rememberCoroutineScope()
     val inFlight by StoryGenerationManager.inFlight.collectAsState()
+    val pullState = rememberPullToRefreshState()
     val latest by latestVm.story.collectAsState()
     var pendingDelete by remember { mutableStateOf<CharacterResponse?>(null) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -99,7 +105,7 @@ fun HomeScreen(
         MoodyTwilightBackground()
 
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            HomeTopBar(onSignOut = { scope.launch { Clerk.auth.signOut() } })
+            HomeTopBar(onOpenAccount = onOpenAccount)
 
             // Banner: prefer in-flight; otherwise show latest-active.
             val gen = inFlight
@@ -131,34 +137,43 @@ fun HomeScreen(
                     CircularProgressIndicator(color = Accent)
                 }
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                PullToRefreshBox(
+                    isRefreshing = isFetching,
+                    onRefresh = {
+                        vm.load()
+                        latestVm.refreshNow()
+                    },
+                    state = pullState,
                     modifier = Modifier.weight(1f),
                 ) {
-                    sectionHeader("Main Characters")
-                    items(main, key = { it.id }) { char ->
-                        CharacterCard(
-                            character = char,
-                            selected = char.id in selectedIds,
-                            onTap = { selectedIds = selectedIds.toggle(char.id) },
-                            onLongPress = { onOpenWizard(CharacterRole.main, char) },
-                        )
-                    }
-                    item { AddTile { onOpenWizard(CharacterRole.main, null) } }
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        sectionHeader("Main Characters")
+                        items(main, key = { it.id }) { char ->
+                            CharacterCard(
+                                character = char,
+                                selected = char.id in selectedIds,
+                                onTap = { selectedIds = selectedIds.toggle(char.id) },
+                                onLongPress = { onOpenWizard(CharacterRole.main, char) },
+                            )
+                        }
+                        item { AddTile { onOpenWizard(CharacterRole.main, null) } }
 
-                    sectionHeader("Side Characters")
-                    items(side, key = { it.id }) { char ->
-                        CharacterCard(
-                            character = char,
-                            selected = char.id in selectedIds,
-                            onTap = { selectedIds = selectedIds.toggle(char.id) },
-                            onLongPress = { onOpenWizard(CharacterRole.side, char) },
-                        )
+                        sectionHeader("Side Characters")
+                        items(side, key = { it.id }) { char ->
+                            CharacterCard(
+                                character = char,
+                                selected = char.id in selectedIds,
+                                onTap = { selectedIds = selectedIds.toggle(char.id) },
+                                onLongPress = { onOpenWizard(CharacterRole.side, char) },
+                            )
+                        }
+                        item { AddTile { onOpenWizard(CharacterRole.side, null) } }
                     }
-                    item { AddTile { onOpenWizard(CharacterRole.side, null) } }
                 }
 
                 Box(
@@ -174,14 +189,13 @@ fun HomeScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Accent,
                             contentColor = Color.White,
-                            disabledContainerColor = Accent.copy(alpha = 0.35f),
+                            disabledContainerColor = Accent.copy(alpha = ALPHA_FAINT),
                         ),
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                     ) {
                         Text(
                             text = if (selected.isEmpty()) "Pick characters to start" else "Start (${selected.size})",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleMedium,
                         )
                     }
                 }
@@ -268,16 +282,16 @@ private fun LatestStoryBanner(
             Spacer(Modifier.size(12.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(eyebrow, color = MiloCream.copy(alpha = 0.7f), fontSize = 12.sp)
+            Text(eyebrow, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.labelSmall)
             Text(
                 story.title ?: "Untitled story",
                 color = MiloCream,
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
             )
         }
         TextButton(onClick = onDismiss) {
-            Text("Dismiss", color = MiloCream.copy(alpha = 0.6f), fontSize = 13.sp)
+            Text("Dismiss", color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -315,12 +329,12 @@ private fun GenerationBanner(
             Spacer(Modifier.size(12.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(eyebrow, color = MiloCream.copy(alpha = 0.7f), fontSize = 12.sp)
-            Text(title, color = MiloCream, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Text(eyebrow, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.labelSmall)
+            Text(title, color = MiloCream, style = MaterialTheme.typography.labelMedium)
         }
         if (status is GenerationStatus.Failed) {
             TextButton(onClick = onDismissFailed) {
-                Text("Dismiss", color = Accent, fontSize = 13.sp)
+                Text("Dismiss", color = Accent, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -331,15 +345,14 @@ private fun LazyGridScope.sectionHeader(text: String) {
         Text(
             text = text,
             color = MiloCream,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
         )
     }
 }
 
 @Composable
-private fun HomeTopBar(onSignOut: () -> Unit) {
+private fun HomeTopBar(onOpenAccount: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -347,11 +360,10 @@ private fun HomeTopBar(onSignOut: () -> Unit) {
         Text(
             text = "Luna Stories",
             color = MiloCream,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.weight(1f),
         )
-        IconButton(onClick = onSignOut) {
+        IconButton(onClick = onOpenAccount) {
             Icon(Icons.Default.Menu, contentDescription = "Account", tint = MiloCream)
         }
     }
@@ -406,8 +418,7 @@ private fun CharacterCard(
         Text(
             text = character.name,
             color = MiloCream,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = 6.dp),
         )
     }
@@ -424,12 +435,12 @@ private fun AddTile(onTap: () -> Unit) {
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(22.dp))
-                .border(2.dp, Accent.copy(alpha = 0.6f), RoundedCornerShape(22.dp))
+                .border(2.dp, Accent.copy(alpha = ALPHA_MUTED), RoundedCornerShape(22.dp))
                 .clickable(onClick = onTap),
             contentAlignment = Alignment.Center,
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add character", tint = Accent, modifier = Modifier.size(32.dp))
         }
-        Text("Add", color = MiloCream.copy(alpha = 0.7f), fontSize = 13.sp, modifier = Modifier.padding(top = 6.dp))
+        Text("Add", color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
     }
 }

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "8.12.0"
 kotlin = "2.3.10"
 coreKtx = "1.18.0"
 junit = "4.13.2"
@@ -14,6 +14,8 @@ kotlinxSerialization = "1.10.0"
 lifecycleViewmodelCompose = "2.9.2"
 lifecycleRuntimeCompose = "2.9.2"
 media3 = "1.10.1"
+billing = "9.0.0"
+revenuecat = "10.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,12 +36,14 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 clerk-android-api = { group = "com.clerk", name = "clerk-android-api", version.ref = "clerk" }
-clerk-android-ui = { group = "com.clerk", name = "clerk-android-ui", version.ref = "clerk" }
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
+android-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+revenuecat = { group = "com.revenuecat.purchases", name = "purchases", version.ref = "revenuecat" }
+revenuecat-ui = { group = "com.revenuecat.purchases", name = "purchases-ui", version.ref = "revenuecat" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

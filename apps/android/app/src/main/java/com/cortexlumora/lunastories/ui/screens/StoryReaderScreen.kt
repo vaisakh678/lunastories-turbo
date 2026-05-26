@@ -1,5 +1,6 @@
 package com.cortexlumora.lunastories.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,19 +8,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -49,6 +55,9 @@ import com.cortexlumora.lunastories.stories.StoryModes
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
+import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
+import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
+import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import com.cortexlumora.lunastories.ui.theme.MiloInk
 import com.cortexlumora.lunastories.ui.theme.MiloPaper
@@ -64,6 +73,8 @@ fun StoryReaderScreen(
     var loading by remember { mutableStateOf(true) }
     val ctx = LocalContext.current
     val player = remember { StoryAudioPlayer(ctx) }
+
+    BackHandler(onBack = onBack)
 
     DisposableEffect(Unit) {
         onDispose { player.release() }
@@ -86,8 +97,19 @@ fun StoryReaderScreen(
         MoodyTwilightBackground()
 
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            IconButton(onClick = onBack, modifier = Modifier.padding(8.dp)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                story?.takeIf { it.status == StoryStatus.ready }?.let { s ->
+                    IconButton(onClick = { shareStory(ctx, s) }) {
+                        Icon(Icons.Default.Share, contentDescription = "Share", tint = MiloCream)
+                    }
+                }
             }
 
             when {
@@ -158,11 +180,11 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
 
         Spacer(Modifier.height(16.dp))
         story.title?.let {
-            Text(it, color = MiloCream, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text(it, color = MiloCream, style = MaterialTheme.typography.headlineMedium)
         }
         story.summary?.let {
             Spacer(Modifier.height(8.dp))
-            Text(it, color = MiloCream.copy(alpha = 0.7f), fontSize = 15.sp, lineHeight = 22.sp)
+            Text(it, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.labelMedium, lineHeight = 22.sp)
         }
 
         Spacer(Modifier.height(20.dp))
@@ -182,8 +204,7 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
                         "text" -> Text(
                             text = block.text.orEmpty(),
                             color = MiloInk,
-                            fontSize = 19.sp,
-                            lineHeight = 28.sp,
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                         "illustration" -> {
                             val tint = ColorPalette.color(block.tint)
@@ -202,9 +223,9 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
                     }
                 }
             } else if (!story.bodyText.isNullOrBlank()) {
-                Text(story.bodyText, color = MiloInk, fontSize = 19.sp, lineHeight = 28.sp)
+                Text(story.bodyText, color = MiloInk, style = MaterialTheme.typography.titleLarge, lineHeight = 28.sp)
             } else {
-                Text("This story has no content yet.", color = MiloInk.copy(alpha = 0.6f))
+                Text("This story has no content yet.", color = MiloInk.copy(alpha = ALPHA_MUTED))
             }
         }
 
@@ -228,6 +249,28 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
     }
 }
 
+private fun shareStory(context: android.content.Context, story: StoryResponse) {
+    val title = story.title ?: "A Luna Stories story"
+    val summary = story.summary?.let { "\n\n$it" } ?: ""
+    val body = story.bodyText
+        ?: story.content?.blocks?.filter { it.type == "text" }?.joinToString("\n\n") { it.text.orEmpty() }
+        ?: ""
+    val text = buildString {
+        append(title)
+        append(summary)
+        if (body.isNotBlank()) {
+            append("\n\n")
+            append(body)
+        }
+    }
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, title)
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    context.startActivity(Intent.createChooser(intent, "Share story"))
+}
+
 @Composable
 private fun CenteredLoader() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -238,6 +281,6 @@ private fun CenteredLoader() {
 @Composable
 private fun CenteredMessage(text: String) {
     Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-        Text(text, color = MiloCream, fontSize = 16.sp, textAlign = TextAlign.Center)
+        Text(text, color = MiloCream, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
     }
 }

@@ -58,7 +58,30 @@ data class CreateStoryRequest(
     val input: JsonElement,
 )
 
+@Serializable
+data class StoryPage(
+    val items: List<StoryResponse>,
+    val nextCursor: String? = null,
+)
+
+@Serializable
+private data class StoryDeleteResponse(val id: String)
+
 object StoryAPI {
+    suspend fun delete(id: String) {
+        APIClient.request<StoryDeleteResponse>("/stories/$id") {
+            method = HttpMethod.Delete
+        }
+    }
+
+    suspend fun list(cursor: String? = null, limit: Int = 30): StoryPage {
+        val params = buildList {
+            add("limit=$limit")
+            if (cursor != null) add("cursor=$cursor")
+        }.joinToString("&", prefix = "?")
+        return APIClient.get("/stories$params")
+    }
+
     suspend fun create(req: CreateStoryRequest): StoryResponse =
         APIClient.request("/stories") {
             method = HttpMethod.Post

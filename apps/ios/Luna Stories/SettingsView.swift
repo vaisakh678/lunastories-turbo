@@ -55,6 +55,25 @@ struct SettingsView: View {
             }
 
             Section {
+                Button {
+                    Task { await Subscriptions.manage() }
+                } label: {
+                    HStack {
+                        SettingsRow(icon: "creditcard", title: "Manage Subscription")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .foregroundStyle(.primary)
+            } header: {
+                Text("Subscription")
+            } footer: {
+                Text("Opens the App Store to cancel, change plan, or restore your subscription.")
+            }
+
+            Section {
                 Link(destination: LegalLinks.termsURL) {
                     SettingsRow(icon: "doc.text", title: "Terms of Service")
                 }
