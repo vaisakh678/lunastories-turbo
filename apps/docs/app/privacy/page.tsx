@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" updated="May 22, 2026">
+    <LegalPage title="Privacy Policy" updated="May 27, 2026">
       <p>
         Luna Stories (&quot;Luna Stories,&quot; &quot;we,&quot; &quot;us&quot;) is built by Cortex Lumora.
         This policy explains what we collect when you use our iOS app and this
@@ -40,8 +40,13 @@ export default function PrivacyPage() {
           never see your payment details.
         </li>
         <li>
-          <strong>Diagnostics</strong> — crash reports and basic usage events
-          so we can fix bugs and improve the experience.
+          <strong>Usage and diagnostics</strong> — crash reports and product
+          analytics events (which screens and features you open, taps, and
+          session timing), together with device and app details such as device
+          model, operating system, app version, and an approximate location
+          inferred from your IP address. We use this to fix bugs and understand
+          how the app is used. We don&apos;t use it to build advertising
+          profiles, and we don&apos;t use it to profile children.
         </li>
       </ul>
 
@@ -59,7 +64,7 @@ export default function PrivacyPage() {
         We share data with the service providers that make the app work:
         Clerk (auth), OpenAI (story and voice generation), Cloudflare and AWS
         (hosting and storage), RevenueCat and Apple (subscriptions), OneSignal
-        (push notifications), and standard crash/analytics tools. We don&apos;t
+        (push notifications), and PostHog (product analytics). We don&apos;t
         sell your data and we don&apos;t use it to train external advertising
         models.
       </p>

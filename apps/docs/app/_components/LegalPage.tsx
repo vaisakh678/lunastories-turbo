@@ -5,10 +5,12 @@ import type { ReactNode } from "react";
 export function LegalPage({
   title,
   updated,
+  eyebrow = "Legal",
   children,
 }: {
   title: string;
   updated: string;
+  eyebrow?: string;
   children: ReactNode;
 }) {
   return (
@@ -39,7 +41,7 @@ export function LegalPage({
       <main className="bg-aurora relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28 flex-1">
         <div className="mx-auto max-w-3xl px-6">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand">
-            Legal
+            {eyebrow}
           </p>
           <h1 className="mt-3 font-display text-4xl sm:text-5xl font-bold leading-tight">
             {title}
