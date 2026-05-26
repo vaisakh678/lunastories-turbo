@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# generated image variants (built from image-src/ by scripts/optimize-images.mjs)
+/public/_img/
+
 # production
 /build
 
