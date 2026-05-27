@@ -52,6 +52,7 @@ import com.cortexlumora.lunastories.subscriptions.Subscriptions
 import com.cortexlumora.lunastories.ui.screens.StoryReaderScreen
 import com.cortexlumora.lunastories.ui.theme.LunaStoriesTheme
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
+import com.cortexlumora.lunastories.viewmodels.SubscriptionsViewModel
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -93,6 +94,9 @@ private fun RootFlow() {
     var showPaywall by remember { mutableStateOf(false) }
 
     val charactersVm: CharactersViewModel = viewModel()
+    val subscriptionsVm: SubscriptionsViewModel = viewModel()
+    val customerInfo by subscriptionsVm.customerInfo.collectAsStateWithLifecycle(initialValue = null)
+    val isPro = com.cortexlumora.lunastories.subscriptions.Subscriptions.isEntitled(customerInfo)
     val authVm: AuthFlowViewModel = viewModel()
     val authStep by authVm.step.collectAsStateWithLifecycle(initialValue = null)
     val authLoadingProvider by authVm.loadingProvider.collectAsStateWithLifecycle(initialValue = null)
@@ -296,8 +300,16 @@ private fun RootFlow() {
                         characters = route.characters,
                         onDismiss = { storyRoute = StoryRoute.ChooseMode(route.characters) },
                         onGenerate = { payload, title, cues ->
-                            StoryGenerationManager.start(payload, title, cues)
-                            storyRoute = StoryRoute.Generating
+                            // Generation is Pro-gated (backend returns 402 too).
+                            // Catch it here at the final step so non-subscribers
+                            // get the paywall instead of a failed generation +
+                            // toast. Mirrors iOS ModeSheetView.handleComplete.
+                            if (!isPro) {
+                                showPaywall = true
+                            } else {
+                                StoryGenerationManager.start(payload, title, cues)
+                                storyRoute = StoryRoute.Generating
+                            }
                         },
                     )
                     is StoryRoute.Generating -> GeneratingScreen(
