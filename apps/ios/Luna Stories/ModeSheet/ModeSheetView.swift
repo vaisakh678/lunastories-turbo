@@ -15,6 +15,7 @@ struct ModeSheetView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(StoryGenerationManager.self) private var generations
+    @Environment(ToastCenter.self) private var toast
     @State private var path = NavigationPath()
     @State private var errorMessage: String?
     /// The id of the in-flight generation we kicked off, so we only react
@@ -67,12 +68,23 @@ struct ModeSheetView: View {
         .onChange(of: generations.inFlight?.status.kind) { _, _ in
             guard
                 let inFlight = generations.inFlight,
-                inFlight.id == generationId,
-                let story = inFlight.status.readyStory
+                inFlight.id == generationId
             else { return }
-            onComplete(story)
-            generations.acknowledge()
-            dismiss()
+            switch inFlight.status {
+            case .ready(let story):
+                onComplete(story)
+                generations.acknowledge()
+                dismiss()
+            case .failed(let message):
+                // Quota/other generation failure: clear the in-flight slot so
+                // the home banner doesn't also surface it, close this modal,
+                // and show the server's message as a toast at the app root.
+                generations.acknowledge()
+                dismiss()
+                toast.show(message, style: .error)
+            case .generating:
+                break
+            }
         }
     }
 
