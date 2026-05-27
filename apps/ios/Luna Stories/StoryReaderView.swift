@@ -16,6 +16,8 @@ struct StoryReaderView: View {
     @State private var audioErrorMessage: String?
     @State private var audioPlayer = StoryAudioPlayer()
     @State private var isMakingAnother: Bool = false
+    @State private var usage = UsageViewModel()
+    @Environment(ToastCenter.self) private var toast
 
     var body: some View {
         Group {
@@ -277,6 +279,20 @@ struct StoryReaderView: View {
         defer { isGeneratingAudio = false }
         do {
             story = try await StoryAPI.generateAudio(storyId)
+            // Narration just landed — refresh usage and warn once weekly audio
+            // crosses 80% (but isn't fully spent). The exhausted/400 case is
+            // surfaced via audioErrorMessage below.
+            await usage.refresh()
+            if let audio = usage.summary?.audio,
+               audio.percentUsed >= 80, audio.remaining > 0 {
+                toast.show(
+                    audio.message,
+                    title: "Running low on audio",
+                    style: .warning,
+                    progress: Double(audio.percentUsed) / 100,
+                    duration: 5,
+                )
+            }
         } catch {
             audioErrorMessage = (error as? APIError)?.errorDescription
                 ?? error.localizedDescription
