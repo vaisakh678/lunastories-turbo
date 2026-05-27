@@ -122,10 +122,24 @@ export async function applyRevenueCatEvent(
 
   const userId = await resolveUserId(event);
   if (!userId) {
-    logger.warn(
-      { appUserId: event.app_user_id, type: event.type },
-      "RevenueCat event for unknown user — ignoring",
-    );
+    const ctx = {
+      appUserId: event.app_user_id,
+      type: event.type,
+      environment: event.environment,
+    };
+    // We return normally (200) either way so RevenueCat doesn't retry — a
+    // genuinely missing/deleted user will never resolve. But a PRODUCTION
+    // event we can't tie to a user means a real purchase went unrecorded
+    // (id mismatch, or the user row is missing), so log it loudly for alerts.
+    // Sandbox misses are routine cross-environment/test noise.
+    if ((event.environment ?? "").toUpperCase() === "PRODUCTION") {
+      logger.error(
+        ctx,
+        "RevenueCat PRODUCTION event for unknown user — ignoring (investigate)",
+      );
+    } else {
+      logger.info(ctx, "RevenueCat sandbox event for unknown user — ignoring");
+    }
     return;
   }
 
