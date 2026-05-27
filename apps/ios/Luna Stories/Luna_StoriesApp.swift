@@ -15,6 +15,7 @@ struct Luna_StoriesApp: App {
     @State private var profile = ProfileViewModel()
     @State private var unread = LatestStoryViewModel()
     @State private var subscriptions = SubscriptionsViewModel()
+    @State private var toast = ToastCenter()
 
     init() {
         Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
@@ -37,6 +38,7 @@ struct Luna_StoriesApp: App {
                 .environment(profile)
                 .environment(unread)
                 .environment(subscriptions)
+                .environment(toast)
                 .preferredColorScheme(.dark)
         }
     }
@@ -65,6 +67,9 @@ private struct RootView: View {
             }
         }
         .animation(.easeOut(duration: 0.25), value: canShowContent)
+        // Toasts sit above everything at the app root, so they survive any
+        // sheet being dismissed and always render at the very top.
+        .overlay(alignment: .top) { ToastOverlay() }
         .task {
             try? await Task.sleep(for: .seconds(1))
             minimumHoldDone = true
