@@ -25,9 +25,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -49,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clerk.api.Clerk
 import com.cortexlumora.lunastories.R
+import com.cortexlumora.lunastories.subscriptions.Subscriptions
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.GlowCoral
@@ -73,8 +76,10 @@ fun AccountScreen(
     onOpenSettings: () -> Unit,
     onOpenFeedback: () -> Unit,
     onOpenPaywall: () -> Unit,
+    isPro: Boolean = false,
 ) {
     val user by Clerk.userFlow.collectAsStateWithLifecycle(initialValue = null)
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var confirmingLogout by remember { mutableStateOf(false) }
     var isLoggingOut by remember { mutableStateOf(false) }
@@ -93,14 +98,41 @@ fun AccountScreen(
                 .statusBarsPadding()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MiloCream)
+                }
+                Spacer(Modifier.weight(1f))
+                // Only nudge an upgrade when they're not already subscribed.
+                if (!isPro) {
+                    TextButton(onClick = onOpenPaywall) {
+                        Text(
+                            "PRO",
+                            color = Accent,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.sp,
+                            letterSpacing = 0.8.sp,
+                        )
+                    }
                 }
             }
 
             Spacer(Modifier.height(12.dp))
             Hero(greeting = greeting)
+            Spacer(Modifier.height(24.dp))
+
+            SubscriptionBanner(
+                isPro = isPro,
+                onUpgrade = onOpenPaywall,
+                onManage = {
+                    (context as? android.app.Activity)?.let { Subscriptions.manage(it) }
+                },
+            )
             Spacer(Modifier.height(24.dp))
 
             // Menu card
@@ -112,12 +144,6 @@ fun AccountScreen(
                     .border(1.dp, MiloCream.copy(alpha = 0.08f), RoundedCornerShape(16.dp)),
             ) {
                 MenuRow(icon = Icons.AutoMirrored.Filled.MenuBook, title = "My Stories", onTap = onOpenMyStories)
-                SoftDivider()
-                MenuRow(
-                    icon = Icons.Default.Star,
-                    title = "Subscribe",
-                    onTap = onOpenPaywall,
-                )
                 SoftDivider()
                 MenuRow(icon = Icons.Default.Settings, title = "Settings", onTap = onOpenSettings)
                 SoftDivider()
@@ -206,6 +232,65 @@ private fun Hero(greeting: String) {
         Text(greeting, color = MiloCream, style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(4.dp))
         Text("Manage your profile", color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.titleSmall)
+    }
+}
+
+@Composable
+private fun SubscriptionBanner(
+    isPro: Boolean,
+    onUpgrade: () -> Unit,
+    onManage: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MiloCream.copy(alpha = 0.06f))
+            .border(
+                1.dp,
+                if (isPro) Accent.copy(alpha = 0.35f) else MiloCream.copy(alpha = 0.08f),
+                RoundedCornerShape(16.dp),
+            )
+            .clickable(onClick = if (isPro) onManage else onUpgrade)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Accent.copy(alpha = 0.18f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                if (isPro) Icons.Filled.WorkspacePremium else Icons.Filled.AutoAwesome,
+                contentDescription = null,
+                tint = Accent,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        Spacer(Modifier.size(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                if (isPro) "Luna Pro" else "Unlock Luna Pro",
+                color = MiloCream,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(Modifier.height(3.dp))
+            Text(
+                if (isPro) "Your subscription is active" else "Unlimited stories & narration",
+                color = MiloCream.copy(alpha = ALPHA_CAPTION),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        Spacer(Modifier.size(8.dp))
+        Text(
+            if (isPro) "Manage" else "Upgrade",
+            color = if (isPro) MiloCream.copy(alpha = 0.9f) else Accent,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
     }
 }
 

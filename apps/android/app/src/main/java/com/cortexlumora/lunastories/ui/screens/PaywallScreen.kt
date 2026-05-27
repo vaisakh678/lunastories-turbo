@@ -65,7 +65,7 @@ import com.cortexlumora.lunastories.ui.theme.GlowGold
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import com.cortexlumora.lunastories.viewmodels.SubscriptionsViewModel
 import com.revenuecat.purchases.Package
-import com.revenuecat.purchases.models.PricingPhase
+import com.revenuecat.purchases.models.Period
 import kotlinx.coroutines.delay
 
 private data class Feature(val title: String, val detail: String)
@@ -181,7 +181,7 @@ fun PaywallScreen(
                 Spacer(Modifier.height(12.dp))
 
                 CtaButton(
-                    label = if (selected?.hasFreeTrial() == true) "Start free trial" else "Continue",
+                    label = selected?.freeTrial()?.let { "Start ${it.trialAdjective()} free trial" } ?: "Continue",
                     isPurchasing = isPurchasing,
                     enabled = selected != null && !isPurchasing,
                     onClick = {
@@ -360,6 +360,14 @@ private fun PlanCard(pkg: Package, isSelected: Boolean, onClick: () -> Unit) {
                     }
                 }
             }
+            pkg.freeTrial()?.let { trial ->
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    "${trial.trialAdjective().uppercase()} FREE TRIAL",
+                    color = Accent,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                )
+            }
             Spacer(Modifier.height(2.dp))
             Text(
                 if (isAnnual) "Save vs monthly · cancel anytime" else "Cancel anytime",
@@ -458,18 +466,37 @@ private fun Package.subscriptionPeriodLabel(): PeriodLabel {
     }
 }
 
-private fun Package.hasFreeTrial(): Boolean =
-    product.defaultOption?.pricingPhases?.any { phase ->
-        phase.price.amountMicros == 0L && phase.recurrenceMode == phase.recurrenceMode // any free phase
-    } ?: false
+/** The free-trial billing period of this package, or null if there's no trial. */
+private fun Package.freeTrial(): Period? =
+    product.defaultOption?.pricingPhases
+        ?.firstOrNull { it.price.amountMicros == 0L }
+        ?.billingPeriod
+
+/** Adjective form for badges/CTAs: "7-day", "2-week", "1-month". A 1-week
+ *  period is normalized to "7-day" (mirrors iOS). */
+private fun Period.trialAdjective(): String = when (unit) {
+    Period.Unit.DAY -> "$value-day"
+    Period.Unit.WEEK -> if (value == 1) "7-day" else "$value-week"
+    Period.Unit.MONTH -> "$value-month"
+    Period.Unit.YEAR -> "$value-year"
+    else -> "$value"
+}
+
+/** Noun phrase for sentences: "7 days", "2 weeks", "1 month". */
+private fun Period.trialNoun(): String = when (unit) {
+    Period.Unit.DAY -> "$value day${if (value == 1) "" else "s"}"
+    Period.Unit.WEEK -> if (value == 1) "7 days" else "$value weeks"
+    Period.Unit.MONTH -> "$value month${if (value == 1) "" else "s"}"
+    Period.Unit.YEAR -> "$value year${if (value == 1) "" else "s"}"
+    else -> "$value"
+}
 
 private fun footerText(pkg: Package): String {
     val unit = pkg.subscriptionPeriodLabel().unitShort
     val price = pkg.product.price.formatted
-    val trial = pkg.product.defaultOption?.pricingPhases?.firstOrNull { (it as PricingPhase).price.amountMicros == 0L }
+    val trial = pkg.freeTrial()
     return if (trial != null) {
-        val days = trial.billingPeriod.iso8601.removePrefix("P").removeSuffix("D").toIntOrNull() ?: 7
-        "Free for $days days, then $price$unit. Cancel anytime."
+        "Free for ${trial.trialNoun()}, then $price$unit. Cancel anytime."
     } else {
         "Then $price$unit. Cancel anytime."
     }

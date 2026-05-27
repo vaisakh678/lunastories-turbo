@@ -16,7 +16,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
@@ -29,6 +31,10 @@ import com.cortexlumora.lunastories.auth.AuthMode
 import com.cortexlumora.lunastories.auth.AuthStep
 import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
+import com.cortexlumora.lunastories.network.UsageAPI
+import com.cortexlumora.lunastories.ui.components.ToastCenter
+import com.cortexlumora.lunastories.ui.components.ToastOverlay
+import com.cortexlumora.lunastories.ui.components.ToastStyle
 import com.cortexlumora.lunastories.stories.StoryGenerationManager
 import com.cortexlumora.lunastories.stories.StoryMode
 import com.cortexlumora.lunastories.ui.screens.AccountScreen
@@ -52,6 +58,7 @@ import com.cortexlumora.lunastories.subscriptions.Subscriptions
 import com.cortexlumora.lunastories.ui.screens.StoryReaderScreen
 import com.cortexlumora.lunastories.ui.theme.LunaStoriesTheme
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
+import com.cortexlumora.lunastories.viewmodels.SubscriptionsViewModel
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -92,7 +99,11 @@ private fun RootFlow() {
     var showOnboardingCarousel by remember { mutableStateOf(false) }
     var showPaywall by remember { mutableStateOf(false) }
 
+    val scope = rememberCoroutineScope()
     val charactersVm: CharactersViewModel = viewModel()
+    val subscriptionsVm: SubscriptionsViewModel = viewModel()
+    val customerInfo by subscriptionsVm.customerInfo.collectAsStateWithLifecycle(initialValue = null)
+    val isPro = com.cortexlumora.lunastories.subscriptions.Subscriptions.isEntitled(customerInfo)
     val authVm: AuthFlowViewModel = viewModel()
     val authStep by authVm.step.collectAsStateWithLifecycle(initialValue = null)
     val authLoadingProvider by authVm.loadingProvider.collectAsStateWithLifecycle(initialValue = null)
@@ -131,6 +142,10 @@ private fun RootFlow() {
                 onOpenAccount = { showAccount = true },
             )
         }
+        // Toasts (generation rejection, "running low" warnings) pinned to the
+        // top, above the main content. Full-screen Dialogs render their own
+        // ToastOverlay so warnings remain visible while reading.
+        ToastOverlay()
     }
 
     if (showOnboardingCarousel && stage == Stage.Auth) {
@@ -251,6 +266,7 @@ private fun RootFlow() {
                     onOpenSettings = { accountSubroute = AccountSubroute.Settings },
                     onOpenFeedback = { accountSubroute = AccountSubroute.Feedback },
                     onOpenPaywall = { showPaywall = true },
+                    isPro = isPro,
                 )
             }
         }
@@ -284,6 +300,7 @@ private fun RootFlow() {
             properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
         ) {
             Surface(modifier = Modifier.fillMaxSize()) {
+              Box(modifier = Modifier.fillMaxSize()) {
                 when (route) {
                     is StoryRoute.ChooseMode -> ChooseModeScreen(
                         onDismiss = { storyRoute = null },
@@ -296,8 +313,16 @@ private fun RootFlow() {
                         characters = route.characters,
                         onDismiss = { storyRoute = StoryRoute.ChooseMode(route.characters) },
                         onGenerate = { payload, title, cues ->
-                            StoryGenerationManager.start(payload, title, cues)
-                            storyRoute = StoryRoute.Generating
+                            // Generation is Pro-gated (backend returns 402 too).
+                            // Catch it here at the final step so non-subscribers
+                            // get the paywall instead of a failed generation +
+                            // toast. Mirrors iOS ModeSheetView.handleComplete.
+                            if (!isPro) {
+                                showPaywall = true
+                            } else {
+                                StoryGenerationManager.start(payload, title, cues)
+                                storyRoute = StoryRoute.Generating
+                            }
                         },
                     )
                     is StoryRoute.Generating -> GeneratingScreen(
@@ -308,10 +333,30 @@ private fun RootFlow() {
                         onReady = { story ->
                             StoryGenerationManager.acknowledge()
                             storyRoute = StoryRoute.Reader(story.id)
+                            // A story just landed — refresh usage and warn once
+                            // weekly stories cross 80% (but aren't fully spent;
+                            // the exhausted case is the rejection toast above).
+                            // Mirrors iOS HomeView's onChange(ready) handler.
+                            scope.launch {
+                                val stories = runCatching { UsageAPI.fetch() }.getOrNull()?.stories
+                                if (stories != null && stories.percentUsed >= 80 && stories.remaining > 0) {
+                                    ToastCenter.show(
+                                        message = stories.message,
+                                        title = "Running low on stories",
+                                        style = ToastStyle.Warning,
+                                        progress = stories.percentUsed / 100f,
+                                        durationMs = 5_000,
+                                    )
+                                }
+                            }
                         },
-                        onFailed = { _ ->
-                            // leave manager state for banner; close generating sheet
+                        onFailed = { message ->
+                            // Quota/other generation failure: clear the in-flight
+                            // slot, close this sheet, and surface the server's
+                            // message as a toast. Mirrors iOS ModeSheetView.
+                            StoryGenerationManager.acknowledge()
                             storyRoute = null
+                            ToastCenter.show(message, style = ToastStyle.Error)
                         },
                     )
                     is StoryRoute.Reader -> StoryReaderScreen(
@@ -320,6 +365,10 @@ private fun RootFlow() {
                         onRegenerate = { storyRoute = StoryRoute.Generating },
                     )
                 }
+                // Render toasts above the full-screen story Dialog so the
+                // "running low" warning fired on a story landing is visible.
+                ToastOverlay()
+              }
             }
         }
     }
