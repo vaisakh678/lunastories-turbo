@@ -31,6 +31,11 @@ const envSchema = z.object({
   // Optional so local/CI environments without notifications still boot.
   ONESIGNAL_APP_ID: z.string().min(1).optional(),
   ONESIGNAL_REST_API_KEY: z.string().min(1).optional(),
+
+  // Shared secret configured on the RevenueCat webhook (Project Settings →
+  // Integrations → Webhooks → Authorization header value). The webhook handler
+  // fails closed if this is unset or doesn't match the incoming header.
+  REVENUECAT_WEBHOOK_AUTH_TOKEN: z.string().min(1).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
