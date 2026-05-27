@@ -566,7 +566,7 @@ private struct GenerationBanner: View {
                 .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: pulse)
 
             Group {
-                if let cue = currentCue, let imageName = cue.imageName {
+                if let cue = currentCue, let imageName = bannerCueImage(cue) {
                     Image(imageName)
                         .resizable()
                         .scaledToFill()
@@ -597,6 +597,18 @@ private struct GenerationBanner: View {
             )
         }
         .frame(width: 52, height: 52)
+    }
+
+    /// Image asset for a cue, or nil to use the SF Symbol tile. Prefers a named
+    /// catalog asset; otherwise the bundled "Avatars/<uuid>" when the cue's
+    /// symbolName is an avatar UUID (Image(systemName:) is blank for a UUID).
+    private func bannerCueImage(_ cue: GenerationCue) -> String? {
+        if let name = cue.imageName, UIImage(named: name) != nil { return name }
+        if isAvatarId(cue.symbolName),
+           UIImage(named: "Avatars/\(cue.symbolName)") != nil {
+            return "Avatars/\(cue.symbolName)"
+        }
+        return nil
     }
 
     @ViewBuilder
