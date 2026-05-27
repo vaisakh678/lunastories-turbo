@@ -1,0 +1,1 @@
+ALTER TABLE "stories" ADD COLUMN "audio_generated_at" timestamp with time zone;

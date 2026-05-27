@@ -147,10 +147,11 @@ struct GeneratingStoryView: View {
     private var cueArtwork: some View {
         if let cue = currentCue {
             Group {
-                // Guard the named-asset branch with an existence check so a
-                // missing/misnamed catalog entry falls through to the SF
-                // Symbol tile instead of rendering a blank empty box.
-                if let imageName = cue.imageName, UIImage(named: imageName) != nil {
+                // Render a mode/character image when we have one — a named
+                // catalog asset, or a bundled avatar when the cue's symbolName
+                // is an avatar UUID (Image(systemName:) renders blank for a
+                // UUID). Falls through to the SF Symbol tile otherwise.
+                if let imageName = resolvedImageName(for: cue) {
                     Image(imageName)
                         .resizable()
                         .scaledToFill()
@@ -180,6 +181,18 @@ struct GeneratingStoryView: View {
             .id("artwork-\(cue.id)")
             .transition(.opacity)
         }
+    }
+
+    /// The image asset to show for a cue, or nil to fall back to the SF Symbol
+    /// tile. Prefers a named catalog asset; otherwise, when the cue's
+    /// symbolName is an avatar UUID, the bundled "Avatars/<uuid>" image.
+    private func resolvedImageName(for cue: GenerationCue) -> String? {
+        if let name = cue.imageName, UIImage(named: name) != nil { return name }
+        if isAvatarId(cue.symbolName),
+           UIImage(named: "Avatars/\(cue.symbolName)") != nil {
+            return "Avatars/\(cue.symbolName)"
+        }
+        return nil
     }
 
     private func drive() async {

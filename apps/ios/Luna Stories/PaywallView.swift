@@ -111,7 +111,7 @@ struct PaywallView: View {
                     )
                     .shadow(color: Color.black.opacity(0.4), radius: 18, x: 0, y: 10)
             }
-            .padding(.top, 16)
+            .padding(.top, 0)
 
             VStack(spacing: 6) {
                 ProTitleBadge()
@@ -284,8 +284,8 @@ struct PaywallView: View {
 
     private var ctaLabel: String {
         guard let pkg = selectedPackage else { return "Continue" }
-        if pkg.storeProduct.introductoryDiscount?.paymentMode == .freeTrial {
-            return "Start free trial"
+        if let trial = pkg.introFreeTrial {
+            return "Start \(trial.trialAdjective) free trial"
         }
         return "Continue"
     }
@@ -294,10 +294,8 @@ struct PaywallView: View {
         guard let pkg = selectedPackage else { return "Cancel anytime." }
         let price = pkg.storeProduct.localizedPriceString
         let unit = pkg.subscriptionPeriodUnit
-        if pkg.storeProduct.introductoryDiscount?.paymentMode == .freeTrial,
-           let trial = pkg.storeProduct.introductoryDiscount {
-            let days = trial.subscriptionPeriod.value
-            return "Free for \(days) days, then \(price)\(unit). Cancel anytime."
+        if let trial = pkg.introFreeTrial {
+            return "Free for \(trial.trialNoun), then \(price)\(unit). Cancel anytime."
         }
         return "Then \(price)\(unit). Cancel anytime."
     }
@@ -373,6 +371,39 @@ private extension Package {
     var isAnnual: Bool {
         guard let period = storeProduct.subscriptionPeriod else { return false }
         return period.unit == .year || (period.unit == .month && period.value == 12)
+    }
+
+    /// The free-trial intro offer period, if this package has one (e.g. the
+    /// 7-day trial configured in App Store Connect). nil if there's no trial.
+    var introFreeTrial: SubscriptionPeriod? {
+        guard let intro = storeProduct.introductoryDiscount,
+              intro.paymentMode == .freeTrial else { return nil }
+        return intro.subscriptionPeriod
+    }
+}
+
+private extension SubscriptionPeriod {
+    /// Adjective form for badges/CTAs: "7-day", "2-week", "1-month".
+    /// A 1-week period is normalized to "7-day" since that reads more naturally.
+    var trialAdjective: String {
+        switch unit {
+        case .day: return "\(value)-day"
+        case .week: return value == 1 ? "7-day" : "\(value)-week"
+        case .month: return "\(value)-month"
+        case .year: return "\(value)-year"
+        @unknown default: return "\(value)"
+        }
+    }
+
+    /// Noun phrase for sentences: "7 days", "2 weeks", "1 month".
+    var trialNoun: String {
+        switch unit {
+        case .day: return "\(value) day\(value == 1 ? "" : "s")"
+        case .week: return value == 1 ? "7 days" : "\(value) weeks"
+        case .month: return "\(value) month\(value == 1 ? "" : "s")"
+        case .year: return "\(value) year\(value == 1 ? "" : "s")"
+        @unknown default: return "\(value)"
+        }
     }
 }
 
@@ -473,6 +504,12 @@ private struct PlanCard: View {
                                     Capsule().fill(Color.accentColor)
                                 )
                         }
+                    }
+                    if let trial = package.introFreeTrial {
+                        Text("\(trial.trialAdjective.uppercased()) FREE TRIAL")
+                            .font(.system(size: 10, weight: .heavy))
+                            .tracking(0.5)
+                            .foregroundStyle(Color.accentColor)
                     }
                     Text(subnote)
                         .font(.system(size: 12))

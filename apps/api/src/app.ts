@@ -1,3 +1,4 @@
+import type { ResponseMeta } from "@repo/dto";
 import type { APIResponse } from "@repo/types";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -16,8 +17,8 @@ export function createApp() {
 
   app.onError((err, c) => {
     if (err instanceof APIError) {
-      return c.json<APIResponse<null>>(
-        { data: null, error: err.message },
+      return c.json<APIResponse<null, ResponseMeta>>(
+        { data: null, error: err.message, meta: err.meta },
         err.statusCode as ContentfulStatusCode,
       );
     }
@@ -30,7 +31,14 @@ export function createApp() {
 
   app.use("/api/v1/*", async (c, next) => {
     const path = c.req.path;
-    if (path.startsWith("/api/v1/health")) return next();
+    // Health is public; webhooks authenticate via their own shared secret
+    // (Clerk Bearer tokens don't apply to server-to-server callbacks).
+    if (
+      path.startsWith("/api/v1/health") ||
+      path.startsWith("/api/v1/webhooks")
+    ) {
+      return next();
+    }
     return authMiddleware(c, next);
   });
 

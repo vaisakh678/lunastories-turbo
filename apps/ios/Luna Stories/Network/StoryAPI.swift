@@ -11,6 +11,12 @@ nonisolated struct FileRefResponse: Codable, Hashable {
     let url: String
 }
 
+/// One of the story's characters, for the cover collage. Mirrors CoverIconDTO.
+nonisolated struct CoverIcon: Codable, Hashable {
+    let symbolName: String
+    let tint: String
+}
+
 nonisolated indirect enum AnyJSON: Codable {
     case string(String)
     case int(Int)
@@ -139,6 +145,7 @@ nonisolated struct StoryResponse: Codable, Identifiable {
     let summary: String?
     let coverSymbol: String?
     let coverTint: String?
+    let coverIcons: [CoverIcon]?
     let durationSeconds: Int?
     let lastReadAt: String?
     let createdAt: String

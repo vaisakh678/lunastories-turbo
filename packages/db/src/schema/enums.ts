@@ -30,3 +30,23 @@ export const feedbackCategoryEnum = pgEnum("feedback_category", [
   "praise",
   "other",
 ]);
+
+// Subscription state mirrored from RevenueCat webhooks. "cancelled" and
+// "in_grace_period" still grant entitlement until subscription_expires_at;
+// see isSubscriptionActive() in the api subscription-service.
+export const subscriptionStatusEnum = pgEnum("subscription_status", [
+  "active",
+  "trialing",
+  "in_grace_period",
+  "cancelled",
+  "expired",
+  "none",
+]);
+
+export const subscriptionStoreEnum = pgEnum("subscription_store", [
+  "app_store",
+  "play_store",
+  "amazon",
+  "stripe",
+  "promotional",
+]);

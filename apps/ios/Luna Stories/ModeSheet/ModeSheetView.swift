@@ -15,7 +15,10 @@ struct ModeSheetView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(StoryGenerationManager.self) private var generations
+    @Environment(ToastCenter.self) private var toast
+    @Environment(SubscriptionsViewModel.self) private var subscriptions
     @State private var path = NavigationPath()
+    @State private var showPaywall: Bool = false
     @State private var errorMessage: String?
     /// The id of the in-flight generation we kicked off, so we only react
     /// to OUR generation finishing (not some other one already in flight).
@@ -60,6 +63,12 @@ struct ModeSheetView: View {
             actions: { Button("OK") { errorMessage = nil } },
             message: { Text(errorMessage ?? "") }
         )
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(.clear)
+        }
         // When OUR generation finishes while the modal is still up, push
         // the reader and dismiss. If the user has already dismissed early,
         // ModeSheetView is gone and this onChange never fires — the
@@ -67,12 +76,23 @@ struct ModeSheetView: View {
         .onChange(of: generations.inFlight?.status.kind) { _, _ in
             guard
                 let inFlight = generations.inFlight,
-                inFlight.id == generationId,
-                let story = inFlight.status.readyStory
+                inFlight.id == generationId
             else { return }
-            onComplete(story)
-            generations.acknowledge()
-            dismiss()
+            switch inFlight.status {
+            case .ready(let story):
+                onComplete(story)
+                generations.acknowledge()
+                dismiss()
+            case .failed(let message):
+                // Quota/other generation failure: clear the in-flight slot so
+                // the home banner doesn't also surface it, close this modal,
+                // and show the server's message as a toast at the app root.
+                generations.acknowledge()
+                dismiss()
+                toast.show(message, style: .error)
+            case .generating:
+                break
+            }
         }
     }
 
@@ -148,6 +168,14 @@ struct ModeSheetView: View {
     }
 
     private func handleComplete(_ payload: StoryInputPayload, cues: [GenerationCue]) {
+        // Generation is Pro-gated (backend returns 402 too). Catch it here at
+        // the final step so non-subscribers get the paywall instead of a
+        // failed generation + toast.
+        guard subscriptions.isPro else {
+            showPaywall = true
+            return
+        }
+
         // Prepend the user's home characters as cues so the carousel feels
         // personal — "your story is being made for you and your kid."
         let homeCues: [GenerationCue] = characters.map { c in

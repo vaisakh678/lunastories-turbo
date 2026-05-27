@@ -16,6 +16,8 @@ struct StoryReaderView: View {
     @State private var audioErrorMessage: String?
     @State private var audioPlayer = StoryAudioPlayer()
     @State private var isMakingAnother: Bool = false
+    @State private var usage = UsageViewModel()
+    @Environment(ToastCenter.self) private var toast
 
     var body: some View {
         Group {
@@ -113,19 +115,19 @@ struct StoryReaderView: View {
                     .fill(Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.28))
                     .frame(maxWidth: 280, maxHeight: 280)
                     .blur(radius: 50)
-                ZStack {
-                    RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .fill(tint.opacity(0.32))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                                .strokeBorder(Color.miloCream.opacity(0.14), lineWidth: 1)
-                        )
-                    Image(systemName: story.coverSymbol ?? "book.fill")
-                        .font(.system(size: 80, weight: .semibold))
-                        .foregroundStyle(Color.miloCream)
-                }
+                StoryCoverGrid(
+                    icons: story.coverIcons ?? [],
+                    fallbackSymbol: story.coverSymbol ?? "book.fill",
+                    tint: tint,
+                    glyphPointSize: 56
+                )
                 .frame(maxWidth: .infinity)
                 .aspectRatio(1.3, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .strokeBorder(Color.miloCream.opacity(0.14), lineWidth: 1)
+                )
                 .shadow(color: Color.black.opacity(0.45), radius: 24, x: 0, y: 12)
             }
 
@@ -277,6 +279,20 @@ struct StoryReaderView: View {
         defer { isGeneratingAudio = false }
         do {
             story = try await StoryAPI.generateAudio(storyId)
+            // Narration just landed — refresh usage and warn once weekly audio
+            // crosses 80% (but isn't fully spent). The exhausted/400 case is
+            // surfaced via audioErrorMessage below.
+            await usage.refresh()
+            if let audio = usage.summary?.audio,
+               audio.percentUsed >= 80, audio.remaining > 0 {
+                toast.show(
+                    audio.message,
+                    title: "Running low on audio",
+                    style: .warning,
+                    progress: Double(audio.percentUsed) / 100,
+                    duration: 5,
+                )
+            }
         } catch {
             audioErrorMessage = (error as? APIError)?.errorDescription
                 ?? error.localizedDescription
