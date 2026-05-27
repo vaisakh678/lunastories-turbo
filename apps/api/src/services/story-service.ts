@@ -5,6 +5,7 @@ import db, {
 } from "@repo/db";
 import type {
   CharacterDTO,
+  CoverIconDTO,
   CursorPagedResponse,
   StoryContent,
   StoryDTO,
@@ -21,7 +22,10 @@ import { generateStory } from "../lib/story-generator";
 import { fileRefFor, uploadFile } from "./file-service";
 import { assertAudioQuota, assertStoryQuota } from "./usage-service";
 
-function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
+function toSummaryDTO(
+  row: typeof storySchema.$inferSelect,
+  coverIcons: CoverIconDTO[] = [],
+): StorySummaryDTO {
   return {
     id: row.id,
     status: row.status,
@@ -30,6 +34,7 @@ function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
     summary: row.summary,
     coverSymbol: row.coverSymbol,
     coverTint: row.coverTint,
+    coverIcons,
     durationSeconds: row.durationSeconds,
     textInputTokens: row.textInputTokens,
     textOutputTokens: row.textOutputTokens,
@@ -40,13 +45,47 @@ function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
   };
 }
 
+/**
+ * Fetches up to 4 cover icons (character symbol + tint) per story, ordered by
+ * character position (main first). One batched query for the whole set, so the
+ * paginated list stays N+1-free.
+ */
+async function coverIconsByStory(
+  storyIds: string[],
+): Promise<Map<string, CoverIconDTO[]>> {
+  const map = new Map<string, CoverIconDTO[]>();
+  if (storyIds.length === 0) return map;
+
+  const rows = await db
+    .select({
+      storyId: storyCharacterSchema.storyId,
+      symbolName: characterSchema.symbolName,
+      tint: characterSchema.tint,
+    })
+    .from(storyCharacterSchema)
+    .innerJoin(
+      characterSchema,
+      eq(characterSchema.id, storyCharacterSchema.characterId),
+    )
+    .where(inArray(storyCharacterSchema.storyId, storyIds))
+    .orderBy(asc(storyCharacterSchema.position));
+
+  for (const r of rows) {
+    const list = map.get(r.storyId) ?? [];
+    if (list.length < 4) list.push({ symbolName: r.symbolName, tint: r.tint });
+    map.set(r.storyId, list);
+  }
+  return map;
+}
+
 async function toDTO(
   row: typeof storySchema.$inferSelect,
   characterIds: string[],
 ): Promise<StoryDTO> {
   const audio = row.audioFileId ? await fileRefFor(row.audioFileId) : null;
+  const coverIcons = (await coverIconsByStory([row.id])).get(row.id) ?? [];
   return {
-    ...toSummaryDTO(row),
+    ...toSummaryDTO(row, coverIcons),
     characterIds,
     generationInput: (row.generationInput ?? {}) as Record<string, unknown>,
     content: (row.content ?? null) as StoryContent | null,
@@ -203,7 +242,8 @@ export async function getLatestActiveStory(
   if (row.status === "failed") return null;
   if (row.status === "ready" && row.lastReadAt) return null;
 
-  return toSummaryDTO(row);
+  const icons = (await coverIconsByStory([row.id])).get(row.id) ?? [];
+  return toSummaryDTO(row, icons);
 }
 
 export async function getStoriesByUser(
@@ -236,7 +276,9 @@ export async function getStoriesByUser(
     .limit(limit + 1);
 
   const hasMore = rows.length > limit;
-  const items = rows.slice(0, limit).map(toSummaryDTO);
+  const page = rows.slice(0, limit);
+  const iconsMap = await coverIconsByStory(page.map((r) => r.id));
+  const items = page.map((r) => toSummaryDTO(r, iconsMap.get(r.id) ?? []));
   const nextCursor = hasMore ? items[items.length - 1]!.id : null;
 
   return { items, nextCursor };
