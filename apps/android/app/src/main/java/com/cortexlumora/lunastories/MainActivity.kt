@@ -32,6 +32,7 @@ import com.cortexlumora.lunastories.auth.AuthStep
 import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
 import com.cortexlumora.lunastories.network.UsageAPI
+import com.cortexlumora.lunastories.network.UserAPI
 import com.cortexlumora.lunastories.ui.components.ToastCenter
 import com.cortexlumora.lunastories.ui.components.ToastOverlay
 import com.cortexlumora.lunastories.ui.components.ToastStyle
@@ -211,9 +212,14 @@ private fun RootFlow() {
     LaunchedEffect(user) {
         if (user != null) {
             authVm.close()
-            // Tie RevenueCat's app-user-id to the Clerk id so Pro entitlement
-            // follows the user across reinstalls and devices.
-            user?.id?.let { uid -> Subscriptions.login(uid) }
+            // Register the *backend* user id (a DB UUID from /users/me) with
+            // RevenueCat — NOT the Clerk id. The RevenueCat webhook matches
+            // events to users by UUID, so a Clerk id (user_…) is dropped as an
+            // unknown user and Pro never syncs to the backend. Mirrors iOS
+            // (ContentView.syncProfileAndPush). Best effort: if the profile
+            // fetch fails we skip, and the next launch retries.
+            val backendId = runCatching { UserAPI.me().id }.getOrNull()
+            if (backendId != null) Subscriptions.login(backendId)
         } else {
             // Signed out — drop the RC alias so the next signed-in user
             // doesn't inherit cached state.
