@@ -1,6 +1,7 @@
 import db, { userSchema } from "@repo/db";
 import { eq } from "drizzle-orm";
 
+import { PaymentRequired } from "../lib/api-error";
 import { logger } from "../lib/logger";
 
 /**
@@ -183,4 +184,25 @@ export function isSubscriptionActive(user: {
   }
   if (!user.subscriptionExpiresAt) return false;
   return user.subscriptionExpiresAt.getTime() > Date.now();
+}
+
+/**
+ * Throws 402 if the user doesn't have an active subscription. Used to gate
+ * generation (stories + audio) behind Luna Pro.
+ */
+export async function assertActiveSubscription(userId: string): Promise<void> {
+  const [user] = await db
+    .select({
+      subscriptionStatus: userSchema.subscriptionStatus,
+      subscriptionExpiresAt: userSchema.subscriptionExpiresAt,
+    })
+    .from(userSchema)
+    .where(eq(userSchema.id, userId))
+    .limit(1);
+
+  if (!user || !isSubscriptionActive(user)) {
+    throw PaymentRequired(
+      "An active Luna Pro subscription is required to create stories.",
+    );
+  }
 }

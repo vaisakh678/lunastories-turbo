@@ -19,6 +19,7 @@ import { generateAudio } from "../lib/audio-generator";
 import { logger } from "../lib/logger";
 import { sendStoryReadyNotification } from "../lib/onesignal";
 import { generateStory } from "../lib/story-generator";
+import { assertActiveSubscription } from "./subscription-service";
 import { fileRefFor, uploadFile } from "./file-service";
 import { assertAudioQuota, assertStoryQuota } from "./usage-service";
 
@@ -124,6 +125,7 @@ export async function createStory(
   userId: string,
   data: CreateStory,
 ): Promise<StoryDTO> {
+  await assertActiveSubscription(userId);
   await assertStoryQuota(userId);
 
   const ownedCharacters = await db
@@ -335,6 +337,7 @@ export async function generateStoryAudio(
     throw BadRequest("Story has no body text to narrate");
   }
 
+  await assertActiveSubscription(userId);
   await assertAudioQuota(userId);
 
   const audio = await generateAudio(row.bodyText);
