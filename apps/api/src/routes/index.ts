@@ -5,10 +5,12 @@ import feedbackRoute from "./feedback-route";
 import healthRoute from "./health-route";
 import storyRoute from "./story-route";
 import userRoute from "./user-route";
+import webhookRoute from "./webhook-route";
 
 const appRoutes = new Hono();
 
 appRoutes.route("/health", healthRoute);
+appRoutes.route("/webhooks", webhookRoute);
 appRoutes.route("/users", userRoute);
 appRoutes.route("/characters", characterRoute);
 appRoutes.route("/stories", storyRoute);

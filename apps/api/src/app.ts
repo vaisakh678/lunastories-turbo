@@ -30,7 +30,14 @@ export function createApp() {
 
   app.use("/api/v1/*", async (c, next) => {
     const path = c.req.path;
-    if (path.startsWith("/api/v1/health")) return next();
+    // Health is public; webhooks authenticate via their own shared secret
+    // (Clerk Bearer tokens don't apply to server-to-server callbacks).
+    if (
+      path.startsWith("/api/v1/health") ||
+      path.startsWith("/api/v1/webhooks")
+    ) {
+      return next();
+    }
     return authMiddleware(c, next);
   });
 
