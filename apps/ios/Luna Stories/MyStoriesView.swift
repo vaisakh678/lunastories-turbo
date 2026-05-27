@@ -76,14 +76,14 @@ private struct StoryCard: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(tint.opacity(0.18))
-                Image(systemName: story.coverSymbol ?? "book.fill")
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(tint)
-            }
+            StoryCoverGrid(
+                icons: story.coverIcons ?? [],
+                fallbackSymbol: story.coverSymbol ?? "book.fill",
+                tint: tint,
+                glyphPointSize: 20
+            )
             .frame(width: 84, height: 84)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(story.title ?? "Untitled story")

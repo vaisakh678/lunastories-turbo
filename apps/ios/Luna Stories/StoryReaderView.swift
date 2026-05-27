@@ -115,19 +115,19 @@ struct StoryReaderView: View {
                     .fill(Color(red: 0.91, green: 0.35, blue: 0.24).opacity(0.28))
                     .frame(maxWidth: 280, maxHeight: 280)
                     .blur(radius: 50)
-                ZStack {
-                    RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .fill(tint.opacity(0.32))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                                .strokeBorder(Color.miloCream.opacity(0.14), lineWidth: 1)
-                        )
-                    Image(systemName: story.coverSymbol ?? "book.fill")
-                        .font(.system(size: 80, weight: .semibold))
-                        .foregroundStyle(Color.miloCream)
-                }
+                StoryCoverGrid(
+                    icons: story.coverIcons ?? [],
+                    fallbackSymbol: story.coverSymbol ?? "book.fill",
+                    tint: tint,
+                    glyphPointSize: 56
+                )
                 .frame(maxWidth: .infinity)
                 .aspectRatio(1.3, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .strokeBorder(Color.miloCream.opacity(0.14), lineWidth: 1)
+                )
                 .shadow(color: Color.black.opacity(0.45), radius: 24, x: 0, y: 12)
             }
 
