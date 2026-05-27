@@ -26,10 +26,12 @@ async function usageFor(
 
   const used = row?.used ?? 0;
   const remaining = Math.max(0, total - used);
+  const percentUsed = total > 0 ? Math.round((used / total) * 100) : 0;
   return {
     used,
     total,
     remaining,
+    percentUsed,
     resetsAt: (row?.resetsAt ?? new Date()).toISOString(),
     message: `${remaining} of ${total} ${noun} left this week`,
   };

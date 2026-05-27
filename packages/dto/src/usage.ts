@@ -8,6 +8,8 @@ export interface GenerationUsageDTO {
   total: number;
   /** Remaining in the window — max(0, total - used). */
   remaining: number;
+  /** Percentage of the cap used, 0–100 (rounded). For progress UI. */
+  percentUsed: number;
   /** ISO timestamp when the window resets (next Saturday 00:00). */
   resetsAt: string;
 }
