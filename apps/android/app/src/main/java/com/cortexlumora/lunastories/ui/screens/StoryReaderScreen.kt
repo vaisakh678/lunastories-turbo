@@ -54,6 +54,7 @@ import com.cortexlumora.lunastories.stories.StoryInputPayload
 import com.cortexlumora.lunastories.stories.StoryModes
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
+import com.cortexlumora.lunastories.ui.components.StoryCoverGrid
 import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
 import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
@@ -162,21 +163,15 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
             .padding(horizontal = 16.dp),
     ) {
         val coverTint = ColorPalette.color(story.coverTint)
-        Box(
+        StoryCoverGrid(
+            icons = story.coverIcons.orEmpty(),
+            tint = coverTint,
+            glyphSize = 48.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(160.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(coverTint.copy(alpha = 0.18f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = story.title?.take(2)?.uppercase() ?: "✨",
-                color = coverTint,
-                fontSize = 44.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
+                .clip(RoundedCornerShape(28.dp)),
+        )
 
         Spacer(Modifier.height(16.dp))
         story.title?.let {

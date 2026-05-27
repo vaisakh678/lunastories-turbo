@@ -60,6 +60,7 @@ import com.cortexlumora.lunastories.network.StoryResponse
 import com.cortexlumora.lunastories.network.StoryStatus
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
+import com.cortexlumora.lunastories.ui.components.StoryCoverGrid
 import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
 import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
@@ -313,19 +314,14 @@ private fun StoryRow(story: StoryResponse, onTap: () -> Unit) {
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
+        StoryCoverGrid(
+            icons = story.coverIcons.orEmpty(),
+            tint = tint,
+            glyphSize = 20.dp,
             modifier = Modifier
                 .size(72.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(tint.copy(alpha = 0.22f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = story.title?.take(2)?.uppercase() ?: "✨",
-                color = tint,
-                style = MaterialTheme.typography.headlineSmall,
-            )
-        }
+                .clip(RoundedCornerShape(14.dp)),
+        )
         Spacer(Modifier.size(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
