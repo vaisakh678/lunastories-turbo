@@ -19,6 +19,7 @@ import { logger } from "../lib/logger";
 import { sendStoryReadyNotification } from "../lib/onesignal";
 import { generateStory } from "../lib/story-generator";
 import { fileRefFor, uploadFile } from "./file-service";
+import { assertAudioQuota, assertStoryQuota } from "./usage-service";
 
 function toSummaryDTO(row: typeof storySchema.$inferSelect): StorySummaryDTO {
   return {
@@ -84,6 +85,8 @@ export async function createStory(
   userId: string,
   data: CreateStory,
 ): Promise<StoryDTO> {
+  await assertStoryQuota(userId);
+
   const ownedCharacters = await db
     .select()
     .from(characterSchema)
@@ -290,6 +293,8 @@ export async function generateStoryAudio(
     throw BadRequest("Story has no body text to narrate");
   }
 
+  await assertAudioQuota(userId);
+
   const audio = await generateAudio(row.bodyText);
   const key = `files/${crypto.randomUUID()}.mp3`;
   const file = await uploadFile({
@@ -304,6 +309,7 @@ export async function generateStoryAudio(
       audioFileId: file.id,
       durationSeconds: audio.durationSeconds,
       audioInputChars: audio.inputChars,
+      audioGeneratedAt: new Date(),
     })
     .where(eq(storySchema.id, storyId))
     .returning();

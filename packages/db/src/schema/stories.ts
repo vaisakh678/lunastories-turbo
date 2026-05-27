@@ -38,6 +38,9 @@ export const storySchema = pgTable("stories", {
     onDelete: "set null",
   }),
   durationSeconds: integer("duration_seconds"),
+  // When narration was last generated for this story. Drives the weekly
+  // audio-generation quota (counting rows whose audio was made this week).
+  audioGeneratedAt: timestamp("audio_generated_at", { withTimezone: true }),
 
   textInputTokens: integer("text_input_tokens"),
   textOutputTokens: integer("text_output_tokens"),
