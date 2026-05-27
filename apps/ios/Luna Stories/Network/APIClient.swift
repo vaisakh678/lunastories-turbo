@@ -114,7 +114,14 @@ actor APIClient {
             throw APIError.invalidResponse
         }
 
-        if http.statusCode == 401 { throw APIError.unauthorized }
+        if http.statusCode == 401 {
+            // The session is stale/invalid (e.g. token from a different Clerk
+            // instance after a dev→prod switch, or an expired session that
+            // couldn't refresh). Clear it so ContentView falls back to sign-in
+            // instead of looping 401s while still appearing "logged in".
+            try? await Clerk.shared.auth.signOut()
+            throw APIError.unauthorized
+        }
 
         let envelope: APIEnvelope<T>
         do {
