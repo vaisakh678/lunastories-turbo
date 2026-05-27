@@ -22,6 +22,13 @@ data class GenerationCue(
     val label: String,
     val drawableRes: Int?,
     val tintName: String,
+    /**
+     * Bundled avatar UUID for a character cue. When set, the generating
+     * carousel renders the child's avatar image (resolved at draw time)
+     * instead of a catalog drawable or the label initials. Mirrors iOS,
+     * where the cue's avatar lives in `symbolName`.
+     */
+    val avatarId: String? = null,
 )
 
 sealed class GenerationStatus {
