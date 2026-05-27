@@ -6,8 +6,9 @@
 //  screen can read `isPro` (gating Pro features) and the paywall can
 //  render live offerings + dispatch real purchases.
 //
-//  The "pro" entitlement identifier matches what's configured in the
-//  RevenueCat dashboard (Project Settings → Entitlements → "pro").
+//  The "Pro" entitlement identifier matches what's configured in the
+//  RevenueCat dashboard (Project Settings → Entitlements → "Pro").
+//  Identifiers are case-sensitive, so this must match exactly.
 //  Both the monthly and annual products grant this entitlement.
 //
 
@@ -23,8 +24,8 @@ final class SubscriptionsViewModel {
     private(set) var isLoading: Bool = false
     var errorMessage: String?
 
-    /// Identifier configured in RevenueCat dashboard.
-    private static let proEntitlement = "pro"
+    /// Identifier configured in RevenueCat dashboard (case-sensitive).
+    private static let proEntitlement = "Pro"
 
     /// Refresh both offerings (what to show in the paywall) and the
     /// current customer info (whether they have the pro entitlement).
