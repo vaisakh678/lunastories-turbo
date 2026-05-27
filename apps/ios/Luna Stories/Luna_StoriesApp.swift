@@ -18,7 +18,7 @@ struct Luna_StoriesApp: App {
     @State private var toast = ToastCenter()
 
     init() {
-        Clerk.configure(publishableKey: "pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ")
+        Clerk.configure(publishableKey: Config.clerkPublishableKey)
         // Initialize OneSignal early so it can pick up cold-start launches
         // from a notification tap. Router + latestStory live at app scope
         // so the SDK's handlers (click + foreground) can write into them

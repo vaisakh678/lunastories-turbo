@@ -1,7 +1,7 @@
 // Production environment.
-// TODO: when the prod API is deployed, swap this to its host (e.g. api.milotales.com).
 
-API_BASE_URL = http:/$()/localhost:3001
+API_BASE_URL = https:/$()/lunastories-prod-api.cortexlumora.com
 APP_NAME = Luna
 ONESIGNAL_APP_ID = 5d1e8899-6667-4617-95a8-defc97c8c048
 REVENUECAT_API_KEY = appl_gdwYZlhzWZMeSSEsDYWHwFNuQRM
+CLERK_PUBLISHABLE_KEY = pk_live_Y2xlcmsubHVuYXN0b3JpZXMuY29ydGV4bHVtb3JhLmNvbSQ

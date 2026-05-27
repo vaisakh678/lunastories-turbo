@@ -44,4 +44,14 @@ nonisolated enum Config {
         }
         return value
     }
+
+    /// Clerk publishable key (`pk_test_…` / `pk_live_…`) for the active
+    /// environment. Sourced from `CLERK_PUBLISHABLE_KEY` in the per-env xcconfig.
+    nonisolated static var clerkPublishableKey: String {
+        guard let value = Bundle.main.infoDictionary?["CLERK_PUBLISHABLE_KEY"] as? String,
+              !value.isEmpty else {
+            fatalError("Missing CLERK_PUBLISHABLE_KEY — check that the active build configuration links a Config/*.xcconfig and that Info.plist references $(CLERK_PUBLISHABLE_KEY)")
+        }
+        return value
+    }
 }
