@@ -111,7 +111,7 @@ struct PaywallView: View {
                     )
                     .shadow(color: Color.black.opacity(0.4), radius: 18, x: 0, y: 10)
             }
-            .padding(.top, 16)
+            .padding(.top, 0)
 
             VStack(spacing: 6) {
                 ProTitleBadge()
