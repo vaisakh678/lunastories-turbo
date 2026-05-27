@@ -29,6 +29,13 @@ data class StoryContent(val blocks: List<StoryContentBlock> = emptyList())
 @Serializable
 data class FileRef(val fileId: String, val key: String, val url: String)
 
+/** One of the story's characters, for the cover collage. Mirrors CoverIconDTO. */
+@Serializable
+data class CoverIcon(
+    val symbolName: String,
+    val tint: String,
+)
+
 @Serializable
 data class StoryResponse(
     val id: String,
@@ -38,6 +45,7 @@ data class StoryResponse(
     val summary: String? = null,
     val coverSymbol: String? = null,
     val coverTint: String? = null,
+    val coverIcons: List<CoverIcon>? = null,
     val durationSeconds: Int? = null,
     val lastReadAt: String? = null,
     val createdAt: String,
