@@ -63,7 +63,9 @@ object Subscriptions {
 
     suspend fun restore(): CustomerInfo = Purchases.sharedInstance.awaitRestore()
 
-    fun isEntitled(info: CustomerInfo?, entitlement: String = "pro"): Boolean =
+    // Entitlement identifier is case-sensitive and configured as "Pro" in the
+    // RevenueCat dashboard — must match exactly (mirrors iOS).
+    fun isEntitled(info: CustomerInfo?, entitlement: String = "Pro"): Boolean =
         info?.entitlements?.get(entitlement)?.isActive == true
 
     /**

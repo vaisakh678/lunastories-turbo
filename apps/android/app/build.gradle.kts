@@ -65,6 +65,18 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Production overrides (debug/defaultConfig points at the local dev
+            // API + dev Clerk instance). Mirrors iOS Prod.xcconfig.
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"https://lunastories-prod-api.cortexlumora.com\"",
+            )
+            buildConfigField(
+                "String",
+                "CLERK_PUBLISHABLE_KEY",
+                "\"pk_live_Y2xlcmsubHVuYXN0b3JpZXMuY29ydGV4bHVtb3JhLmNvbSQ\"",
+            )
             // Only attach the release signing config when keystore.properties
             // is present, so ./gradlew assembleRelease still compiles locally
             // even before the keystore is set up.

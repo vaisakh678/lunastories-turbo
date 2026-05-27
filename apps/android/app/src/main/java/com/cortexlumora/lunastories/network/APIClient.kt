@@ -72,7 +72,13 @@ object APIClient {
     }
 
     suspend inline fun <reified T> unwrap(response: HttpResponse): T {
-        if (response.status == HttpStatusCode.Unauthorized) throw APIError.Unauthorized()
+        if (response.status == HttpStatusCode.Unauthorized) {
+            // Stale/invalid session (e.g. token from a different Clerk instance
+            // after a dev→prod switch). Clear it so the app falls back to
+            // sign-in instead of looping 401s while "logged in". Mirrors iOS.
+            runCatching { Clerk.auth.signOut() }
+            throw APIError.Unauthorized()
+        }
         // Only treat the body as our JSON envelope if the server actually sent
         // JSON. Otherwise an HTML page (e.g. someone pointing at the wrong
         // port and hitting the docs site) would land verbatim in the error
