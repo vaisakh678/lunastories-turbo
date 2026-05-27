@@ -8,7 +8,6 @@ import { BadRequest } from "../lib/api-error";
 // Start of the current weekly window: the most recent Saturday at 00:00.
 // dow is Sun=0 … Sat=6, so days since Saturday = (dow + 1) % 7.
 const WEEK_START = sql`(date_trunc('day', now()) - ((extract(dow from now())::int + 1) % 7) * interval '1 day')`;
-const WEEK_RESETS_AT = sql<Date>`${WEEK_START} + interval '7 days'`;
 
 async function usageFor(
   userId: string,
@@ -19,7 +18,10 @@ async function usageFor(
   const [row] = await db
     .select({
       used: sql<number>`count(*)::int`,
-      resetsAt: WEEK_RESETS_AT,
+      // Epoch seconds (float8) — node-postgres parses this to a JS number,
+      // avoiding the timestamptz string/Date ambiguity of a raw sql expression
+      // (which came back as a string and broke .toISOString()).
+      resetEpoch: sql<number>`extract(epoch from (${WEEK_START} + interval '7 days'))`,
     })
     .from(storySchema)
     .where(and(eq(storySchema.userId, userId), gte(windowColumn, WEEK_START)));
@@ -27,12 +29,13 @@ async function usageFor(
   const used = row?.used ?? 0;
   const remaining = Math.max(0, total - used);
   const percentUsed = total > 0 ? Math.round((used / total) * 100) : 0;
+  const resetsAt = new Date((row?.resetEpoch ?? Date.now() / 1000) * 1000);
   return {
     used,
     total,
     remaining,
     percentUsed,
-    resetsAt: (row?.resetsAt ?? new Date()).toISOString(),
+    resetsAt: resetsAt.toISOString(),
     message: `${remaining} of ${total} ${noun} left this week`,
   };
 }
