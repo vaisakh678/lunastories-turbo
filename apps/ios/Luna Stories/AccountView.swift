@@ -8,6 +8,7 @@ import ClerkKit
 
 struct AccountView: View {
     @Environment(Clerk.self) private var clerk
+    @Environment(SubscriptionsViewModel.self) private var subscriptions
     @State private var confirmingLogout: Bool = false
     @State private var isLoggingOut: Bool = false
     @State private var errorMessage: String?
@@ -56,18 +57,17 @@ struct AccountView: View {
                 }
                 .padding(.top, 12)
 
+                SubscriptionBanner(
+                    isPro: subscriptions.isPro,
+                    onUpgrade: { showPaywall = true },
+                    onManage: { Task { await Subscriptions.manage() } }
+                )
+
                 VStack(spacing: 0) {
                     NavigationLink {
                         MyStoriesView()
                     } label: {
                         MenuRowLabel(icon: "book.fill", title: "My Stories")
-                    }
-                    .buttonStyle(.plain)
-                    SoftDivider()
-                    Button {
-                        showPaywall = true
-                    } label: {
-                        MenuRowLabel(icon: "star.circle.fill", title: "Subscribe")
                     }
                     .buttonStyle(.plain)
                     SoftDivider()
@@ -127,16 +127,20 @@ struct AccountView: View {
             .padding(.vertical, 20)
         }
         .background(MoodyTwilightBackground().ignoresSafeArea())
+        .task { await subscriptions.refresh() }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showPaywall = true
-                } label: {
-                    Text("PRO")
-                        .font(.system(size: 13, weight: .heavy))
-                        .tracking(0.8)
+            // Only nudge an upgrade when they're not already subscribed.
+            if !subscriptions.isPro {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showPaywall = true
+                    } label: {
+                        Text("PRO")
+                            .font(.system(size: 13, weight: .heavy))
+                            .tracking(0.8)
+                    }
+                    .accessibilityLabel("Upgrade to Pro")
                 }
-                .accessibilityLabel("Upgrade to Pro")
             }
         }
         .sheet(isPresented: $showPaywall) {
@@ -174,6 +178,65 @@ struct AccountView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+}
+
+private struct SubscriptionBanner: View {
+    let isPro: Bool
+    let onUpgrade: () -> Void
+    let onManage: () -> Void
+
+    var body: some View {
+        Button(action: isPro ? onManage : onUpgrade) {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.18))
+                    Image(systemName: isPro ? "crown.fill" : "sparkles")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                }
+                .frame(width: 44, height: 44)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(isPro ? "Luna Pro" : "Unlock Luna Pro")
+                        .font(.headline)
+                        .foregroundStyle(Color.miloCream)
+                    Text(
+                        isPro
+                            ? "Your subscription is active"
+                            : "Unlimited stories & narration"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(Color.miloCream.opacity(0.7))
+                }
+
+                Spacer(minLength: 0)
+
+                Text(isPro ? "Manage" : "Upgrade")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(
+                        isPro ? Color.miloCream.opacity(0.9) : Color.accentColor
+                    )
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.miloCream.opacity(0.06))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(
+                                isPro
+                                    ? Color.accentColor.opacity(0.35)
+                                    : Color.miloCream.opacity(0.08),
+                                lineWidth: 1
+                            )
+                    )
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
     }
 }
 

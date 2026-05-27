@@ -37,7 +37,7 @@ final class SubscriptionsViewModel {
         async let customerResult = fetchCustomerInfo()
         offerings = await offeringsResult
         if let info = await customerResult {
-            isPro = info.entitlements[Self.proEntitlement]?.isActive == true
+            isPro = info.entitlements.active[Self.proEntitlement] != nil
         }
     }
 
@@ -48,7 +48,7 @@ final class SubscriptionsViewModel {
     func purchase(package: Package) async throws -> Bool {
         let result = try await Purchases.shared.purchase(package: package)
         if result.userCancelled { return false }
-        let active = result.customerInfo.entitlements[Self.proEntitlement]?.isActive == true
+        let active = result.customerInfo.entitlements.active[Self.proEntitlement] != nil
         isPro = active
         return active
     }
@@ -58,7 +58,7 @@ final class SubscriptionsViewModel {
     @discardableResult
     func restore() async throws -> Bool {
         let info = try await Purchases.shared.restorePurchases()
-        let active = info.entitlements[Self.proEntitlement]?.isActive == true
+        let active = info.entitlements.active[Self.proEntitlement] != nil
         isPro = active
         return active
     }
