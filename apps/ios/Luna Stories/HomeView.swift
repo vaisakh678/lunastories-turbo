@@ -7,9 +7,11 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var vm = CharactersViewModel()
+    @State private var usage = UsageViewModel()
     @Environment(StoryGenerationManager.self) private var generations
     @Environment(DeepLinkRouter.self) private var deepLinks
     @Environment(LatestStoryViewModel.self) private var unread
+    @Environment(ToastCenter.self) private var toast
     @State private var addingRole: CharacterRole?
     @State private var editingCharacter: Character?
     @State private var showStoryFlow: Bool = false
@@ -272,8 +274,26 @@ struct HomeView: View {
             }
             // Re-check unread when an in-flight generation lands — that
             // story may now be the latest unread.
-            .onChange(of: generations.inFlight?.status.kind) { _, _ in
+            .onChange(of: generations.inFlight?.status.kind) { _, newKind in
                 Task { await unread.refresh() }
+                // kind == 1 is .ready: a story just landed. Refresh usage and
+                // warn once it crosses 80% (but isn't fully spent — the
+                // exhausted/blocked case is handled by the rejection toast).
+                if newKind == 1 {
+                    Task {
+                        await usage.refresh()
+                        if let stories = usage.summary?.stories,
+                           stories.percentUsed >= 80, stories.remaining > 0 {
+                            toast.show(
+                                stories.message,
+                                title: "Running low on stories",
+                                style: .warning,
+                                progress: Double(stories.percentUsed) / 100,
+                                duration: 5,
+                            )
+                        }
+                    }
+                }
             }
             // Poll while a server-side generation is in flight (e.g. user
             // force-quit during generation and the local manager is no
