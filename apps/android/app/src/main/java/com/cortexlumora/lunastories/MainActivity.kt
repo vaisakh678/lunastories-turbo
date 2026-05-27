@@ -255,6 +255,7 @@ private fun RootFlow() {
                     onOpenSettings = { accountSubroute = AccountSubroute.Settings },
                     onOpenFeedback = { accountSubroute = AccountSubroute.Feedback },
                     onOpenPaywall = { showPaywall = true },
+                    isPro = isPro,
                 )
             }
         }
