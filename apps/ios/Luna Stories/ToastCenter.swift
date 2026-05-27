@@ -4,8 +4,9 @@
 //
 //  App-scoped, lightweight toast notifications. Inject `ToastCenter` into the
 //  environment and render `ToastOverlay()` once at the app root; anywhere can
-//  then call `toast.show("…")`. Used e.g. when story generation is rejected
-//  (quota reached) — the modal closes and the message surfaces here.
+//  then call `toast.show(...)`. Two shapes:
+//   - compact error (e.g. generation rejected / quota hit)
+//   - a larger card with a title + progress bar (e.g. "running low" at >=80%)
 //
 
 import Observation
@@ -13,12 +14,14 @@ import SwiftUI
 
 enum ToastStyle: Equatable {
     case error
+    case warning
     case info
     case success
 
     var icon: String {
         switch self {
         case .error: "exclamationmark.triangle.fill"
+        case .warning: "exclamationmark.circle.fill"
         case .info: "info.circle.fill"
         case .success: "checkmark.circle.fill"
         }
@@ -27,6 +30,7 @@ enum ToastStyle: Equatable {
     var tint: Color {
         switch self {
         case .error: Color(red: 0.95, green: 0.49, blue: 0.34) // warm coral
+        case .warning: Color(red: 0.96, green: 0.73, blue: 0.26) // gold
         case .info: .accentColor
         case .success: Color(red: 0.40, green: 0.78, blue: 0.55)
         }
@@ -35,8 +39,11 @@ enum ToastStyle: Equatable {
 
 struct Toast: Identifiable, Equatable {
     let id = UUID()
+    let title: String?
     let message: String
     let style: ToastStyle
+    /// Optional progress bar value, 0...1 — drives the "running low" card.
+    let progress: Double?
 }
 
 @Observable
@@ -47,8 +54,14 @@ final class ToastCenter {
 
     /// Show a toast, auto-dismissing after `duration` seconds. A new toast
     /// replaces any current one (and resets the timer).
-    func show(_ message: String, style: ToastStyle = .error, duration: Double = 3) {
-        current = Toast(message: message, style: style)
+    func show(
+        _ message: String,
+        title: String? = nil,
+        style: ToastStyle = .error,
+        progress: Double? = nil,
+        duration: Double = 3,
+    ) {
+        current = Toast(title: title, message: message, style: style, progress: progress)
         dismissTask?.cancel()
         dismissTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(duration))
@@ -87,15 +100,28 @@ private struct ToastCard: View {
     @State private var dragOffset: CGFloat = 0
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: toast.style.icon)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(toast.style.tint)
 
-            Text(toast.message)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Color.miloCream)
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 6) {
+                if let title = toast.title {
+                    Text(title)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(Color.miloCream)
+                }
+                Text(toast.message)
+                    .font(.subheadline.weight(toast.title == nil ? .medium : .regular))
+                    .foregroundStyle(Color.miloCream.opacity(toast.title == nil ? 1 : 0.75))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if let progress = toast.progress {
+                    ProgressBar(value: progress, tint: toast.style.tint)
+                        .frame(height: 6)
+                        .padding(.top, 2)
+                }
+            }
 
             Spacer(minLength: 8)
 
@@ -137,5 +163,21 @@ private struct ToastCard: View {
                     }
                 }
         )
+    }
+}
+
+private struct ProgressBar: View {
+    let value: Double // 0...1
+    let tint: Color
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.miloCream.opacity(0.15))
+                Capsule()
+                    .fill(tint)
+                    .frame(width: geo.size.width * min(max(value, 0), 1))
+            }
+        }
     }
 }
