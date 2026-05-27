@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
+import type { ResponseMeta } from "@repo/dto";
 import type { APIResponse } from "@repo/types";
 import { createStorySchema, storyListQuerySchema } from "@repo/zod";
 import { Hono } from "hono";
@@ -14,6 +15,7 @@ import {
   markStoryAsRead,
   softDeleteStory,
 } from "../services/story-service";
+import { audioUsage, storyUsage } from "../services/usage-service";
 
 const storyIdParamSchema = z.object({ id: z.string().uuid() });
 
@@ -23,7 +25,11 @@ const storyRoute = new Hono()
     const userId = getUserIdFromCTX(c);
 
     const story = await createStory(userId, data);
-    return c.json<APIResponse<typeof story>>({ data: story });
+    const usage = await storyUsage(userId);
+    return c.json<APIResponse<typeof story, ResponseMeta>>({
+      data: story,
+      meta: { usage },
+    });
   })
   .get("/", zValidator("query", storyListQuerySchema), async (c) => {
     const userId = getUserIdFromCTX(c);
@@ -54,7 +60,11 @@ const storyRoute = new Hono()
       const userId = getUserIdFromCTX(c);
 
       const story = await generateStoryAudio(userId, id);
-      return c.json<APIResponse<typeof story>>({ data: story });
+      const usage = await audioUsage(userId);
+      return c.json<APIResponse<typeof story, ResponseMeta>>({
+        data: story,
+        meta: { usage },
+      });
     },
   )
   .post("/:id/read", zValidator("param", storyIdParamSchema), async (c) => {

@@ -1,53 +1,82 @@
 import db, { storySchema } from "@repo/db";
-import { and, eq, gte, sql } from "drizzle-orm";
+import type { GenerationUsageDTO, UsageSummaryDTO } from "@repo/dto";
+import { and, eq, gte, sql, type AnyColumn } from "drizzle-orm";
 
-import { MAX_AUDIO_PER_WEEK, MAX_STORIES_PER_MONTH } from "../config/limits";
+import { MAX_AUDIO_PER_WEEK, MAX_STORIES_PER_WEEK } from "../config/limits";
 import { BadRequest } from "../lib/api-error";
 
-/** Stories the user has generated since the start of the current month. */
-async function storiesThisMonth(userId: string): Promise<number> {
+// Start of the current weekly window: the most recent Saturday at 00:00.
+// dow is Sun=0 … Sat=6, so days since Saturday = (dow + 1) % 7.
+const WEEK_START = sql`(date_trunc('day', now()) - ((extract(dow from now())::int + 1) % 7) * interval '1 day')`;
+const WEEK_RESETS_AT = sql<Date>`${WEEK_START} + interval '7 days'`;
+
+async function usageFor(
+  userId: string,
+  windowColumn: AnyColumn,
+  total: number,
+  noun: string,
+): Promise<GenerationUsageDTO> {
   const [row] = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({
+      used: sql<number>`count(*)::int`,
+      resetsAt: WEEK_RESETS_AT,
+    })
     .from(storySchema)
-    .where(
-      and(
-        eq(storySchema.userId, userId),
-        // Count every generation, including ones later soft-deleted — the
-        // generation cost was already incurred.
-        gte(storySchema.createdAt, sql`date_trunc('month', now())`),
-      ),
-    );
-  return row?.count ?? 0;
+    .where(and(eq(storySchema.userId, userId), gte(windowColumn, WEEK_START)));
+
+  const used = row?.used ?? 0;
+  const remaining = Math.max(0, total - used);
+  return {
+    used,
+    total,
+    remaining,
+    resetsAt: (row?.resetsAt ?? new Date()).toISOString(),
+    message: `${remaining} of ${total} ${noun} left this week`,
+  };
 }
 
-/** Narrations the user has generated since the start of the current week. */
-async function audioThisWeek(userId: string): Promise<number> {
-  const [row] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(storySchema)
-    .where(
-      and(
-        eq(storySchema.userId, userId),
-        gte(storySchema.audioGeneratedAt, sql`date_trunc('week', now())`),
-      ),
-    );
-  return row?.count ?? 0;
+/** Story-generation usage for the current week (counted by created_at). */
+export function storyUsage(userId: string): Promise<GenerationUsageDTO> {
+  return usageFor(userId, storySchema.createdAt, MAX_STORIES_PER_WEEK, "stories");
 }
 
-/** Throws 400 if the user has hit the monthly story-generation cap. */
+/** Audio-narration usage for the current week (counted by audio_generated_at). */
+export function audioUsage(userId: string): Promise<GenerationUsageDTO> {
+  return usageFor(
+    userId,
+    storySchema.audioGeneratedAt,
+    MAX_AUDIO_PER_WEEK,
+    "audio narrations",
+  );
+}
+
+/** Both quotas at once — for GET /usage. */
+export async function usageSummary(userId: string): Promise<UsageSummaryDTO> {
+  const [stories, audio] = await Promise.all([
+    storyUsage(userId),
+    audioUsage(userId),
+  ]);
+  return { stories, audio };
+}
+
+/** Throws 400 (with usage in meta) if the weekly story cap is reached. */
 export async function assertStoryQuota(userId: string): Promise<void> {
-  if ((await storiesThisMonth(userId)) >= MAX_STORIES_PER_MONTH) {
+  const usage = await storyUsage(userId);
+  if (usage.remaining <= 0) {
     throw BadRequest(
-      `You've reached your limit of ${MAX_STORIES_PER_MONTH} stories this month. It resets at the start of next month.`,
+      `You've reached your limit of ${usage.total} stories this week. It resets Saturday.`,
+      { usage },
     );
   }
 }
 
-/** Throws 400 if the user has hit the weekly audio-generation cap. */
+/** Throws 400 (with usage in meta) if the weekly audio cap is reached. */
 export async function assertAudioQuota(userId: string): Promise<void> {
-  if ((await audioThisWeek(userId)) >= MAX_AUDIO_PER_WEEK) {
+  const usage = await audioUsage(userId);
+  if (usage.remaining <= 0) {
     throw BadRequest(
-      `You've reached your limit of ${MAX_AUDIO_PER_WEEK} audio narrations this week. It resets on Monday.`,
+      `You've reached your limit of ${usage.total} audio narrations this week. It resets Saturday.`,
+      { usage },
     );
   }
 }
