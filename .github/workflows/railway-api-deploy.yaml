@@ -2,7 +2,7 @@ name: Railway API Deploy
 
 on:
   push:
-    branches: [development]
+    branches: [development, main]
     paths:
       - "apps/api/**"
       - "packages/**"
