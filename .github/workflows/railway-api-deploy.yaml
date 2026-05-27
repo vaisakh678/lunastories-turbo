@@ -8,6 +8,7 @@ on:
       - "packages/**"
       - "pnpm-lock.yaml"
       - "turbo.json"
+      - "railway.json"
       - ".github/workflows/**"
 
 jobs:
