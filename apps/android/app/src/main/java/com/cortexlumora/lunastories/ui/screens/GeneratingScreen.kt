@@ -46,6 +46,7 @@ import com.cortexlumora.lunastories.network.StoryResponse
 import com.cortexlumora.lunastories.stories.GenerationCue
 import com.cortexlumora.lunastories.stories.GenerationStatus
 import com.cortexlumora.lunastories.stories.StoryGenerationManager
+import com.cortexlumora.lunastories.ui.components.CharacterIconView
 import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
@@ -168,15 +169,24 @@ private fun CueArt(cue: GenerationCue) {
             .border(1.dp, MiloCream.copy(alpha = 0.18f), RoundedCornerShape(28.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        if (cue.drawableRes != null) {
-            Image(
+        when {
+            // Character cue: render the bundled avatar (UUID resolved at draw
+            // time). CharacterIconView falls back to a tinted person glyph
+            // when the avatar isn't bundled, so it never renders blank.
+            cue.avatarId != null -> CharacterIconView(
+                symbolName = cue.avatarId,
+                tint = tint,
+                cornerRadius = 0.dp,
+                glyphSize = 56.dp,
+                modifier = Modifier.fillMaxSize(),
+            )
+            cue.drawableRes != null -> Image(
                 painter = painterResource(cue.drawableRes),
                 contentDescription = cue.label,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-        } else {
-            Text(
+            else -> Text(
                 text = cue.label.take(2).uppercase(),
                 color = tint,
                 fontSize = 36.sp,

@@ -200,6 +200,11 @@ private fun buildCreativeCues(
     profByChar: Map<String, PickOption>,
     moral: PickOption,
 ): List<GenerationCue> = buildList {
+    // Lead with the children's avatars so the carousel feels personal —
+    // "your story is being made for you and your kid." Mirrors iOS.
+    characters.forEach { c ->
+        add(GenerationCue("char-${c.id}", c.name, null, c.tint, avatarId = c.symbolName))
+    }
     add(GenerationCue("mode", mode.title, mode.heroRes, mode.tintName))
     characters.forEach { c ->
         typeByChar[c.id]?.let { add(GenerationCue("type-${c.id}", "${c.name} the ${it.title}", it.drawableRes, it.tintName ?: "orange")) }
@@ -253,11 +258,15 @@ private fun IconicFlow(
                         put("place", place!!.title)
                     },
                 )
-                val cues = listOf(
-                    GenerationCue("mode", mode.title, mode.heroRes, mode.tintName),
-                    GenerationCue("picked", picked!!.title, picked!!.drawableRes, picked!!.tintName ?: mode.tintName),
-                    GenerationCue("place", place!!.title, place!!.drawableRes, place!!.tintName ?: mode.tintName),
-                )
+                val cues = buildList {
+                    // Lead with the children's avatars, mirroring iOS.
+                    characters.forEach { c ->
+                        add(GenerationCue("char-${c.id}", c.name, null, c.tint, avatarId = c.symbolName))
+                    }
+                    add(GenerationCue("mode", mode.title, mode.heroRes, mode.tintName))
+                    add(GenerationCue("picked", picked!!.title, picked!!.drawableRes, picked!!.tintName ?: mode.tintName))
+                    add(GenerationCue("place", place!!.title, place!!.drawableRes, place!!.tintName ?: mode.tintName))
+                }
                 val title = "${picked!!.title} at ${place!!.title}"
                 onGenerate(payload, title, cues)
             }
