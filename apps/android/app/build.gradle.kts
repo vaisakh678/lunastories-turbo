@@ -44,6 +44,17 @@ android {
             "REVENUECAT_API_KEY",
             "\"goog_ysmCipdCRiqpPxyJgsxMdBpTDdm\"",
         )
+        // PostHog analytics. Disabled by default (debug/dev) so local testing
+        // doesn't pollute the single PostHog project; the release build flips
+        // POSTHOG_ENABLED to true (mirrors iOS Prod.xcconfig). Key + host are
+        // the same everywhere — the key is a public, write-only project token.
+        buildConfigField("boolean", "POSTHOG_ENABLED", "false")
+        buildConfigField(
+            "String",
+            "POSTHOG_API_KEY",
+            "\"phc_uELVgfpSKGRYPo5MYFNbPTXbFLb86RuKMgKqaBZaCarC\"",
+        )
+        buildConfigField("String", "POSTHOG_HOST", "\"https://us.i.posthog.com\"")
     }
 
     signingConfigs {
@@ -77,6 +88,7 @@ android {
                 "CLERK_PUBLISHABLE_KEY",
                 "\"pk_live_Y2xlcmsubHVuYXN0b3JpZXMuY29ydGV4bHVtb3JhLmNvbSQ\"",
             )
+            buildConfigField("boolean", "POSTHOG_ENABLED", "true")
             // Only attach the release signing config when keystore.properties
             // is present, so ./gradlew assembleRelease still compiles locally
             // even before the keystore is set up.
@@ -126,6 +138,7 @@ dependencies {
     // billing) wires up against this lib later.
     implementation(libs.android.billing.ktx)
     implementation(libs.revenuecat)
+    implementation(libs.posthog.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
