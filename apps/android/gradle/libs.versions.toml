@@ -16,6 +16,7 @@ lifecycleRuntimeCompose = "2.9.2"
 media3 = "1.10.1"
 billing = "9.0.0"
 revenuecat = "10.6.1"
+posthog = "3.47.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +45,7 @@ media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", versi
 android-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
 revenuecat = { group = "com.revenuecat.purchases", name = "purchases", version.ref = "revenuecat" }
 revenuecat-ui = { group = "com.revenuecat.purchases", name = "purchases-ui", version.ref = "revenuecat" }
+posthog-android = { group = "com.posthog", name = "posthog-android", version.ref = "posthog" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

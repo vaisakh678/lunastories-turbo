@@ -67,6 +67,7 @@ struct ContentView: View {
                 profile.clear()
                 PushNotifications.logout()
                 Task { await Subscriptions.logout() }
+                Analytics.reset()
             } else {
                 Task { await syncProfileAndPush() }
             }
@@ -94,6 +95,9 @@ struct ContentView: View {
             // state follows the user across reinstalls and devices.
             await Subscriptions.login(userId: userId)
             await subscriptions.refresh()
+            // Same id for analytics so a person's events line up with their
+            // subscription. No-op unless Config.posthogEnabled (Prod only).
+            Analytics.identify(userId)
         } else {
             print("🔐 syncProfileAndPush: profile is nil — OneSignal.login SKIPPED. errorMessage=\(profile.errorMessage ?? "nil")")
         }

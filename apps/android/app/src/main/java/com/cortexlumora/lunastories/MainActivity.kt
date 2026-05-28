@@ -31,6 +31,7 @@ import com.cortexlumora.lunastories.auth.AuthMode
 import com.cortexlumora.lunastories.auth.AuthStep
 import com.cortexlumora.lunastories.network.CharacterResponse
 import com.cortexlumora.lunastories.network.CharacterRole
+import com.cortexlumora.lunastories.analytics.Analytics
 import com.cortexlumora.lunastories.network.UsageAPI
 import com.cortexlumora.lunastories.network.UserAPI
 import com.cortexlumora.lunastories.ui.components.ToastCenter
@@ -219,11 +220,17 @@ private fun RootFlow() {
             // (ContentView.syncProfileAndPush). Best effort: if the profile
             // fetch fails we skip, and the next launch retries.
             val backendId = runCatching { UserAPI.me().id }.getOrNull()
-            if (backendId != null) Subscriptions.login(backendId)
+            if (backendId != null) {
+                Subscriptions.login(backendId)
+                // Same backend id for analytics so a person's events line up
+                // with their subscription. No-op unless POSTHOG_ENABLED.
+                Analytics.identify(backendId)
+            }
         } else {
-            // Signed out — drop the RC alias so the next signed-in user
-            // doesn't inherit cached state.
+            // Signed out — drop the RC alias and analytics identity so the next
+            // signed-in user doesn't inherit cached state.
             Subscriptions.logout()
+            Analytics.reset()
         }
     }
 

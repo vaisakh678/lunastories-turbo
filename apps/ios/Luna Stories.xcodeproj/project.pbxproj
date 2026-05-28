@@ -12,6 +12,7 @@
 		E9AA1EE42FA03D4F0030A6FA /* OneSignalFramework in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA1EE32FA03D4F0030A6FA /* OneSignalFramework */; };
 		E9AA1EE62FA03D4F0030A6FA /* OneSignalInAppMessages in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA1EE52FA03D4F0030A6FA /* OneSignalInAppMessages */; };
 		E9AA1EE82FA03D4F0030A6FA /* OneSignalLocation in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA1EE72FA03D4F0030A6FA /* OneSignalLocation */; };
+		E9B7DCE92FC8215F005C291E /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = E9B7DCE82FC8215F005C291E /* PostHog */; };
 		E9E6ECD02F9CC0F3007B0CE5 /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */; };
 		E9E6ECD22F9CC0F3007B0CE5 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ECD12F9CC0F3007B0CE5 /* ClerkKitUI */; };
 		E9E6ED1E2F9DB494007B0CE5 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = E9E6ED1D2F9DB494007B0CE5 /* Kingfisher */; };
@@ -40,6 +41,7 @@
 				E9E6ECD22F9CC0F3007B0CE5 /* ClerkKitUI in Frameworks */,
 				E91CE1E62FA0CE9E001C3D96 /* RevenueCat in Frameworks */,
 				E9AA1EE22FA03D4F0030A6FA /* OneSignalExtension in Frameworks */,
+				E9B7DCE92FC8215F005C291E /* PostHog in Frameworks */,
 				E9AA1EE82FA03D4F0030A6FA /* OneSignalLocation in Frameworks */,
 				E9AA1EE42FA03D4F0030A6FA /* OneSignalFramework in Frameworks */,
 			);
@@ -100,6 +102,7 @@
 				E9AA1EE52FA03D4F0030A6FA /* OneSignalInAppMessages */,
 				E9AA1EE72FA03D4F0030A6FA /* OneSignalLocation */,
 				E91CE1E52FA0CE9E001C3D96 /* RevenueCat */,
+				E9B7DCE82FC8215F005C291E /* PostHog */,
 			);
 			productName = "Luna Stories";
 			productReference = E98199932F9CAAE10045FE32 /* Luna Stories.app */;
@@ -134,6 +137,7 @@
 				E9E6ED1C2F9DB494007B0CE5 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				E9AA1E752FA03A6D0030A6FA /* XCRemoteSwiftPackageReference "OneSignal-iOS-SDK" */,
 				E9AA202F2FA0CBFB0030A6FA /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				E9B7DCE72FC8215F005C291E /* XCRemoteSwiftPackageReference "posthog-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E98199942F9CAAE10045FE32 /* Products */;
@@ -811,6 +815,14 @@
 				minimumVersion = 5.69.0;
 			};
 		};
+		E9B7DCE72FC8215F005C291E /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.59.1;
+			};
+		};
 		E9E6ECCE2F9CC0F3007B0CE5 /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/clerk/clerk-ios";
@@ -854,6 +866,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E9AA1E752FA03A6D0030A6FA /* XCRemoteSwiftPackageReference "OneSignal-iOS-SDK" */;
 			productName = OneSignalLocation;
+		};
+		E9B7DCE82FC8215F005C291E /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9B7DCE72FC8215F005C291E /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
 		};
 		E9E6ECCF2F9CC0F3007B0CE5 /* ClerkKit */ = {
 			isa = XCSwiftPackageProductDependency;

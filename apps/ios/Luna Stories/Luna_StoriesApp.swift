@@ -27,6 +27,9 @@ struct Luna_StoriesApp: App {
         // RevenueCat — configure once at launch. Login follows in
         // ContentView.syncProfileAndPush once the backend user id is known.
         Subscriptions.configure()
+        // PostHog — no-op unless Config.posthogEnabled (Prod only). identify()
+        // follows in ContentView.syncProfileAndPush.
+        Analytics.configure()
     }
 
     var body: some Scene {
