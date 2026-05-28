@@ -54,4 +54,26 @@ nonisolated enum Config {
         }
         return value
     }
+
+    /// Whether PostHog analytics is enabled for the active environment.
+    /// Sourced from `POSTHOG_ENABLED` (YES only in Prod.xcconfig). Unlike the
+    /// keys above this never fatalErrors — a missing/false value just means
+    /// "disabled", so debug/dev builds stay out of the PostHog project.
+    nonisolated static var posthogEnabled: Bool {
+        let value = Bundle.main.infoDictionary?["POSTHOG_ENABLED"] as? String
+        return value == "YES" || value == "true" || value == "1"
+    }
+
+    /// PostHog public (write-only) project token. Sourced from
+    /// `POSTHOG_API_KEY`. Empty when unset — callers guard on `posthogEnabled`.
+    nonisolated static var posthogAPIKey: String {
+        Bundle.main.infoDictionary?["POSTHOG_API_KEY"] as? String ?? ""
+    }
+
+    /// PostHog ingestion host. Sourced from `POSTHOG_HOST`, defaulting to US
+    /// cloud when unset.
+    nonisolated static var posthogHost: String {
+        let value = Bundle.main.infoDictionary?["POSTHOG_HOST"] as? String ?? ""
+        return value.isEmpty ? "https://us.i.posthog.com" : value
+    }
 }
