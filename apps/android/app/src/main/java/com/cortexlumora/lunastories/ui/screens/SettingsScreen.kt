@@ -68,6 +68,7 @@ import com.cortexlumora.lunastories.BuildConfig
 import com.cortexlumora.lunastories.LegalLinks
 import com.cortexlumora.lunastories.network.UserAPI
 import com.cortexlumora.lunastories.subscriptions.Subscriptions
+import com.cortexlumora.lunastories.ui.findActivity
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
 import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
@@ -111,7 +112,7 @@ private const val KEY_REMINDER_MINUTE = "bedtime_reminder_minute"
 @Composable
 fun SettingsScreen(onBack: () -> Unit) {
     val ctx = LocalContext.current
-    val activity = ctx as? android.app.Activity
+    val activity = ctx.findActivity()
     val scope = rememberCoroutineScope()
     val prefs = remember { ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
 

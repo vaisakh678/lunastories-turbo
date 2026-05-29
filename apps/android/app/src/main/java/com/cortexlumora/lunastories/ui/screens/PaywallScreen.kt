@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cortexlumora.lunastories.LegalLinks
 import com.cortexlumora.lunastories.R
+import com.cortexlumora.lunastories.ui.findActivity
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
 import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
@@ -186,7 +187,10 @@ fun PaywallScreen(
                     enabled = selected != null && !isPurchasing,
                     onClick = {
                         val pkg = selected ?: return@CtaButton
-                        val activity = context as? android.app.Activity ?: return@CtaButton
+                        // LocalContext inside a Compose Dialog is a wrapped
+                        // context, not the Activity, so a plain `as?` cast fails
+                        // and the purchase never starts. Unwrap to the Activity.
+                        val activity = context.findActivity() ?: return@CtaButton
                         vm.purchase(activity, pkg)
                     },
                 )
@@ -228,19 +232,23 @@ fun PaywallScreen(
 @Composable
 private fun Hero() {
     Box(contentAlignment = Alignment.Center) {
+        // Radial-gradient glows (not Modifier.blur — a no-op below API 31 and
+        // clipped to a hard square) so the halo is a smooth circle everywhere.
         Box(
             modifier = Modifier
-                .size(140.dp)
-                .blur(40.dp)
-                .clip(CircleShape)
-                .background(GlowCoral.copy(alpha = 0.32f)),
+                .size(150.dp)
+                .background(
+                    Brush.radialGradient(listOf(GlowCoral.copy(alpha = 0.40f), Color.Transparent)),
+                    shape = CircleShape,
+                ),
         )
         Box(
             modifier = Modifier
-                .size(110.dp)
-                .blur(28.dp)
-                .clip(CircleShape)
-                .background(GlowGold.copy(alpha = 0.30f)),
+                .size(120.dp)
+                .background(
+                    Brush.radialGradient(listOf(GlowGold.copy(alpha = 0.32f), Color.Transparent)),
+                    shape = CircleShape,
+                ),
         )
         Image(
             painter = painterResource(R.drawable.splash_icon),
