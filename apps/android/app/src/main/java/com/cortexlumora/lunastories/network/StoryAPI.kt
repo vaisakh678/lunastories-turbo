@@ -15,11 +15,16 @@ enum class StoryStatus {
     @SerialName("failed") failed;
 }
 
+// Mirrors server StoryBlock (packages/dto/src/story.ts): a discriminated union
+// keyed on `kind` ("text" | "illustration"). Field names must match the wire
+// shape exactly — `kind` and `symbolName`, not `type`/`symbol` — or the 200
+// body fails to deserialize. `kind` is defaulted so an unexpected block shape
+// degrades gracefully instead of failing the whole story parse.
 @Serializable
 data class StoryContentBlock(
-    val type: String,
+    val kind: String = "",
     val text: String? = null,
-    val symbol: String? = null,
+    val symbolName: String? = null,
     val tint: String? = null,
 )
 

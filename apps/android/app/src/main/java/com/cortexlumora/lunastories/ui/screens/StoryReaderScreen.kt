@@ -294,7 +294,7 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
             val blocks = story.content?.blocks
             if (!blocks.isNullOrEmpty()) {
                 blocks.forEach { block ->
-                    when (block.type) {
+                    when (block.kind) {
                         "text" -> Text(
                             text = block.text.orEmpty(),
                             color = MiloInk,
@@ -310,7 +310,7 @@ private fun ReaderBody(story: StoryResponse, onMakeAnother: () -> Unit) {
                                     .background(tint.copy(alpha = 0.20f)),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Text(text = block.symbol ?: "✦", color = tint, fontSize = 36.sp)
+                                Text(text = block.symbolName ?: "✦", color = tint, fontSize = 36.sp)
                             }
                         }
                         else -> Unit
@@ -347,7 +347,7 @@ private fun shareStory(context: android.content.Context, story: StoryResponse) {
     val title = story.title ?: "A Luna Stories story"
     val summary = story.summary?.let { "\n\n$it" } ?: ""
     val body = story.bodyText
-        ?: story.content?.blocks?.filter { it.type == "text" }?.joinToString("\n\n") { it.text.orEmpty() }
+        ?: story.content?.blocks?.filter { it.kind == "text" }?.joinToString("\n\n") { it.text.orEmpty() }
         ?: ""
     val text = buildString {
         append(title)
