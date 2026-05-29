@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -201,21 +202,30 @@ private fun Hero(greeting: String) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            // Coral halo
+            // Coral glow. A radial gradient (not Modifier.blur) so the halo is a
+            // smooth circle on every API level — blur is a no-op below API 31 and
+            // its default rectangular edge treatment clipped the glow into a hard
+            // square.
             Box(
                 modifier = Modifier
-                    .size(140.dp)
-                    .blur(28.dp)
-                    .clip(CircleShape)
-                    .background(GlowCoral.copy(alpha = 0.32f)),
+                    .size(150.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(GlowCoral.copy(alpha = 0.40f), Color.Transparent),
+                        ),
+                        shape = CircleShape,
+                    ),
             )
-            // Gold halo
+            // Gold glow
             Box(
                 modifier = Modifier
-                    .size(110.dp)
-                    .blur(22.dp)
-                    .clip(CircleShape)
-                    .background(GlowGold.copy(alpha = 0.25f)),
+                    .size(120.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(GlowGold.copy(alpha = 0.32f), Color.Transparent),
+                        ),
+                        shape = CircleShape,
+                    ),
             )
             // Splash icon
             Image(
