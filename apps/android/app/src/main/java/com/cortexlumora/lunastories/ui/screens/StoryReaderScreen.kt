@@ -11,14 +11,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,7 +37,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +54,9 @@ import com.cortexlumora.lunastories.audio.StoryAudioPlayer
 import com.cortexlumora.lunastories.network.StoryAPI
 import com.cortexlumora.lunastories.network.StoryResponse
 import com.cortexlumora.lunastories.network.StoryStatus
+import com.cortexlumora.lunastories.network.UsageAPI
+import com.cortexlumora.lunastories.ui.components.ToastCenter
+import com.cortexlumora.lunastories.ui.components.ToastStyle
 import com.cortexlumora.lunastories.stories.GenerationCue
 import com.cortexlumora.lunastories.stories.StoryGenerationManager
 import com.cortexlumora.lunastories.stories.StoryInputPayload
@@ -72,8 +81,10 @@ fun StoryReaderScreen(
     var story by remember { mutableStateOf<StoryResponse?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
+    var generatingAudio by remember { mutableStateOf(false) }
     val ctx = LocalContext.current
     val player = remember { StoryAudioPlayer(ctx) }
+    val scope = rememberCoroutineScope()
 
     BackHandler(onBack = onBack)
 
@@ -88,6 +99,11 @@ fun StoryReaderScreen(
             .onSuccess { story = it }
             .onFailure { error = it.message ?: "Couldn't load story" }
         loading = false
+        // Stamp this story as opened (idempotent on the server). Fire and
+        // forget — a failed mark shouldn't disrupt reading. Mirrors iOS.
+        if (story != null) {
+            launch { runCatching { StoryAPI.markAsRead(storyId) } }
+        }
     }
 
     LaunchedEffect(story?.audio?.url) {
@@ -130,10 +146,93 @@ fun StoryReaderScreen(
             }
         }
 
-        story?.takeIf { it.status == StoryStatus.ready && it.audio != null }?.let {
+        story?.takeIf { it.status == StoryStatus.ready }?.let { s ->
             Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-                AudioBar(player = player)
+                if (s.audio != null) {
+                    AudioBar(player = player)
+                } else {
+                    GenerateAudioBar(
+                        generating = generatingAudio,
+                        onClick = {
+                            if (generatingAudio) return@GenerateAudioBar
+                            generatingAudio = true
+                            scope.launch {
+                                runCatching { StoryAPI.generateAudio(s.id) }
+                                    .onSuccess { updated ->
+                                        story = updated
+                                        // Narration just landed — refresh usage and warn once
+                                        // weekly audio crosses 80% (but isn't fully spent).
+                                        runCatching { UsageAPI.fetch() }.getOrNull()?.audio?.let { a ->
+                                            if (a.percentUsed >= 80 && a.remaining > 0) {
+                                                ToastCenter.show(
+                                                    message = a.message,
+                                                    title = "Running low on audio",
+                                                    style = ToastStyle.Warning,
+                                                    progress = a.percentUsed / 100f,
+                                                    durationMs = 5_000,
+                                                )
+                                            }
+                                        }
+                                    }
+                                    .onFailure {
+                                        ToastCenter.show(
+                                            message = it.message ?: "Couldn't generate audio",
+                                            title = "Audio generation failed",
+                                            style = ToastStyle.Error,
+                                        )
+                                    }
+                                generatingAudio = false
+                            }
+                        },
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun GenerateAudioBar(generating: Boolean, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Button(
+            onClick = onClick,
+            enabled = !generating,
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Accent,
+                contentColor = Color.White,
+                disabledContainerColor = Accent.copy(alpha = 0.5f),
+                disabledContentColor = Color.White,
+            ),
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+        ) {
+            if (generating) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+                Text("Generating audio…", fontWeight = FontWeight.SemiBold)
+            } else {
+                Icon(Icons.Filled.GraphicEq, contentDescription = null)
+                Spacer(Modifier.width(10.dp))
+                Text("Generate Audio", fontWeight = FontWeight.SemiBold)
+            }
+        }
+        if (!generating) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Takes about 10–15 seconds.",
+                color = MiloCream.copy(alpha = ALPHA_MUTED),
+                style = MaterialTheme.typography.labelSmall,
+            )
         }
     }
 }

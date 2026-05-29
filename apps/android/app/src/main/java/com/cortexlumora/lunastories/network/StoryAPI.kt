@@ -75,12 +75,37 @@ data class StoryPage(
 @Serializable
 private data class StoryDeleteResponse(val id: String)
 
+@Serializable
+data class MarkAsReadResponse(val id: String, val lastReadAt: String)
+
+@Serializable
+private object EmptyBody
+
 object StoryAPI {
     suspend fun delete(id: String) {
         APIClient.request<StoryDeleteResponse>("/stories/$id") {
             method = HttpMethod.Delete
         }
     }
+
+    /** Kick off narration synthesis for a story; returns the story with audio. */
+    suspend fun generateAudio(id: String): StoryResponse =
+        APIClient.request("/stories/$id/audio") {
+            method = HttpMethod.Post
+            contentType(ContentType.Application.Json)
+            setBody(EmptyBody)
+        }
+
+    /**
+     * Stamp the story as opened. Idempotent on the backend, so it's safe to
+     * fire on every reader open. Mirrors iOS StoryAPI.markAsRead.
+     */
+    suspend fun markAsRead(id: String): MarkAsReadResponse =
+        APIClient.request("/stories/$id/read") {
+            method = HttpMethod.Post
+            contentType(ContentType.Application.Json)
+            setBody(EmptyBody)
+        }
 
     suspend fun list(cursor: String? = null, limit: Int = 30): StoryPage {
         val params = buildList {

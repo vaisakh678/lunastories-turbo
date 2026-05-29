@@ -71,14 +71,17 @@ object CreativeOptions {
         PickOption("Spy", R.drawable.story_profession_spy, "gray"),
     )
 
+    // Titles must match iOS CreativeModeView.moralOptions verbatim — the title
+    // is sent as the `moral` field in the story payload, so any divergence
+    // would feed the backend different prompts per platform.
     val morals: List<PickOption> = listOf(
-        PickOption("Kindness", tintName = "pink"),
-        PickOption("Bravery", tintName = "red"),
-        PickOption("Honesty", tintName = "blue"),
-        PickOption("Friendship", tintName = "green"),
-        PickOption("Sharing", tintName = "orange"),
-        PickOption("Curiosity", tintName = "purple"),
-        PickOption("Patience", tintName = "teal"),
+        PickOption("No specific moral", tintName = "gray"),
+        PickOption("Always be kind", tintName = "pink"),
+        PickOption("Be honest", tintName = "blue"),
+        PickOption("Never give up", tintName = "red"),
+        PickOption("Be a good friend", tintName = "teal"),
+        PickOption("Treat others the way you want to be treated", tintName = "purple"),
+        PickOption("Think before you act", tintName = "indigo"),
     )
 }
 

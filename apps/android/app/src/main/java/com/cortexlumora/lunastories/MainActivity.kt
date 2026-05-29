@@ -56,10 +56,12 @@ import com.cortexlumora.lunastories.ui.screens.ModeFormScreen
 import com.cortexlumora.lunastories.ui.screens.OnboardingScreen
 import com.cortexlumora.lunastories.ui.screens.PaywallScreen
 import com.cortexlumora.lunastories.ui.screens.SplashScreen
+import com.cortexlumora.lunastories.push.PushNotifications
 import com.cortexlumora.lunastories.subscriptions.Subscriptions
 import com.cortexlumora.lunastories.ui.screens.StoryReaderScreen
 import com.cortexlumora.lunastories.ui.theme.LunaStoriesTheme
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
+import com.cortexlumora.lunastories.viewmodels.DeepLinkRouter
 import com.cortexlumora.lunastories.viewmodels.SubscriptionsViewModel
 import kotlinx.coroutines.delay
 
@@ -225,12 +227,28 @@ private fun RootFlow() {
                 // Same backend id for analytics so a person's events line up
                 // with their subscription. No-op unless POSTHOG_ENABLED.
                 Analytics.identify(backendId)
+                // Alias the OneSignal subscription to the same backend id so
+                // "story ready" pushes target this user. Mirrors iOS.
+                PushNotifications.login(backendId)
             }
         } else {
-            // Signed out — drop the RC alias and analytics identity so the next
-            // signed-in user doesn't inherit cached state.
+            // Signed out — drop the RC alias, analytics identity, and push
+            // alias so the next signed-in user doesn't inherit cached state.
             Subscriptions.logout()
             Analytics.reset()
+            PushNotifications.logout()
+        }
+    }
+
+    // A push tap (foreground/background/cold) writes a story id into
+    // DeepLinkRouter; open the reader once we're home, then clear it so an
+    // identical later tap still registers. Mirrors iOS HomeView's observer.
+    val pendingStoryId by DeepLinkRouter.pendingStoryId.collectAsStateWithLifecycle(initialValue = null)
+    LaunchedEffect(pendingStoryId, stage) {
+        val id = pendingStoryId
+        if (id != null && stage == Stage.Home) {
+            storyRoute = StoryRoute.Reader(id)
+            DeepLinkRouter.consume()
         }
     }
 
@@ -333,6 +351,10 @@ private fun RootFlow() {
                             if (!isPro) {
                                 showPaywall = true
                             } else {
+                                // First real generation is the natural moment to
+                                // ask for notification permission (so we can ping
+                                // when the story is ready). Mirrors iOS.
+                                PushNotifications.requestPermissionIfNeeded()
                                 StoryGenerationManager.start(payload, title, cues)
                                 storyRoute = StoryRoute.Generating
                             }

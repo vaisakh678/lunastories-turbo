@@ -17,6 +17,7 @@ media3 = "1.10.1"
 billing = "9.0.0"
 revenuecat = "10.6.1"
 posthog = "3.47.0"
+onesignal = "5.1.31"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,7 @@ android-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx
 revenuecat = { group = "com.revenuecat.purchases", name = "purchases", version.ref = "revenuecat" }
 revenuecat-ui = { group = "com.revenuecat.purchases", name = "purchases-ui", version.ref = "revenuecat" }
 posthog-android = { group = "com.posthog", name = "posthog-android", version.ref = "posthog" }
+onesignal = { group = "com.onesignal", name = "OneSignal", version.ref = "onesignal" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
