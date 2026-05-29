@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Luna Stories</string>
+    <!-- app_name is provided per-flavor via resValue in app/build.gradle.kts -->
+
 </resources>
