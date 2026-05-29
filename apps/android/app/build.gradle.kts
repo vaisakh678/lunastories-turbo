@@ -28,33 +28,61 @@ android {
         versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        // 10.0.2.2 is the emulator's loopback for the host machine.
-        // The api server listens on 3001 (apps/api/src/index.ts) — 3000 is
-        // taken by apps/docs in dev, hitting it returns HTML and the Ktor
-        // client errors out with the Next.js page body as the message.
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3001\"")
-        buildConfigField(
-            "String",
-            "CLERK_PUBLISHABLE_KEY",
-            "\"pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ\"",
-        )
-        buildConfigField(
-            "String",
-            "REVENUECAT_API_KEY",
-            "\"goog_ysmCipdCRiqpPxyJgsxMdBpTDdm\"",
-        )
-        // PostHog analytics. Disabled by default (debug/dev) so local testing
-        // doesn't pollute the single PostHog project; the release build flips
-        // POSTHOG_ENABLED to true (mirrors iOS Prod.xcconfig). Key + host are
-        // the same everywhere — the key is a public, write-only project token.
-        buildConfigField("boolean", "POSTHOG_ENABLED", "false")
-        buildConfigField(
-            "String",
-            "POSTHOG_API_KEY",
-            "\"phc_uELVgfpSKGRYPo5MYFNbPTXbFLb86RuKMgKqaBZaCarC\"",
-        )
-        buildConfigField("String", "POSTHOG_HOST", "\"https://us.i.posthog.com\"")
+    // One flavor per environment, mirroring the iOS Config/*.xcconfig split
+    // (Local/Dev/Prod). Each flavor supplies the env-specific build config; the
+    // app name is set via resValue so installs sit side by side on a device.
+    // PostHog key + host are the same everywhere — the key is a public,
+    // write-only project token; only POSTHOG_ENABLED varies (prod only).
+    flavorDimensions += "environment"
+    productFlavors {
+        create("local") {
+            dimension = "environment"
+            resValue("string", "app_name", "Luna (Local)")
+            // 10.0.2.2 is the emulator's loopback for the host machine.
+            // The api server listens on 3001 (apps/api/src/index.ts) — 3000 is
+            // taken by apps/docs in dev, hitting it returns HTML and the Ktor
+            // client errors out with the Next.js page body as the message.
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3001\"")
+            buildConfigField(
+                "String",
+                "CLERK_PUBLISHABLE_KEY",
+                "\"pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ\"",
+            )
+            buildConfigField("String", "REVENUECAT_API_KEY", "\"goog_ysmCipdCRiqpPxyJgsxMdBpTDdm\"")
+            buildConfigField("boolean", "POSTHOG_ENABLED", "false")
+            buildConfigField("String", "POSTHOG_API_KEY", "\"phc_uELVgfpSKGRYPo5MYFNbPTXbFLb86RuKMgKqaBZaCarC\"")
+            buildConfigField("String", "POSTHOG_HOST", "\"https://us.i.posthog.com\"")
+        }
+        create("dev") {
+            dimension = "environment"
+            resValue("string", "app_name", "Luna (Dev)")
+            buildConfigField("String", "API_BASE_URL", "\"https://dev-api-development-13c7.up.railway.app\"")
+            buildConfigField(
+                "String",
+                "CLERK_PUBLISHABLE_KEY",
+                "\"pk_test_YXJ0aXN0aWMtYm9hLTc4LmNsZXJrLmFjY291bnRzLmRldiQ\"",
+            )
+            buildConfigField("String", "REVENUECAT_API_KEY", "\"goog_ysmCipdCRiqpPxyJgsxMdBpTDdm\"")
+            buildConfigField("boolean", "POSTHOG_ENABLED", "false")
+            buildConfigField("String", "POSTHOG_API_KEY", "\"phc_uELVgfpSKGRYPo5MYFNbPTXbFLb86RuKMgKqaBZaCarC\"")
+            buildConfigField("String", "POSTHOG_HOST", "\"https://us.i.posthog.com\"")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "Luna")
+            buildConfigField("String", "API_BASE_URL", "\"https://lunastories-prod-api.cortexlumora.com\"")
+            buildConfigField(
+                "String",
+                "CLERK_PUBLISHABLE_KEY",
+                "\"pk_live_Y2xlcmsubHVuYXN0b3JpZXMuY29ydGV4bHVtb3JhLmNvbSQ\"",
+            )
+            buildConfigField("String", "REVENUECAT_API_KEY", "\"goog_ysmCipdCRiqpPxyJgsxMdBpTDdm\"")
+            buildConfigField("boolean", "POSTHOG_ENABLED", "true")
+            buildConfigField("String", "POSTHOG_API_KEY", "\"phc_uELVgfpSKGRYPo5MYFNbPTXbFLb86RuKMgKqaBZaCarC\"")
+            buildConfigField("String", "POSTHOG_HOST", "\"https://us.i.posthog.com\"")
+        }
     }
 
     signingConfigs {
@@ -76,19 +104,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Production overrides (debug/defaultConfig points at the local dev
-            // API + dev Clerk instance). Mirrors iOS Prod.xcconfig.
-            buildConfigField(
-                "String",
-                "API_BASE_URL",
-                "\"https://lunastories-prod-api.cortexlumora.com\"",
-            )
-            buildConfigField(
-                "String",
-                "CLERK_PUBLISHABLE_KEY",
-                "\"pk_live_Y2xlcmsubHVuYXN0b3JpZXMuY29ydGV4bHVtb3JhLmNvbSQ\"",
-            )
-            buildConfigField("boolean", "POSTHOG_ENABLED", "true")
+            // Env-specific config (API URL, Clerk key, PostHog) now lives in the
+            // per-environment product flavors above, not here.
             // Only attach the release signing config when keystore.properties
             // is present, so ./gradlew assembleRelease still compiles locally
             // even before the keystore is set up.
