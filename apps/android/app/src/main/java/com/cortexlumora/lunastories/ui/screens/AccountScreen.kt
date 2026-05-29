@@ -60,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clerk.api.Clerk
 import com.cortexlumora.lunastories.R
 import com.cortexlumora.lunastories.subscriptions.Subscriptions
+import com.cortexlumora.lunastories.ui.findActivity
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.GlowCoral
@@ -131,7 +132,7 @@ fun AccountScreen(
                 isPro = isPro,
                 onUpgrade = onOpenPaywall,
                 onManage = {
-                    (context as? android.app.Activity)?.let { Subscriptions.manage(it) }
+                    context.findActivity()?.let { Subscriptions.manage(it) }
                 },
             )
             Spacer(Modifier.height(24.dp))
