@@ -232,19 +232,23 @@ fun PaywallScreen(
 @Composable
 private fun Hero() {
     Box(contentAlignment = Alignment.Center) {
+        // Radial-gradient glows (not Modifier.blur — a no-op below API 31 and
+        // clipped to a hard square) so the halo is a smooth circle everywhere.
         Box(
             modifier = Modifier
-                .size(140.dp)
-                .blur(40.dp)
-                .clip(CircleShape)
-                .background(GlowCoral.copy(alpha = 0.32f)),
+                .size(150.dp)
+                .background(
+                    Brush.radialGradient(listOf(GlowCoral.copy(alpha = 0.40f), Color.Transparent)),
+                    shape = CircleShape,
+                ),
         )
         Box(
             modifier = Modifier
-                .size(110.dp)
-                .blur(28.dp)
-                .clip(CircleShape)
-                .background(GlowGold.copy(alpha = 0.30f)),
+                .size(120.dp)
+                .background(
+                    Brush.radialGradient(listOf(GlowGold.copy(alpha = 0.32f), Color.Transparent)),
+                    shape = CircleShape,
+                ),
         )
         Image(
             painter = painterResource(R.drawable.splash_icon),
