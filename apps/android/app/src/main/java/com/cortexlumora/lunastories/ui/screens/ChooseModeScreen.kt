@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,9 +30,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cortexlumora.lunastories.stories.StoryMode
@@ -56,19 +60,33 @@ fun ChooseModeScreen(
                 IconButton(onClick = onDismiss) {
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = MiloCream)
                 }
-                Text(
-                    text = "Choose a Mode",
-                    color = MiloCream,
-                    style = MaterialTheme.typography.headlineSmall,
-                )
             }
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
             ) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            text = "Choose a mode",
+                            color = MiloCream,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineSmall,
+                        )
+                        Text(
+                            text = "Pick a theme for your next story.",
+                            color = MiloCream.copy(alpha = ALPHA_MUTED),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                }
                 items(StoryModes) { mode ->
                     ModeTile(mode = mode, onTap = { onPickMode(mode) })
                 }
@@ -80,18 +98,17 @@ fun ChooseModeScreen(
 @Composable
 private fun ModeTile(mode: StoryMode, onTap: () -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .clickable(onClick = onTap),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onTap),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
+                .shadow(12.dp, RoundedCornerShape(22.dp))
                 .clip(RoundedCornerShape(22.dp))
                 .background(mode.tint.copy(alpha = 0.18f))
-                .border(1.dp, MiloCream.copy(alpha = 0.18f), RoundedCornerShape(22.dp)),
+                .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(22.dp)),
         ) {
             Image(
                 painter = painterResource(mode.heroRes),
@@ -103,14 +120,11 @@ private fun ModeTile(mode: StoryMode, onTap: () -> Unit) {
         Text(
             text = mode.title,
             color = MiloCream,
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        Text(
-            text = mode.description,
-            color = MiloCream.copy(alpha = ALPHA_MUTED),
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(top = 2.dp),
+            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.labelMedium,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         )
     }
 }

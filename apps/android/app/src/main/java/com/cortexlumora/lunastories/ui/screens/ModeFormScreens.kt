@@ -49,8 +49,12 @@ import com.cortexlumora.lunastories.stories.IconicModes
 import com.cortexlumora.lunastories.stories.PickOption
 import com.cortexlumora.lunastories.stories.StoryInputPayload
 import com.cortexlumora.lunastories.stories.StoryMode
+import com.cortexlumora.lunastories.ui.components.CharacterStepHeader
+import com.cortexlumora.lunastories.ui.components.ColorPalette
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.components.OptionGrid
+import com.cortexlumora.lunastories.ui.components.OptionList
+import com.cortexlumora.lunastories.ui.components.PlainStepHeader
 import com.cortexlumora.lunastories.ui.theme.Accent
 import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
 import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
@@ -133,33 +137,52 @@ private fun CreativeFlow(
         when {
             step < n -> {
                 val char = characters[step]
-                StepHeader("What is ${char.name}?")
-                OptionGrid(
-                    options = CreativeOptions.types,
-                    selected = typeByChar[char.id],
-                    onSelect = { typeByChar = typeByChar + (char.id to it) },
-                )
+                Column {
+                    CharacterStepHeader(
+                        name = char.name,
+                        symbolName = char.symbolName,
+                        tint = ColorPalette.color(char.tint),
+                        title = "Choose a type",
+                        stepLabel = "Step ${step + 1} of $totalSteps",
+                    )
+                    OptionGrid(
+                        options = CreativeOptions.types,
+                        selected = typeByChar[char.id],
+                        onSelect = { typeByChar = typeByChar + (char.id to it) },
+                    )
+                }
             }
             step < n * 2 -> {
                 val char = characters[step - n]
-                StepHeader("${char.name}'s profession")
-                OptionGrid(
-                    options = CreativeOptions.professions,
-                    selected = profByChar[char.id],
-                    onSelect = { profByChar = profByChar + (char.id to it) },
-                )
+                Column {
+                    CharacterStepHeader(
+                        name = char.name,
+                        symbolName = char.symbolName,
+                        tint = ColorPalette.color(char.tint),
+                        title = "Choose a profession",
+                        stepLabel = "Step ${step + 1} of $totalSteps",
+                    )
+                    OptionGrid(
+                        options = CreativeOptions.professions,
+                        selected = profByChar[char.id],
+                        onSelect = { profByChar = profByChar + (char.id to it) },
+                    )
+                }
             }
             else -> {
-                StepHeader("Choose a moral")
-                OptionGrid(
-                    options = CreativeOptions.morals,
-                    selected = moral,
-                    onSelect = { moral = it },
-                    columns = 2,
-                    extraTile = {
-                        CustomTile("Write your own") { showCustomMoralSheet = true }
-                    },
-                )
+                Column {
+                    PlainStepHeader(
+                        title = "Choose a moral",
+                        subtitle = "Pick a lesson for your story.",
+                        stepLabel = "Step $totalSteps of $totalSteps",
+                    )
+                    OptionList(
+                        options = CreativeOptions.morals,
+                        selected = moral,
+                        onSelect = { moral = it },
+                        onOther = { showCustomMoralSheet = true },
+                    )
+                }
             }
         }
     }
@@ -275,21 +298,25 @@ private fun IconicFlow(
     ) {
         when (step) {
             0 -> {
-                StepHeader("Pick a character")
-                OptionGrid(
-                    options = data.characters,
-                    selected = picked,
-                    onSelect = { picked = it },
-                )
+                Column {
+                    PlainStepHeader(title = "Pick a character", stepLabel = "Step 1 of 2")
+                    OptionGrid(
+                        options = data.characters,
+                        selected = picked,
+                        onSelect = { picked = it },
+                    )
+                }
             }
             else -> {
-                StepHeader("Pick a place")
-                OptionGrid(
-                    options = data.places,
-                    selected = place,
-                    onSelect = { place = it },
-                    extraTile = { CustomTile("Other") { showCustomPlaceSheet = true } },
-                )
+                Column {
+                    PlainStepHeader(title = "Pick a place", stepLabel = "Step 2 of 2")
+                    OptionGrid(
+                        options = data.places,
+                        selected = place,
+                        onSelect = { place = it },
+                        onOther = { showCustomPlaceSheet = true },
+                    )
+                }
             }
         }
     }
@@ -344,17 +371,6 @@ private fun Scaffold(
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = MiloCream.copy(alpha = ALPHA_MUTED))
                 }
             }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                repeat(totalSteps) { i ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(if (i <= step) Accent else MiloCream.copy(alpha = 0.15f)),
-                    )
-                }
-            }
             Spacer(Modifier.height(20.dp))
             Box(modifier = Modifier.weight(1f)) { content() }
             Button(
@@ -372,36 +388,6 @@ private fun Scaffold(
             }
             Spacer(Modifier.height(8.dp))
         }
-    }
-}
-
-@Composable
-private fun StepHeader(text: String) {
-    Text(
-        text = text,
-        color = MiloCream,
-        style = MaterialTheme.typography.headlineSmall,
-        modifier = Modifier.padding(bottom = 12.dp),
-    )
-}
-
-@Composable
-private fun CustomTile(label: String, onTap: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onTap),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(18.dp))
-                .background(MiloCream.copy(alpha = 0.08f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(Icons.Default.Edit, contentDescription = label, tint = MiloCream)
-        }
-        Text(label, color = MiloCream.copy(alpha = ALPHA_MUTED), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
     }
 }
 
