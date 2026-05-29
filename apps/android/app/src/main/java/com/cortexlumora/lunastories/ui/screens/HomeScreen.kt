@@ -70,6 +70,7 @@ import com.cortexlumora.lunastories.ui.theme.ALPHA_FAINT
 import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
 import com.cortexlumora.lunastories.ui.theme.MiloCream
 import com.cortexlumora.lunastories.viewmodels.CharactersViewModel
+import com.cortexlumora.lunastories.viewmodels.DeepLinkRouter
 import com.cortexlumora.lunastories.viewmodels.LatestStoryViewModel
 import com.cortexlumora.lunastories.network.StoryResponse
 import com.cortexlumora.lunastories.network.StoryStatus
@@ -96,6 +97,10 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) { vm.load() }
     LaunchedEffect(inFlight) { if (inFlight == null) latestVm.refreshNow() }
+    // A foreground "story ready" push bumps this tick — refresh the banner
+    // immediately instead of waiting for the next poll. Mirrors iOS.
+    val refreshTick by DeepLinkRouter.refreshTick.collectAsState()
+    LaunchedEffect(refreshTick) { if (refreshTick > 0) latestVm.refreshNow() }
 
     val main = characters.filter { it.role == CharacterRole.main }
     val side = characters.filter { it.role == CharacterRole.side }
