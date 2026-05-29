@@ -54,6 +54,7 @@ android {
             buildConfigField("boolean", "POSTHOG_ENABLED", "false")
             buildConfigField("String", "POSTHOG_API_KEY", "\"phc_uELVgfpSKGRYPo5MYFNbPTXbFLb86RuKMgKqaBZaCarC\"")
             buildConfigField("String", "POSTHOG_HOST", "\"https://us.i.posthog.com\"")
+            buildConfigField("String", "ONESIGNAL_APP_ID", "\"5d1e8899-6667-4617-95a8-defc97c8c048\"")
         }
         create("dev") {
             dimension = "environment"
@@ -68,6 +69,7 @@ android {
             buildConfigField("boolean", "POSTHOG_ENABLED", "false")
             buildConfigField("String", "POSTHOG_API_KEY", "\"phc_uELVgfpSKGRYPo5MYFNbPTXbFLb86RuKMgKqaBZaCarC\"")
             buildConfigField("String", "POSTHOG_HOST", "\"https://us.i.posthog.com\"")
+            buildConfigField("String", "ONESIGNAL_APP_ID", "\"5d1e8899-6667-4617-95a8-defc97c8c048\"")
         }
         create("prod") {
             dimension = "environment"
@@ -82,6 +84,7 @@ android {
             buildConfigField("boolean", "POSTHOG_ENABLED", "true")
             buildConfigField("String", "POSTHOG_API_KEY", "\"phc_uELVgfpSKGRYPo5MYFNbPTXbFLb86RuKMgKqaBZaCarC\"")
             buildConfigField("String", "POSTHOG_HOST", "\"https://us.i.posthog.com\"")
+            buildConfigField("String", "ONESIGNAL_APP_ID", "\"5d1e8899-6667-4617-95a8-defc97c8c048\"")
         }
     }
 
@@ -156,6 +159,7 @@ dependencies {
     implementation(libs.android.billing.ktx)
     implementation(libs.revenuecat)
     implementation(libs.posthog.android)
+    implementation(libs.onesignal)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
