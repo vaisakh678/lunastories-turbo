@@ -121,8 +121,16 @@ class AuthFlowViewModel : ViewModel() {
                 true
             }
             is ClerkResult.Failure -> {
-                _error.value = r.errorMessage()
-                false
+                // Passwordless: if there's no account for this email yet, fall
+                // through to creating one so "Sign in" also works for brand-new
+                // users. Clerk reports this with form_identifier_not_found; any
+                // other failure is a real error we surface as-is.
+                if (r.errorCode() == "form_identifier_not_found") {
+                    startSignUpOtp(email)
+                } else {
+                    _error.value = r.errorMessage()
+                    false
+                }
             }
         }
     }
@@ -199,3 +207,8 @@ private fun ClerkResult.Failure<*>.errorMessage(): String {
     }
     return msg ?: this.throwable?.message ?: "Something went wrong"
 }
+
+/** First Clerk API error code (e.g. "form_identifier_not_found"), if any. */
+private fun ClerkResult.Failure<*>.errorCode(): String? =
+    (this.error as? com.clerk.api.network.model.error.ClerkErrorResponse)
+        ?.errors?.firstOrNull()?.code
