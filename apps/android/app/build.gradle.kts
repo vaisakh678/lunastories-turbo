@@ -44,7 +44,7 @@ android {
             // The api server listens on 3001 (apps/api/src/index.ts) — 3000 is
             // taken by apps/docs in dev, hitting it returns HTML and the Ktor
             // client errors out with the Next.js page body as the message.
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3001\"")
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3001/api/v1\"")
             buildConfigField(
                 "String",
                 "CLERK_PUBLISHABLE_KEY",
@@ -59,7 +59,7 @@ android {
         create("dev") {
             dimension = "environment"
             resValue("string", "app_name", "Luna (Dev)")
-            buildConfigField("String", "API_BASE_URL", "\"https://dev-api-development-13c7.up.railway.app\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://dev-api-development-13c7.up.railway.app/api/v1\"")
             buildConfigField(
                 "String",
                 "CLERK_PUBLISHABLE_KEY",
@@ -74,7 +74,7 @@ android {
         create("prod") {
             dimension = "environment"
             resValue("string", "app_name", "Luna")
-            buildConfigField("String", "API_BASE_URL", "\"https://lunastories-prod-api.cortexlumora.com\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://lunastories-prod-api.cortexlumora.com/api/v1\"")
             buildConfigField(
                 "String",
                 "CLERK_PUBLISHABLE_KEY",
