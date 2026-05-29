@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -386,7 +387,9 @@ private fun Scaffold(
             ) {
                 Text(nextLabel, fontWeight = FontWeight.SemiBold)
             }
-            Spacer(Modifier.height(8.dp))
+            // Clear the system nav bar plus a little breathing room so the
+            // button doesn't hug the bottom edge.
+            Spacer(Modifier.navigationBarsPadding().height(24.dp))
         }
     }
 }
