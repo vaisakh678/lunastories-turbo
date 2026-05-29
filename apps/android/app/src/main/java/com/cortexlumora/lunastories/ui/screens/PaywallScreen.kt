@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cortexlumora.lunastories.LegalLinks
 import com.cortexlumora.lunastories.R
+import com.cortexlumora.lunastories.ui.findActivity
 import com.cortexlumora.lunastories.ui.components.MoodyTwilightBackground
 import com.cortexlumora.lunastories.ui.theme.ALPHA_CAPTION
 import com.cortexlumora.lunastories.ui.theme.ALPHA_MUTED
@@ -186,7 +187,10 @@ fun PaywallScreen(
                     enabled = selected != null && !isPurchasing,
                     onClick = {
                         val pkg = selected ?: return@CtaButton
-                        val activity = context as? android.app.Activity ?: return@CtaButton
+                        // LocalContext inside a Compose Dialog is a wrapped
+                        // context, not the Activity, so a plain `as?` cast fails
+                        // and the purchase never starts. Unwrap to the Activity.
+                        val activity = context.findActivity() ?: return@CtaButton
                         vm.purchase(activity, pkg)
                     },
                 )
