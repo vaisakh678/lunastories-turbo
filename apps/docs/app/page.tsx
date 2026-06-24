@@ -363,7 +363,9 @@ function FinalCTA() {
             </p>
             <div className="mt-8 flex justify-center">
               <a
-                href="#"
+                href="https://apps.apple.com/app/luna-stories/id6764280509"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 rounded-2xl bg-foreground text-background px-7 py-4 font-semibold shadow-xl shadow-black/40 hover:scale-[1.02] transition"
               >
                 <AppleLogo />
