@@ -34,7 +34,12 @@ export default function RootLayout() {
                   headerShown: false,
                   contentStyle: { backgroundColor: colors.twilightBottom },
                 }}
-              />
+              >
+                <Stack.Screen name="get-started" options={{ animation: 'fade' }} />
+                <Stack.Screen name="character-wizard" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="create" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
+              </Stack>
             </ToastProvider>
           </ThemeProvider>
         </QueryClientProvider>

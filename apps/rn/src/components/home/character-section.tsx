@@ -18,12 +18,15 @@ export function CharacterSection({
   selectedIds,
   onToggle,
   onAdd,
+  onEdit,
 }: {
   role: CharacterRole;
   characters: Character[];
   selectedIds: Set<string>;
   onToggle: (character: Character) => void;
   onAdd: () => void;
+  /** Long-press a card to edit — maps the iOS context-menu Edit action. */
+  onEdit?: (character: Character) => void;
 }) {
   // Chunk cards + add tile into rows of 3, padding the last row with
   // spacers so cells keep equal width (flex: 1 each).
@@ -58,6 +61,7 @@ export function CharacterSection({
                   character={cell}
                   isSelected={selectedIds.has(cell.id)}
                   onPress={() => onToggle(cell)}
+                  onLongPress={onEdit ? () => onEdit(cell) : undefined}
                 />
               );
             })}

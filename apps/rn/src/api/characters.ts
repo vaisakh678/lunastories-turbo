@@ -1,55 +1,82 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { api, USE_MOCK } from './client';
+import { delay, makeId, mockDb } from './mock-data';
+import type { Character, CreateCharacterRequest, UpdateCharacterRequest } from './models';
 
-export type CharacterRole = 'main' | 'side';
-
-export interface Character {
-  id: string;
-  role: CharacterRole;
-  name: string;
-  /** Bundled avatar id (UUID) or an SF Symbol name — same contract as iOS. */
-  symbolName: string;
-  tint: string;
-  tagline?: string;
-}
-
-// Local avatar bundle for mock data. Mirrors the iOS Avatars/ asset
-// namespace; require() so Metro bundles the HEICs.
-export const avatarSources: Record<string, number> = {
-  'avatar-0': require('../../assets/avatars/avatar-0.heic'),
-  'avatar-1': require('../../assets/avatars/avatar-1.heic'),
-  'avatar-2': require('../../assets/avatars/avatar-2.heic'),
-  'avatar-3': require('../../assets/avatars/avatar-3.heic'),
-  'avatar-4': require('../../assets/avatars/avatar-4.heic'),
-  'avatar-5': require('../../assets/avatars/avatar-5.heic'),
-};
-
-const mockCharacters: Character[] = [
-  {
-    id: '4b8f4c3e-0001-4000-8000-000000000001',
-    role: 'main',
-    name: 'Milo',
-    symbolName: 'avatar-0',
-    tint: 'orange',
-  },
-];
+export type { Character, CharacterRole } from './models';
+export { avatarSources } from './models';
 
 async function listCharacters(): Promise<Character[]> {
   if (USE_MOCK) {
-    // Small delay so pull-to-refresh and loading states are visible.
-    await new Promise((r) => setTimeout(r, 600));
-    return mockCharacters;
+    await delay(500);
+    return [...mockDb.characters];
   }
   const { data } = await api.get<Character[]>('/characters');
   return data;
+}
+
+async function createCharacter(request: CreateCharacterRequest): Promise<Character> {
+  if (USE_MOCK) {
+    await delay(400);
+    const created: Character = { ...request, id: makeId('char') };
+    mockDb.characters.unshift(created);
+    return created;
+  }
+  const { data } = await api.post<Character>('/characters', request);
+  return data;
+}
+
+async function updateCharacter(id: string, patch: UpdateCharacterRequest): Promise<Character> {
+  if (USE_MOCK) {
+    await delay(400);
+    const idx = mockDb.characters.findIndex((c) => c.id === id);
+    if (idx < 0) throw new Error('Character not found');
+    mockDb.characters[idx] = { ...mockDb.characters[idx], ...patch };
+    return mockDb.characters[idx];
+  }
+  const { data } = await api.patch<Character>(`/characters/${id}`, patch);
+  return data;
+}
+
+async function deleteCharacter(id: string): Promise<void> {
+  if (USE_MOCK) {
+    await delay(400);
+    mockDb.characters = mockDb.characters.filter((c) => c.id !== id);
+    return;
+  }
+  await api.delete(`/characters/${id}`);
 }
 
 export function useCharacters() {
   return useQuery({
     queryKey: ['characters'],
     queryFn: listCharacters,
-    // SWR feel like the iOS CharactersViewModel: keep showing cached
-    // characters while a refresh happens in the background.
     staleTime: 30_000,
+  });
+}
+
+export function useCreateCharacter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createCharacter,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['characters'] }),
+  });
+}
+
+export function useUpdateCharacter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: UpdateCharacterRequest }) =>
+      updateCharacter(id, patch),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['characters'] }),
+  });
+}
+
+export function useDeleteCharacter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteCharacter,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['characters'] }),
   });
 }

@@ -1,9 +1,9 @@
-import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { avatarSources, type Character } from '@/api/characters';
-import { colors, creamAlpha } from '@/theme/colors';
+import type { Character } from '@/api/models';
+import { CharacterIcon } from '@/components/character-icon';
+import { colors } from '@/theme/colors';
 
 // CharacterCard from HomeView.swift: square avatar clipped to a 22pt
 // continuous-corner rect, 3pt accent border + checkmark when selected,
@@ -19,22 +19,15 @@ export function CharacterCard({
   onPress: () => void;
   onLongPress?: () => void;
 }) {
-  const source = avatarSources[character.symbolName];
   return (
     <Pressable onPress={onPress} onLongPress={onLongPress} style={styles.container}>
       <View style={styles.tileWrap}>
-        {source ? (
-          <Image source={source} style={styles.avatar} contentFit="cover" />
-        ) : (
-          <View style={[styles.avatar, styles.symbolFallback]}>
-            <SymbolView
-              name={character.symbolName as never}
-              size={30}
-              weight="semibold"
-              tintColor={colors.accent}
-            />
-          </View>
-        )}
+        <CharacterIcon
+          symbolName={character.symbolName}
+          tintName={character.tintName}
+          cornerRadius={22}
+          glyphSize={30}
+        />
         {isSelected ? (
           <>
             <View pointerEvents="none" style={styles.selectedBorder} />
@@ -67,16 +60,6 @@ const styles = StyleSheet.create({
     // borderCurve gives the SwiftUI "continuous" superellipse corners.
     borderCurve: 'continuous',
     overflow: 'hidden',
-  },
-  avatar: {
-    flex: 1,
-    borderRadius: 22,
-    borderCurve: 'continuous',
-  },
-  symbolFallback: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: creamAlpha(0.06),
   },
   selectedBorder: {
     position: 'absolute',
