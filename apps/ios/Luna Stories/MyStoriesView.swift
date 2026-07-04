@@ -54,7 +54,7 @@ struct MyStoriesView: View {
         .background(MoodyTwilightBackground().ignoresSafeArea())
         .navigationTitle("My Stories")
         .task { await vm.load() }
-        .refreshable { await vm.load() }
+        .refreshable { await Task { await vm.load() }.value }
         .alert(
             "Couldn't load stories",
             isPresented: Binding(

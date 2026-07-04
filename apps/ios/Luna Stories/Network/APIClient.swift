@@ -24,6 +24,20 @@ enum APIError: Error, LocalizedError {
     }
 }
 
+extension Error {
+    /// True when this error just means the surrounding task was torn down
+    /// (e.g. pull-to-refresh dismissed mid-flight), not a real failure.
+    /// View models check this so "cancelled" never surfaces as an alert.
+    var isCancellation: Bool {
+        if self is CancellationError { return true }
+        if let urlError = self as? URLError, urlError.code == .cancelled { return true }
+        if let api = self as? APIError, case .transport(let inner) = api {
+            return inner.isCancellation
+        }
+        return false
+    }
+}
+
 private nonisolated struct APIEnvelope<T: Decodable>: Decodable {
     let data: T?
     let message: String?

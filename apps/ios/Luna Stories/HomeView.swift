@@ -108,9 +108,15 @@ struct HomeView: View {
                     // latest-story banner together. Both are silent SWR refreshes
                     // (isFetching, not isLoading) so the skeleton never flashes
                     // while data is already on screen.
-                    async let characters: Void = vm.load()
-                    async let latest: Void = unread.refresh()
-                    _ = await (characters, latest)
+                    // Wrapped in an unstructured Task: .refreshable cancels its
+                    // task as soon as the spinner dismisses, which would kill
+                    // the in-flight requests; awaiting the Task's value lets
+                    // the refresh finish regardless.
+                    await Task {
+                        async let characters: Void = vm.load()
+                        async let latest: Void = unread.refresh()
+                        _ = await (characters, latest)
+                    }.value
                 }
 
                 VStack(spacing: 0) {

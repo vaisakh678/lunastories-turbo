@@ -42,8 +42,10 @@ final class StoriesViewModel {
             nextCursor = page.nextCursor
             saveToDisk()
         } catch {
-            errorMessage = (error as? APIError)?.errorDescription
-                ?? error.localizedDescription
+            if !error.isCancellation {
+                errorMessage = (error as? APIError)?.errorDescription
+                    ?? error.localizedDescription
+            }
         }
         isFetching = false
     }
@@ -57,8 +59,10 @@ final class StoriesViewModel {
             nextCursor = page.nextCursor
             // Intentionally NOT saved to cache — cache is page-1 only.
         } catch {
-            errorMessage = (error as? APIError)?.errorDescription
-                ?? error.localizedDescription
+            if !error.isCancellation {
+                errorMessage = (error as? APIError)?.errorDescription
+                    ?? error.localizedDescription
+            }
         }
         isLoadingMore = false
     }
