@@ -150,8 +150,15 @@ struct HomeView: View {
                         .allowsHitTesting(false)
 
                         StartButton(
-                            isEnabled: !selectedCharacterIds.isEmpty,
                             action: {
+                                guard !selectedCharacterIds.isEmpty else {
+                                    toast.show(
+                                        "Please select at least one character for your story",
+                                        title: "No character selected",
+                                        style: .info
+                                    )
+                                    return
+                                }
                                 // Lazy permission request — first generation
                                 // is a natural moment to ask, since the user
                                 // is opting into something that needs notifs.
@@ -633,7 +640,6 @@ private struct GenerationBanner: View {
 }
 
 private struct StartButton: View {
-    let isEnabled: Bool
     let action: () -> Void
 
     var body: some View {
@@ -643,13 +649,10 @@ private struct StartButton: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(
-                    Capsule().fill(isEnabled ? Color.accentColor : Color.gray.opacity(0.45))
-                )
-                .shadow(color: .black.opacity(isEnabled ? 0.18 : 0), radius: 12, x: 0, y: 6)
+                .background(Capsule().fill(Color.accentColor))
+                .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 6)
         }
         .buttonStyle(.plain)
-        .disabled(!isEnabled)
     }
 }
 

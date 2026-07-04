@@ -83,13 +83,18 @@ struct ToastOverlay: View {
     @Environment(ToastCenter.self) private var toast
 
     var body: some View {
-        if let current = toast.current {
-            ToastCard(toast: current) { toast.dismiss() }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .transition(.move(edge: .top).combined(with: .opacity))
-                .animation(.spring(response: 0.4, dampingFraction: 0.85), value: toast.current)
+        // The animation lives on this always-present container (not inside the
+        // `if let`) so SwiftUI animates the card's insertion and removal — a
+        // transition attached only to conditional content won't fire on insert.
+        ZStack(alignment: .top) {
+            if let current = toast.current {
+                ToastCard(toast: current) { toast.dismiss() }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: toast.current)
     }
 }
 
