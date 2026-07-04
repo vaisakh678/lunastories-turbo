@@ -44,8 +44,10 @@ final class CharactersViewModel {
             characters = try await CharacterAPI.list()
             saveToDisk()
         } catch {
-            errorMessage = (error as? APIError)?.errorDescription
-                ?? error.localizedDescription
+            if !error.isCancellation {
+                errorMessage = (error as? APIError)?.errorDescription
+                    ?? error.localizedDescription
+            }
         }
         isFetching = false
     }
