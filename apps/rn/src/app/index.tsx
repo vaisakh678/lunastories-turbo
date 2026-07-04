@@ -1,98 +1,173 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Stack } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useCharacters, type Character } from '@/api/characters';
+import { CharacterSection } from '@/components/home/character-section';
+import { StartButton } from '@/components/home/start-button';
+import { MoodyTwilightBackground } from '@/components/moody-twilight-background';
+import { useToast } from '@/components/toast';
+import { colors } from '@/theme/colors';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
-
+// HomeView.swift ported: twilight background, Main/Side character grids,
+// pinned Start button over a bottom fade, account button top-right.
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
+  const toast = useToast();
+  const { data: characters = [], refetch, isRefetching } = useCharacters();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const mainCharacters = characters.filter((c) => c.role === 'main');
+  const sideCharacters = characters.filter((c) => c.role === 'side');
+
+  const toggle = (character: Character) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(character.id)) next.delete(character.id);
+      else next.add(character.id);
+      return next;
+    });
+  };
+
+  const handleStart = () => {
+    if (selectedIds.size === 0) {
+      toast.show('Please select at least one character for your story', {
+        title: 'No character selected',
+        style: 'info',
+      });
+      return;
+    }
+    // TODO(story flow phase): open the story creation flow.
+  };
+
+  const handleAdd = () => {
+    // TODO(wizard phase): open the character wizard sheet.
+  };
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <View style={styles.root}>
+      {/* Native navigation bar with a collapsing large title, matching
+          .navigationTitle("Luna Stories") + hidden toolbar background. */}
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: 'Luna Stories',
+          headerLargeTitle: true,
+          headerTransparent: true,
+          headerLargeStyle: { backgroundColor: 'transparent' },
+          headerLargeTitleStyle: { color: colors.cream },
+          headerTitleStyle: { color: colors.cream },
+          headerShadowVisible: false,
+          headerRight: () => <AccountButton />,
+        }}
+      />
+      <MoodyTwilightBackground />
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.cream}
           />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
+        }
+      >
+        <View style={styles.sections}>
+          <CharacterSection
+            role="main"
+            characters={mainCharacters}
+            selectedIds={selectedIds}
+            onToggle={toggle}
+            onAdd={handleAdd}
           />
-        </ThemedView>
+          <CharacterSection
+            role="side"
+            characters={sideCharacters}
+            selectedIds={selectedIds}
+            onToggle={toggle}
+            onAdd={handleAdd}
+          />
+        </View>
+      </ScrollView>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      {/* Bottom fade + pinned Start button (HomeView's 200pt gradient overlay). */}
+      <View pointerEvents="box-none" style={styles.bottomOverlay}>
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.35)', 'rgba(0,0,0,0.55)']}
+          locations={[0, 0.55, 1]}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[styles.startWrap, { paddingBottom: Math.max(insets.bottom, 20) + 16 }]}>
+          <StartButton onPress={handleStart} />
+        </View>
+      </View>
+    </View>
   );
 }
+
+// Account button (two rounded bars) mirroring the iOS toolbar item.
+function AccountButton() {
+  return (
+    <Pressable style={accountStyles.button} accessibilityLabel="Account">
+      <View style={accountStyles.bars}>
+        <View style={accountStyles.barLong} />
+        <View style={accountStyles.barShort} />
+      </View>
+    </Pressable>
+  );
+}
+
+const accountStyles = StyleSheet.create({
+  button: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bars: {
+    alignItems: 'flex-end',
+    gap: 6,
+  },
+  barLong: {
+    width: 18,
+    height: 2,
+    borderRadius: 2,
+    backgroundColor: 'white',
+  },
+  barShort: {
+    width: 14,
+    height: 2,
+    borderRadius: 2,
+    backgroundColor: 'white',
+  },
+});
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: colors.twilightBottom,
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  scrollContent: {
+    paddingTop: 20,
+    paddingBottom: 140,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  sections: {
+    gap: 20,
   },
-  title: {
-    textAlign: 'center',
+  bottomOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 200,
+    justifyContent: 'flex-end',
   },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  startWrap: {
+    paddingHorizontal: 24,
   },
 });
