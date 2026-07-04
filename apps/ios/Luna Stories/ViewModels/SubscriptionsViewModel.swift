@@ -24,6 +24,11 @@ final class SubscriptionsViewModel {
     private(set) var isLoading: Bool = false
     var errorMessage: String?
 
+    /// Per-product intro-offer eligibility (product id → status), refreshed
+    /// alongside offerings. Trials show only for users who haven't already
+    /// consumed the intro offer on their Apple ID.
+    private(set) var introEligibility: [String: IntroEligibilityStatus] = [:]
+
     /// Identifier configured in RevenueCat dashboard (case-sensitive).
     private static let proEntitlement = "Pro"
 
@@ -40,6 +45,15 @@ final class SubscriptionsViewModel {
         if let info = await customerResult {
             isPro = info.entitlements.active[Self.proEntitlement] != nil
         }
+        await refreshIntroEligibility()
+    }
+
+    /// Whether trial/intro copy should be shown for a package. Only an
+    /// explicit `.ineligible` (this Apple ID already used the intro offer)
+    /// hides it — `.unknown` (e.g. not signed into the App Store yet) still
+    /// shows the trial, since most users seeing the paywall are new.
+    func isTrialEligible(for package: Package) -> Bool {
+        introEligibility[package.storeProduct.productIdentifier] != .ineligible
     }
 
     /// Attempt a purchase. Returns true if the user now has pro access
@@ -65,6 +79,16 @@ final class SubscriptionsViewModel {
     }
 
     // MARK: - Helpers
+
+    private func refreshIntroEligibility() async {
+        let ids = offerings?.current?.availablePackages
+            .map(\.storeProduct.productIdentifier) ?? []
+        guard !ids.isEmpty else { return }
+        let result = await Purchases.shared.checkTrialOrIntroDiscountEligibility(
+            productIdentifiers: ids
+        )
+        introEligibility = result.mapValues(\.status)
+    }
 
     private func fetchOfferings() async -> Offerings? {
         do {

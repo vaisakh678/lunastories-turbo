@@ -179,6 +179,7 @@ struct PaywallView: View {
                 ForEach(packages, id: \.identifier) { pkg in
                     PlanCard(
                         package: pkg,
+                        showsTrial: subscriptions.isTrialEligible(for: pkg),
                         isSelected: pkg.identifier == selectedPackage?.identifier,
                         onTap: { selectedPackageId = pkg.identifier }
                     )
@@ -284,7 +285,7 @@ struct PaywallView: View {
 
     private var ctaLabel: String {
         guard let pkg = selectedPackage else { return "Continue" }
-        if let trial = pkg.introFreeTrial {
+        if let trial = pkg.introFreeTrial, subscriptions.isTrialEligible(for: pkg) {
             return "Start \(trial.trialAdjective) free trial"
         }
         return "Continue"
@@ -294,7 +295,7 @@ struct PaywallView: View {
         guard let pkg = selectedPackage else { return "Cancel anytime." }
         let price = pkg.storeProduct.localizedPriceString
         let unit = pkg.subscriptionPeriodUnit
-        if let trial = pkg.introFreeTrial {
+        if let trial = pkg.introFreeTrial, subscriptions.isTrialEligible(for: pkg) {
             return "Free for \(trial.trialNoun), then \(price)\(unit). Cancel anytime."
         }
         return "Then \(price)\(unit). Cancel anytime."
@@ -468,6 +469,7 @@ private struct FeatureRow: View {
 
 private struct PlanCard: View {
     let package: Package
+    let showsTrial: Bool
     let isSelected: Bool
     let onTap: () -> Void
 
@@ -505,7 +507,7 @@ private struct PlanCard: View {
                                 )
                         }
                     }
-                    if let trial = package.introFreeTrial {
+                    if let trial = package.introFreeTrial, showsTrial {
                         Text("\(trial.trialAdjective.uppercased()) FREE TRIAL")
                             .font(.system(size: 10, weight: .heavy))
                             .tracking(0.5)
